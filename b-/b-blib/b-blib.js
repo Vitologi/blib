@@ -26,7 +26,11 @@
 	
 	/** PRIVATE METHODS */
 	var core = {
-			'toLowerCase':String.prototype.toLowerCase
+			'toString':Object.prototype.toString,
+			'toLowerCase':String.prototype.toLowerCase,
+			'push':[].push,
+			'sort':[].sort,
+			'splice':[].splice
 		},
 		Blib = function(){
             return new init(arguments);
@@ -154,7 +158,18 @@
 	
 	Blib.is = function(obj, type){
 		
+		if(Blib.is(type,'undefined')){
+			//return string type
+		}
 		
+		if(Blib.is(type,'array')){
+			var status = false,
+				i;
+			for(i in type){
+				status = status || Blib.is(obj, type[i];
+			}
+			return status;
+		}
 	
 		if(type == "array"){
 			return (typeof(obj)=="object" && obj.length);
@@ -374,9 +389,9 @@
 		},
 		
 		//get Array methods
-        'push':[].push,
-		'sort':[].sort,
-		'splice':[].splice
+        'push':core.push,
+		'sort':core.sort,
+		'splice':core.splice
 	};
 	
 	

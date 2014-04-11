@@ -4,14 +4,10 @@
     var config = {
 			'_private':{
 				'version':true,
-				'alias':true,
 				'ajax':true,
 				'store':true
 			},
             'version':'0.2.0',
-			'alias':{
-				'head': document.getElementsByTagName('head')[0] //под задачу
-			},
 			'ajax':{
 				'dataType':"text",
 				'success':function(){},
@@ -29,12 +25,14 @@
         };
 	
 	/** PRIVATE METHODS */
-	var Blib = function(){
+	var core = {
+			'toLowerCase':String.prototype.toLowerCase
+		},
+		Blib = function(){
             return new init(arguments);
         },
         init = function(args){
-			
-			if(!args.length){return this;}
+
 			if(typeof(args[0]) === "function"){return Blib.ready(args[0]);}
 			
 			return merge(this, getElement(args));
@@ -91,6 +89,7 @@
 			return first;
 		},
 		getElement = function(selector){
+			if(typeof(selector)==="String")selector = [selector];
 			var els = document.getElementsByTagName('*'),
 				elsLen=els.length,
 				elements=[];
@@ -148,16 +147,27 @@
 			}else{
 				localStorage.setItem("blib", JSON.stringify(config.store.data));
 			}
-		},
-		block2url = function(name, extension, path){
-			if(typeof(path) == "string") return path+name+"."+extension;
-			return name.substr(0,1)+"/"+name+"/"+name+"."+extension;
 		};
 	
 	
 	/** LIBRARY METHODS */
 	
-	Blib.block2url = block2url;
+	Blib.is = function(obj, type){
+		
+		
+	
+		if(type == "array"){
+			return (typeof(obj)=="object" && obj.length);
+		}
+		
+		if(type == "object"){
+			return obj.constructor == Object;
+		}
+		
+		if(type == "string"){
+			return obj.constructor == String;
+		}
+	};
 	
 	/**
 	 * Method for work with blib configuration
@@ -177,7 +187,7 @@
 			second =  needle[1] || false;
 		
 		if(typeof(value)  === 'undefined') return clone(navigate(result, option));
-		if(config["_private"][first] || (first == "_private" && !second && !(second in config["_private"]))) return Blib;
+		if(config["_private"][first] || (first == "_private" && (!second || second in config["_private"]))) return Blib;
 		
 		navigate(result, option, value);
 	};
@@ -403,12 +413,139 @@
  * 
  */
 (function( Blib ){
+	
+	
+	/** PRIVATE VARIABLE AND METHODS */
+	var is = Blib.is,
+		config = {
+			'head': document.getElementsByTagName('head')[0],
+			'def' :{
+				'target':false,
+				'list':[]		
+			}
+		},
 
-	var config = {
-		'item':true
-	}
+		block2url = function(name, extension, path){
+			if(typeof(path) == "string") return path+name+"."+extension;
+			return name.substr(0,1)+"/"+name+"/"+name+"."+extension;
+		},
+		serializeValue = function(cache){
+			var temp = {},
+				version = Blib.store.get("version");
+				
+			if(!cache || typeof(cache)==="string")return version;
+			
+			for(var key in cache){
+				if(is("array", cache[key])){
+					temp[cache[key]] = serializeValue(cache[key]);
+				}else if(is("string", cache[key])){
+					temp[cache[key]] = version;
+				}else if(is("object", cache[key])){
+					temp[key] = serializeValue(cache[key]);
+				}
+				
+			}
+
+			return temp;
+		},
+		
+		/** 
+			{'action':"add", 'extention':extention, 'value':data[extention]}
+		*/
+		combine = function(param){
+			var version = Blib.store.get("version"),
+				file,
+				cache,
+				storeValue;
+			
+			for(file in param.value){break;};
+			cache = param.value[file];
+			
+			switch(param.action){
+				case "add":
+					
+					//if(!config.head.appendChild(param.file)){return console.log("error(missing:"+param.file+")");}
+					
+					
+					
+					Blib.store.set(param.extention+"."+file, storeValue);
+					break;
+				case "del":
+					
+					break;
+				default:
+					
+					break;
+			}
+		};
+	Blib.is = is;
+	
 	Blib.config("include", config);
 	Blib.config("_private.include", true);
+	
+	Blib.test = serializeValue;
+	
+	/**
+	* include block (html+css+js in set container || css+js)
+	* @param {string} file		path of block without extension
+	* @param {string} target	selector where will be load block
+	*/
+	Blib.include =  function(obj, target){
+		var version = Blib.store.get("version");
+		
+		if(!obj){
+			obj={'list':[]};
+		}else if(typeof(obj)==="String"){
+			obj={'list':[obj]};
+			if(target)obj.target = target;
+		}
+		
+		for(key in config.def){
+			if(key in obj)continue;
+			obj[key] = config.def[key];
+		}
+
+		if(obj.list.length !== 1){
+		
+			Blib.ajax({
+				url:'/',
+				data:{'blib':'include', 'list':obj.list},
+				type:"DATA",
+				dataType: "json",
+				success: function(data){
+					Blib.store.set("version", data['version']);
+					delete data['version'];
+					
+					for(extention in data){
+						combine({'action':"add", 'extention':extention, 'value':data[extention]});
+					}
+				}
+			});
+			
+			return;
+			
+		}
+		
+		//combine({'action':"add", 'extention':'css', 'value':{block2url(obj.list[0], "css"): version}});
+		
+		if(obj.target){
+			var target = Blib(target);
+			Blib.ajax({
+				url:block2url(obj.list[0], "html") + '?ver='+version,
+				dataType: "html",
+				success: function(data){
+					//possible update version from storage
+					for(key in target){
+						target[key].html(data);
+					}
+					//combine({'action':"add", 'extention':'js', 'value':{block2url(obj.list[0], "js"): version}});
+				}
+			});
+		}else{
+			//combine({'action':"add", 'extention':'js', 'value':{block2url(obj.list[0], "js"): version}});
+		}
+
+	};
 	
 	/*
 	function(request){
@@ -460,32 +597,7 @@
 	};
 	*/
 	
-	/**
-	* include block (html+css+js in set container || css+js)
-	* @param {string} file		path of block without extension
-	* @param {string} target	selector where will be load block
-	*/
-	Blib.include =  function(file, target){
-		/*
-		cssFunction(file+'.css');
-
-		if(target){
-			var target = $(target);
-			$.ajax({
-				url:file+'.html?new='+version,
-				dataType: "html",
-				success: function(data){
-					for(key in target){
-						target[key].innerHTML=data;
-					}
-					jsFunction(file+'.js');
-				}
-			});
-		}else{
-			jsFunction(file+'.js');
-		}
-		*/
-	};
+	
 	
 	/**
 	* include css file
@@ -551,59 +663,11 @@
 	
 	
 	
-	/**
-	* method for get version of site and load all stylesheet/script in one file
-	* @param {object} dataObject	object of setting
-	* {bool} script					for glue javascripts
-	* {srting}[]exception			blocks which will not be uploaded
-	* {srting}[]order				first turn load sctipts/if 'script' is false, then 'order' set chosen blocks
-	*/
-	Blib.include.fire = function(dataObject){
-		
-		/*
-		if(!dataObject['order'].length || dataObject['script']){
-			// first include all cache 
-			var arr = (storageFlag && localStorage.getItem('css'))?JSON.parse(localStorage.getItem('css')):{};
-			for(key in arr){
-				cssFunction(key, arr[key]['list']||[]);
-			}
-			var arr = (storageFlag && localStorage.getItem('js'))?JSON.parse(localStorage.getItem('js')):{};
-			for(key in arr){
-				jsFunction(key, arr[key]['list']||[]);
-			}
-		}
-		
-		// get files which we have 
-		var allCss = storageHandler({'operation':'getAllFiles', 'type':'css'}),
-			allJs = storageHandler({'operation':'getAllFiles', 'type':'js'}),
-			requestData = {
-				'version':version,
-				'data':{
-					'css':allCss,
-					'js':(dataObject['script']?allJs:"orderOnly")
-				},
-				'exception':(dataObject['exception'] || []),
-				'order':(dataObject['order'] ||["b-/b-blib-build/b-blib-build.js", "b-/b-jquery/b-jquery.js", "b-/b-jquery-ui/b-jquery-ui.js"])
-			};	
-
-		ready(function(){
-			$.ajax({
-				url:'b-/b-blib/b-blib.php',
-				data:requestData,
-				type:"DATA",
-				dataType: "json",
-				success: function(data){
-					if(!data['status']){return false;}
-					version = data['version'];
-					if(storageFlag){localStorage.setItem("version", JSON.stringify(version));}
-					if(data['css']){cssFunction(data['css']['name'], data['css']['list']);}
-					if(data['js']){jsFunction(data['js']['name'], data['js']['list']);}
-				}
-			});
-		});//ready
-		
-		*/
-	};
+	
+	
+	
+	
+	
 	
 })( window.blib );
 

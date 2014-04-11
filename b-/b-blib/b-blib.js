@@ -158,30 +158,43 @@
 	
 	Blib.is = function(obj, type){
 		
-		if(Blib.is(type,'undefined')){
-			//return string type
+		switch(type){
+			case "undefined":
+			case "string":
+			case "boolean":
+			case "function":
+				return typeof(obj) === type;
+				break;
+				
+			case "number":
+				return (typeof(obj) === type && obj === obj);
+				break;
+			
+			case "NaN":
+				return (typeof(obj) === 'number' && obj !== obj);
+				break;	
+				
+			default:
+				return "object";
+				break;
+			
+			//undefined, string, boolean, function,     number, NaN,      object, null, array, date, 
 		}
+		
+		
 		
 		if(Blib.is(type,'array')){
 			var status = false,
 				i;
 			for(i in type){
-				status = status || Blib.is(obj, type[i];
+				status = status || Blib.is(obj, type[i]);
 			}
 			return status;
 		}
-	
-		if(type == "array"){
-			return (typeof(obj)=="object" && obj.length);
-		}
+
+		return (type)?typeof(obj) === type:typeof(obj);
+
 		
-		if(type == "object"){
-			return obj.constructor == Object;
-		}
-		
-		if(type == "string"){
-			return obj.constructor == String;
-		}
 	};
 	
 	/**

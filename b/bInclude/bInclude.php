@@ -5,8 +5,9 @@ class bInclude extends bBlib{
 	
 	protected function input($data){
 		$this->local['parent'] = array('bJquery', 'bIndex');
+		$this->local['callback'] = self::$global['REQUEST']['callback'];
 		$this->local['cache'] = $this->path."/__cache/bInclude__cache.ini";
-		$this->local['list'] = (array)$data['list'] or array();
+		$this->local['list'] = $this->callback?json_decode(self::$global['REQUEST']['list']):(array)$data['list'] or array();
 	}	
 	
 	public function output(){
@@ -31,6 +32,13 @@ class bInclude extends bBlib{
 			"name"		=> $name,
 			"list"		=> $list
 		);
+		
+		
+		if($this->callback){
+			header('Content-type: application/json');
+			echo sprintf('%1$s(%2$s);',$this->callback, json_encode($answer));
+			exit;
+		}		
 		
 		header('Content-type: application/json');
 		echo json_encode($answer);

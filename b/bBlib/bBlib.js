@@ -428,6 +428,7 @@
     init.prototype = Blib.fn = Blib.prototype;
 	if ( typeof window === "object" && typeof window.document === "object" ) {
 		window.blib = Blib;
+		window.Blib = Blib;
 	}
 	
 	
@@ -475,8 +476,9 @@
 		 * @return {string} 			- url
 		 */
 		block2url = function(name, extension, path){
-			if(is(path,"string")) return path+name+"."+extension;
-			return name.substr(0,1)+"/"+name+"/"+name+"."+extension;
+			var server = Blib.config('system.server');
+			if(is(path,"string")) return server+path+name+"."+extension;
+			return server+name.substr(0,1)+"/"+name+"/"+name+"."+extension;
 		},
 		
 		/**
@@ -487,8 +489,7 @@
 		 */
 		combine = function(param){
 			var version = config.version,
-				server = Blib.config('system.server'),
-				cachePath = is(param.list, "array")?server+"b/bInclude/__cache/":false,
+				cachePath = is(param.list, "array")?"b/bInclude/__cache/":false,
 				link = block2url(param.name, param.extention, cachePath)+"?version="+version,
 				id = param.name+"."+param.extention,
 				blocks = config.blocks,
@@ -566,7 +567,9 @@
 	* @param {string} target - selector for loaded block
 	*/
 	Blib.include =  function(blocks, target){
-		var version = config.version;
+		var version = config.version,
+			server = Blib.config('system.server'),
+			domElement;
 		
 		if(is(blocks, "string")){
 			blocks=[blocks];
@@ -575,18 +578,29 @@
 		}
 		
 		if(blocks.length !== 1){
-		
-			Blib.ajax({
-				url:'/',
-				data:{'blib':'bInclude', 'list':blocks},
-				type:"DATA",
-				dataType: "json",
-				success: function(data){
-					config.version = data['version'];
-					combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
-					combine({'action':"add", 'extention':"js", 'name':data['name'] , 'list':data['list']});
-				}
-			});
+			
+			if(server === ""){
+				Blib.ajax({
+					url:'/',
+					data:{'blib':'bInclude', 'list':blocks},
+					type:"DATA",
+					dataType: "json",
+					success: function(data){
+						config.version = data['version'];
+						combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
+						combine({'action':"add", 'extention':"js", 'name':data['name'] , 'list':data['list']});
+					}
+				});
+			}else{
+				domElement  = document.createElement('script');
+				domElement.type="text/javascript";
+				domElement.src = server+'?blib=bInclude&callback=Blib.include.callback&list='+JSON.stringify(blocks);
+				config.head.appendChild(domElement);
+				
+				window.setTimeout(function(){
+					config.head.removeChild(domElement);
+				},10000);
+			}
 			
 			return;
 			
@@ -609,6 +623,12 @@
 		}
 
 	};
-
+	
+	Blib.include.callback = function(data){
+		config.version = data['version'];
+		combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
+		combine({'action':"add", 'extention':"js", 'name':data['name'] , 'list':data['list']});
+	}
+	
 })( window.blib );
 

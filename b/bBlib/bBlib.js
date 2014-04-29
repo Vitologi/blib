@@ -20,7 +20,9 @@
 				'isset':('localStorage' in window && window['localStorage'] !== null)?true:false,
 				'data':{}
 			},
-			'system':{},
+			'system':{
+				'server':''
+			},
 			'user':{}
         };
 	
@@ -42,6 +44,59 @@
 			return merge(this, getElement(args));
 
         },
+		is = function(obj, type){
+			
+			switch(type){
+				case "undefined":
+				case "string":
+				case "boolean":
+				case "function":
+					return typeof(obj) === type;
+					break;
+					
+				case "number":
+					return (typeof(obj) === type && obj === obj);
+					break;
+				
+				case "NaN":
+					return (typeof(obj) === 'number' && obj !== obj);
+					break;
+					
+				case "null":
+					return obj === null;
+					break;
+					
+				default:
+					var tempType = core.toString.call(obj);
+					tempType = tempType.substr(8,tempType.length-9).toLowerCase();
+					
+					switch(type){
+						case "object":
+						case "array":
+						case "date":
+						case "global":
+							return tempType === type;
+							break;
+						
+						default:
+							
+							if(Blib.is(type,'array')){
+								var status = false,	i;
+								for(i in type){
+									status = status || Blib.is(obj, type[i]);
+								}
+								return status;
+							}					
+							
+							return (obj===obj)?tempType:"NaN";
+							break;
+					}
+
+					break;
+
+			}
+			
+		},
 		clone = function(obj){
 
 			if(typeof(obj) != 'object' || obj === null){
@@ -155,47 +210,8 @@
 	
 	
 	/** LIBRARY METHODS */
-	
-	Blib.is = function(obj, type){
-		
-		switch(type){
-			case "undefined":
-			case "string":
-			case "boolean":
-			case "function":
-				return typeof(obj) === type;
-				break;
-				
-			case "number":
-				return (typeof(obj) === type && obj === obj);
-				break;
-			
-			case "NaN":
-				return (typeof(obj) === 'number' && obj !== obj);
-				break;	
-				
-			default:
-				return "object";
-				break;
-			
-			//undefined, string, boolean, function,     number, NaN,      object, null, array, date, 
-		}
-		
-		
-		
-		if(Blib.is(type,'array')){
-			var status = false,
-				i;
-			for(i in type){
-				status = status || Blib.is(obj, type[i]);
-			}
-			return status;
-		}
-
-		return (type)?typeof(obj) === type:typeof(obj);
-
-		
-	};
+	Blib.is		= is;
+	Blib.clone	= clone;
 	
 	/**
 	 * Method for work with blib configuration
@@ -424,14 +440,12 @@
 (function( Blib ){
 	//add object method
 	Blib.fn.test = function(){
-		console.log(this.length);
-		console.log(this);
+		console.log('object method');
 	}
 	
 	//add library method
 	Blib.test = function(){
-		console.log(this.length);
-		console.log(this);
+		console.log('library method');
 	}
 })(blib);
 
@@ -445,108 +459,132 @@
 	
 	/** PRIVATE VARIABLE AND METHODS */
 	var is = Blib.is,
+		//local config
 		config = {
 			'head': document.getElementsByTagName('head')[0],
-			'def' :{
-				'target':false,
-				'list':[]		
-			}
-		},
-
-		block2url = function(name, extension, path){
-			if(typeof(path) == "string") return path+name+"."+extension;
-			return name.substr(0,1)+"/"+name+"/"+name+"."+extension;
-		},
-		serializeValue = function(cache){
-			var temp = {},
-				version = Blib.store.get("version");
-				
-			if(!cache || typeof(cache)==="string")return version;
-			
-			for(var key in cache){
-				if(is("array", cache[key])){
-					temp[cache[key]] = serializeValue(cache[key]);
-				}else if(is("string", cache[key])){
-					temp[cache[key]] = version;
-				}else if(is("object", cache[key])){
-					temp[key] = serializeValue(cache[key]);
-				}
-				
-			}
-
-			return temp;
+			'version':1,
+			'blocks':{}
 		},
 		
-		/** 
-			{'action':"add", 'extention':extention, 'value':data[extention]}
-		*/
+		/**
+		 * Translate block's name into it path on server
+		 * 
+		 * @param {string} name 		- block's name
+		 * @param {string} extension 	- block's extension like css, js, html
+		 * @param {string} name 		- alternative block's folder
+		 * @return {string} 			- url
+		 */
+		block2url = function(name, extension, path){
+			if(is(path,"string")) return path+name+"."+extension;
+			return name.substr(0,1)+"/"+name+"/"+name+"."+extension;
+		},
+		
+		/**
+		 * Function for manipulate blocks in site (add or delete them from DOM)
+		 * 
+		 * @param {object} param 		- set of parameters
+		 * @example {'action':"add", 'extention':"css", 'name':"bJquery" , 'list':["bJquery1", "bJquery2", "bJquery3"]}
+		 */
 		combine = function(param){
-			var version = Blib.store.get("version"),
-				file,
-				cache,
-				storeValue;
-			
-			for(file in param.value){break;};
-			cache = param.value[file];
+			var version = config.version,
+				server = Blib.config('system.server'),
+				cachePath = is(param.list, "array")?server+"b/bInclude/__cache/":false,
+				link = block2url(param.name, param.extention, cachePath)+"?version="+version,
+				id = param.name+"."+param.extention,
+				blocks = config.blocks,
+				domElement, newElement, temp;
 			
 			switch(param.action){
+				case "del":
+					domElement = Blib("#"+id)[0];
+					if(domElement){
+						domElement.parentNode.removeChild(domElement);
+						if(param.extention === "js") delete blocks[param.name];
+					}
+					break;
+				
 				case "add":
 					
-					//if(!config.head.appendChild(param.file)){return console.log("error(missing:"+param.file+")");}
+					for(key in blocks){
+						if(!is(blocks[key]['list'], "array"))continue;
+						temp = blocks[key]['list'];
+						
+						for(var i=0, len = temp.length; i<len; i++){
+							if(temp[i]!==param.name) continue;
+							combine({'action':"add", 'extention':param.extention, 'name':key , 'list':temp});
+							return;
+						}
+						
+					}
 					
 					
+					combine({'action':"del", 'extention':param.extention, 'name':param.name , 'list':param.list});
 					
-					Blib.store.set(param.extention+"."+file, storeValue);
+					switch(param.extention){
+						case "css":
+							
+							domElement  = document.createElement('link');
+							domElement.rel  = 'stylesheet';
+							domElement.type = 'text/css';
+							domElement.media = 'all';
+							domElement.id = id;
+							domElement.href = link;
+							
+							break;
+							
+						case "js":
+							
+							domElement  = document.createElement('script');
+							domElement.type="text/javascript";
+							domElement.id = id;
+							domElement.src = link;
+							
+							break;
+						
+						default:
+							break;
+					}	
+					
+				
+					if(!config.head.appendChild(domElement)){return console.log("error(missing:"+link+")");};
+					if(param.extention === "js") blocks[param.name] = {'version':version, 'list':param.list};
 					break;
-				case "del":
 					
-					break;
 				default:
-					
 					break;
 			}
 		};
-	Blib.is = is;
 	
-	Blib.config("include", config);
-	Blib.config("_private.include", true);
 	
-	Blib.test = serializeValue;
+	//save config into global config and protect them
+	Blib.config("bInclude", config);
+	Blib.config("_private.bInclude", true);
 	
 	/**
-	* include block (html+css+js in set container || css+js)
-	* @param {string} file		path of block without extension
-	* @param {string} target	selector where will be load block
+	* Include block/s
+	* @param {string|array|some else} blocks	name/s
+	* @param {string} target - selector for loaded block
 	*/
-	Blib.include =  function(obj, target){
-		var version = Blib.store.get("version");
+	Blib.include =  function(blocks, target){
+		var version = config.version;
 		
-		if(!obj){
-			obj={'list':[]};
-		}else if(typeof(obj)==="String"){
-			obj={'list':[obj]};
-			if(target)obj.target = target;
+		if(is(blocks, "string")){
+			blocks=[blocks];
+		}else if(!is(blocks, "array")){
+			blocks=[];
 		}
 		
-		for(key in config.def){
-			if(key in obj)continue;
-			obj[key] = config.def[key];
-		}
-
-		if(obj.list.length !== 1){
+		if(blocks.length !== 1){
 		
 			Blib.ajax({
 				url:'/',
-				data:{'blib':'include', 'list':obj.list},
+				data:{'blib':'bInclude', 'list':blocks},
 				type:"DATA",
 				dataType: "json",
 				success: function(data){
-					Blib.store.set("version", data['version']);
-					delete data['version'];
-					
-					for(extention in data){
-						combine({'action':"add", 'extention':extention, 'value':data[extention]});
-					}
+					config.version = data['version'];
+					combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
+					combine({'action':"add", 'extention':"js", 'name':data['name'] , 'list':data['list']});
 				}
 			});
 			
@@ -554,150 +592,23 @@
 			
 		}
 		
-		//combine({'action':"add", 'extention':'css', 'value':{block2url(obj.list[0], "css"): version}});
+		combine({'action':"add", 'extention':'css', 'name':blocks[0]});
 		
-		if(obj.target){
+		if(target){
 			var target = Blib(target);
 			Blib.ajax({
-				url:block2url(obj.list[0], "html") + '?ver='+version,
+				url:block2url(blocks[0], "html") + '?ver='+version, //html ajax work only with self server
 				dataType: "html",
 				success: function(data){
-					//possible update version from storage
-					for(key in target){
-						target[key].html(data);
-					}
-					//combine({'action':"add", 'extention':'js', 'value':{block2url(obj.list[0], "js"): version}});
+					target.html(data);
+					combine({'action':"add", 'extention':'js', 'name':blocks[0]});
 				}
 			});
 		}else{
-			//combine({'action':"add", 'extention':'js', 'value':{block2url(obj.list[0], "js"): version}});
+			combine({'action':"add", 'extention':'js', 'name':blocks[0]});
 		}
 
 	};
-	
-	/*
-	function(request){
-		
-		var store =  Blib.store,
-			isset = config.store.isset;
-			data = config.store.data;
-		
-		console.log(store.get());
-		
-	
-		//storeSave
-		
-		var operation = request['operation'],
-			type = request['type'],
-			fileName = request['fileName'],
-			fileCache = request['fileCache']||[],
-			file = request['file'],
-			obj = eval(type),
-			html = document.getElementById(fileName);
-		
-		if(operation=='clear'){
-			if(html){html.parentNode.removeChild(html);}
-			delete obj[fileName];			
-		}else if(operation=='set'){
-			if(!head.appendChild(file)){return alert("непрошло"+fileName);}
-			obj[fileName]={'version':version, 'list':fileCache};
-		}else if(operation=='getAllFiles'){
-			var arr=[];
-			for(key in obj){
-				if(obj[key]['list']){
-					arr = arr.concat(obj[key]['list']);
-				}else{
-					arr.push(key);
-				}
-			}
-			arr.sort();
-			var i = arr.length;
-			while (i--) {
-				if (arr[i] == arr[i-1]){
-					arr.splice(i, 1);
-				}
-			}
-			return arr;
-		}
-		
-		if(storageFlag){localStorage.setItem(type, JSON.stringify(obj));}
-		
-	};
-	*/
-	
-	
-	
-	/**
-	* include css file
-	* @param {string} cssFile	name of css file
-	* @param {string}[] inCache	files which contain in it
-	* @return {object}			this
-	*/
-	Blib.include.css = function(cssFile, inCache){
-		/*
-		cssFile = cssFile.toString();
-	
-		if((cssFile in css) && (css[cssFile]['version']==version)){ return this; }
-	
-		for(key in css){
-			var innerFiles = (css[key]['list'])?css[key]['list']:[];
-			for(var len=innerFiles.length, i=0;i<len;i++){
-				if(innerFiles[i]==cssFile){return cssFunction(key, innerFiles);}
-			}
-		}
-		
-		storageHandler({'operation':'clear', 'type':'css', 'fileName':cssFile});
-		var cssLink  = document.createElement('link');
-		cssLink.rel  = 'stylesheet';
-		cssLink.type = 'text/css';
-		cssLink.href = cssFile+"?new="+version;
-		cssLink.media = 'all';
-		cssLink.id = cssFile;
-		storageHandler({'operation':'set', 'type':'css', 'fileName':cssFile, 'fileCache':inCache, 'file':cssLink});
-		
-		return this;
-		*/
-	};
-	
-	/**
-	* include js file
-	* @param {string} jsFile	name of js file
-	* @param {string}[] inCache	files which contain in it
-	* @return {object}			this
-	*/
-	Blib.include.js = function(jsFile, inCache){
-		
-		/*
-		jsFile = jsFile.toString();
 
-		if(!(jsFile in js)){
-			for(key in js){
-				var innerFiles = (js[key]['list'])?js[key]['list']:[];
-				for(var i=0, len=innerFiles.length;i<len;i++){
-					if(innerFiles[i]==jsFile){return jsFunction(key, innerFiles);}
-				}
-			}
-		}
-		
-		storageHandler({'operation':'clear', 'type':'js', 'fileName':jsFile});
-		var scriptLink  = document.createElement('script');
-		scriptLink.id = jsFile;
-		scriptLink.src = jsFile+"?new="+version;
-		scriptLink.type="text/javascript";
-		storageHandler({'operation':'set', 'type':'js', 'fileName':jsFile, 'fileCache':inCache, 'file':scriptLink});
-		return this;
-		*/
-	};
-	
-	
-	
-	
-	
-	
-	
-	
-	
 })( window.blib );
-
-
 

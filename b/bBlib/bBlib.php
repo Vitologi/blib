@@ -16,7 +16,7 @@ abstract class bBlib{
 	
 	
 	/** INTERCEPTION METHODS */
-	final public function __construct($data){
+	final public function __construct($data = array()){
 		$this->setLocals($data);
 		$this->input($data);
 	}
@@ -65,9 +65,6 @@ abstract class bBlib{
 		
 		if($blib = self::$global['REQUEST']['blib']){
 			$block = new $blib(self::$global['REQUEST']);
-			
-			var_dump($block);
-			
 			
 			$block->output();
 		}

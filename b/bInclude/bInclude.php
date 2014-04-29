@@ -4,7 +4,7 @@ defined('_BLIB') or die;
 class bInclude extends bBlib{	
 	
 	protected function input($data){
-		$this->local['parent'] = array('bIncludePseudo', 'bIncludePseudo2');
+		$this->local['parent'] = array('bJquery', 'bIndex');
 		$this->local['cache'] = $this->path."/__cache/bInclude__cache.ini";
 		$this->local['list'] = (array)$data['list'] or array();
 	}	
@@ -45,18 +45,18 @@ class bInclude extends bBlib{
 
 	private function setCache($name, $list){
 		
-		$cache = scan('b', '*.css', $list);
+		$cache = $this->scan('b', 'css', $list);
 		$css = @fopen ($this->path.'/__cache/'.$name.'.css', "w");
 		@fwrite ($css, $cache['code']);
 		@fclose ($css);
 		
 		
-		$cache = scan('b','*.js', $list);
+		$cache = $this->scan('b', 'js', $list);
 		$js = @fopen ($this->path.'/__cache/'.$name.'.js', "w");
 		@fwrite ($js, $cache['code']);
 		@fclose ($js);
 		
-		$this->local['list'] = $cache['list']
+		$this->local['list'] = $cache['list'];
 		
 		$temp = @file_get_contents($this->cache);
 		$temp = ($temp)?(array)json_decode($temp):array();
@@ -73,22 +73,60 @@ class bInclude extends bBlib{
 //[param] $dir-директория , $mask-какие типы файлов склеивать, $code - куда поместить склееянный код
 //[answer] массив имен склеянных файлов, пишет код в $code
 */
-	private function scan($dir, $mask, $list){
+	private function scan($dir, $extention, $list, $cache = array(), $deep = 0){
 
-		$d = array('code'=>array(), 'list');
 		$arr = opendir($dir);
 		while($v = readdir($arr)){
-			if($v == '.' or $v == '..' or $v == '__cache') continue;
+			if($v == '.' or $v == '..' or $v == '__cache' or $v == 'bBlib') continue;
 			
 			if(is_dir($dir.'/'.$v)){
-				$d = array_merge($d, scan($dir.'/'.$v, $mask));
-			}elseif(fnmatch($mask, $v)){
-				//array_search($temp, $order);
-				$order['code'][$key]=@file_get_contents($dir.'/'.$v);
-				
+				$cache = array_merge($cache, $this->scan($dir.'/'.$v, $extention, $list, $cache, $deep+1));
+				continue;
 			}
+			
+			if(!fnmatch('*.'.$extention, $v)) continue;
+			
+			$name = basename($v, '.'.$extention);
+			
+			if(count($list) && !in_array($name, $list)) continue;
+			
+			$block = new $name();
+			$parent = $block->parent;
+			$code = @file_get_contents($dir.'/'.$v);
+			$cache[$name] = array($parent, $code);
+	
 		}
-		return $d;
+		
+		return ($deep?$cache:$this->glueCache($cache, array('code'=>null, 'list'=>array())));
+		
+	}
+
+		
+	private function glueCache($cache, $answer, $deep = 0){
+		$i=0;
+		foreach($cache as $key => $value){
+			
+			foreach($cache as $key2 => $value2){
+				if(in_array($key,$value2[0])) continue 2;					
+			}
+			
+			$answer['list'][] = $key;
+			$answer['code'][] = $value[1];
+			$i++;
+			unset($cache[$key]);
+
+		}
+		
+		if($i){
+			$answer = $this->glueCache($cache, $answer, $deep+1);
+		}
+		
+		if(!$deep){
+			$answer['list'] = array_reverse ($answer['list']);
+			$answer['code'] = implode(array_reverse ($answer['code']));
+		}
+		
+		return $answer;
 	}
 	
 }

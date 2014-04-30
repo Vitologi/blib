@@ -27,22 +27,15 @@ class bInclude extends bBlib{
 		$ini = (array)json_decode($ini);
 		$list = $ini[$name];
 		
-		$answer = array(
+		$answer = json_encode(array(
 			"version"	=> $version,
 			"name"		=> $name,
 			"list"		=> $list
-		);
+		));
 		
-		
-		if($this->callback){
-			header('Content-type: application/json');
-			echo sprintf('%1$s(%2$s);',$this->callback, json_encode($answer));
-			exit;
-		}		
-		
-		header('Content-type: application/json');
-		echo json_encode($answer);
+		echo ($this->callback?sprintf('%1$s(%2$s);',$this->callback, $answer):$answer);
 		exit;
+
 	}
 	
 	private function getCacheName(){

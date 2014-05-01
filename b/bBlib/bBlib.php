@@ -2,31 +2,38 @@
 
 abstract class bBlib{
 	
-	/** GLOBAL PROPERTY */
+	/** GLOBAL DATA */
 	protected static $global = array(
-		'REQUEST'	=>null,
-		'DB'		=>null
+		'_version'	=>"0.0.2"
 	);
 	
-	/** LOCAL PROPERTY */
+	/** LOCAL DATA */
 	protected $local = array(
-		'block'		=>"bBlib",
-		'parent'	=>array()
+		'parents' => array()
 	);
-	
 	
 	/** INTERCEPTION METHODS */
-	final public function __construct($data = array()){
-		$this->setLocals($data);
-		$this->input($data);
+	final public function __construct(Array $data = array()){
+		
+		$this->inputSelf();
+		
+		foreach((array) $this->parents as $value){
+			$this->inputParents(new $value(array('caller'=>$this, 'data' => $data)));
+		}
+
+		$this->inputUser($data);
 	}
 	
-	function __get($prorerty){
-		return $this->local[$prorerty];
+	function __get($property){
+		return (substr($property,0,1)==="_")?self::$global[$property]:$this->local[$property];
 	}
 	
-	function __isset($prorerty){
-		return array_key_exists($prorerty, $this->local);
+	function __set($property, $value){
+		return(substr($property,0,1)==="_")?(self::$global[$property] or self::$global[$property] = $value):($this->local[$property] or $this->local[$property] = $value);
+	}
+	
+	function __isset($property){
+		return array_key_exists($property, (substr($property,0,1)==="_")?self::$global:$this->local);
 	}
 	
 	private static function autoload(){
@@ -46,31 +53,45 @@ abstract class bBlib{
 	}
 	
 	/** SETTERS */
-	private static function setGlobals(){
-		self::$global['REQUEST'] = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET;
-		self::$global['DB'] = '0_0 db connect';
+	private static function inputGlobals(){
+		self::$global['_request'] = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET;
 	}
 	
-	final protected function setLocals($data){
-		$class = $this->local['block'] = get_class($this);
-		$this->local['path'] = sprintf('%1$s/%2$s',$class{0},$class);
+	abstract protected function inputSelf();
+	
+	final protected function inputParents(bBlib $block){
+		
+		$data = (array) $block->outputParents();
+		
+		foreach($data as $key => $value){
+			$this->$key = $value;
+		}
 	}
 	
+	protected function inputUser( Array $data){
+		
+	}
+	
+	/** GETTERS */
+	
+	public function outputParents(){
+		
+	}
+	
+	public function outputUser(){
+		
+	}
 
 	/** INTERFACES */
 	public static function gate() {
 		define("_BLIB", true);
-		self::setGlobals();
 		self::autoload();
+		self::inputGlobals();
 		
-		if($blib = self::$global['REQUEST']['blib']){
-			$block = new $blib(self::$global['REQUEST']);
-			
-			$block->output();
+		if($blib = self::$global['_request']['blib']){
+			$block = new $blib(self::$global['_request']);
+			$block->outputUser();
 		}
     }
-	
-	abstract public function output();
-	abstract protected function input($data);
 	
 }

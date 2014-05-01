@@ -3,14 +3,18 @@ defined('_BLIB') or die;
 
 class bInclude extends bBlib{	
 	
-	protected function input($data){
-		$this->local['parent'] = array('bJquery', 'bIndex');
-		$this->local['callback'] = self::$global['REQUEST']['callback'];
-		$this->local['cache'] = $this->path."/__cache/bInclude__cache.ini";
-		$this->local['list'] = $this->callback?json_decode(self::$global['REQUEST']['list']):(array)$data['list'] or array();
-	}	
+	protected function inputSelf(){
+		$this->version = '1.0.0';
+		$this->parents = array('bSystemAlias');
+	}
 	
-	public function output(){
+	protected function inputUser($data){
+		$this->callback = $this->_request['callback'];
+		$this->cache = $this->path."/__cache/bInclude__cache.ini";
+		$this->list = $this->callback?json_decode($this->_request['list']):(array)$data['list'] or array();
+	}
+	
+	public function outputUser(){
 		
 		//get name
 		$name = $this->getCacheName();
@@ -92,9 +96,8 @@ class bInclude extends bBlib{
 			if(count($list) && !in_array($name, $list)) continue;
 			
 			$block = new $name();
-			$parent = $block->parent;
 			$code = @file_get_contents($dir.'/'.$v);
-			$cache[$name] = array($parent, $code);
+			$cache[$name] = array($block->parents, $code);
 	
 		}
 		

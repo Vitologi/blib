@@ -4,7 +4,8 @@ abstract class bBlib{
 	
 	/** GLOBAL DATA */
 	protected static $global = array(
-		'_version'	=>"0.0.2"
+		'_version'	=>"0.0.2",
+		'_request'	=>null
 	);
 	
 	/** LOCAL DATA */
@@ -13,15 +14,16 @@ abstract class bBlib{
 	);
 	
 	/** INTERCEPTION METHODS */
-	final public function __construct(Array $data = array()){
+	final public function __construct(Array $data = array(), bBlib $caller = null){
 		
 		$this->inputSelf();
 		
 		foreach((array) $this->parents as $value){
-			$this->inputParents(new $value(array('caller'=>$this, 'data' => $data)));
+			$parent = new $value($data, $this);
+			$this->inputSystem(array_merge(array($value => $parent), (array)$parent->output()));
 		}
 
-		$this->inputUser($data);
+		$this->input($data, $caller);
 	}
 	
 	function __get($property){
@@ -35,6 +37,28 @@ abstract class bBlib{
 	function __isset($property){
 		return array_key_exists($property, (substr($property,0,1)==="_")?self::$global:$this->local);
 	}
+	
+	function __call($method, $args){
+		
+		switch(substr($method, 0, 2)){
+			case "__":
+				$block = get_class($this);
+				$element = sprintf('%s__%s', $block, substr($method, 2));
+				if(class_exists($element, false)){ return new $element($args, $this);}
+				
+				break;
+			
+			default:
+				
+				foreach((array) $this->parents as $value){
+					if (!method_exists($value, $method)) continue;
+					return call_user_func_array(array($value, $method), array($args, $this));
+				}
+				
+				break;
+			
+		}		
+	} 
 	
 	private static function autoload(){
 		
@@ -59,28 +83,17 @@ abstract class bBlib{
 	
 	abstract protected function inputSelf();
 	
-	final protected function inputParents(bBlib $block){
-		
-		$data = (array) $block->outputParents();
-		
+	final protected function inputSystem($data){
+		$data = (is_array($data)?$data:array());
 		foreach($data as $key => $value){
 			$this->$key = $value;
 		}
 	}
 	
-	protected function inputUser( Array $data){
-		
-	}
+	protected function input($data, $caller){}
 	
 	/** GETTERS */
-	
-	public function outputParents(){
-		
-	}
-	
-	public function outputUser(){
-		
-	}
+	public function output(){}
 
 	/** INTERFACES */
 	public static function gate() {
@@ -90,8 +103,7 @@ abstract class bBlib{
 		
 		if($blib = self::$global['_request']['blib']){
 			$block = new $blib(self::$global['_request']);
-			$block->outputUser();
+			$block->output();
 		}
     }
-	
 }

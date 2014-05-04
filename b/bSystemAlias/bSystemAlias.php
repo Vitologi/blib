@@ -7,11 +7,11 @@ class bSystemAlias extends bBlib{
 		$this->version = '1.0.0';
 	}
 	
-	protected function inputUser($data){
-		$this->caller = $data['caller'];
+	protected function input($data, $caller){
+		$this->caller = $caller;
 	}
 	
-	public function outputParents(){
+	public function output(){
 		
 		$block = get_class($this->caller);
 		$path = sprintf('%1$s/%2$s',$block{0},$block);

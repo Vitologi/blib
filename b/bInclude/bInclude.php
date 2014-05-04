@@ -8,13 +8,13 @@ class bInclude extends bBlib{
 		$this->parents = array('bSystemAlias');
 	}
 	
-	protected function inputUser($data){
+	protected function input($data){
 		$this->callback = $this->_request['callback'];
 		$this->cache = $this->path."/__cache/bInclude__cache.ini";
 		$this->list = $this->callback?json_decode($this->_request['list']):(array)$data['list'] or array();
 	}
 	
-	public function outputUser(){
+	public function output(){
 		
 		//get name
 		$name = $this->getCacheName();
@@ -37,6 +37,7 @@ class bInclude extends bBlib{
 			"list"		=> $list
 		));
 		
+		header('Content-Type: application/json; charset=utf-8');
 		echo ($this->callback?sprintf('%1$s(%2$s);',$this->callback, $answer):$answer);
 		exit;
 

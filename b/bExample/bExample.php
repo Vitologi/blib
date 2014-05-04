@@ -35,6 +35,8 @@ class bExample extends bBlib{
 			}
 		}else{
 			//$this->install(11,59);
+			//var_dump($this);
+			
 			var_dump($this);
 			
 			//header('Content-Type: text/html; charset=utf-8');

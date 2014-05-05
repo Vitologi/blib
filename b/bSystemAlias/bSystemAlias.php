@@ -12,15 +12,7 @@ class bSystemAlias extends bBlib{
 	}
 	
 	public function output(){
-		/*
-		$block = get_class($this->caller);
-		$path = sprintf('%1$s/%2$s',$block{0},$block);
 		
-		return array(
-			'block'	=>	$block,
-			'path'	=>	$path
-		);
-		*/
 	}
 	
 	

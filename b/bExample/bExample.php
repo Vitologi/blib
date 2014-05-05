@@ -10,6 +10,8 @@ class bExample extends bBlib{
 	
 	protected function input($data, $caller){
 		$this->caller = $caller;
+		
+		$this->__object(array('property' => 'value'));	//create child class (element)
 	}
 	
 
@@ -23,16 +25,12 @@ class bExample extends bBlib{
 			);
 			
 			$forMyChild = 'do this';
-			$forAllMyChild = 'do that';
-			
-			if($this->caller){
-				return array(
-					'do'	=>	$forMyChild,
-					'data'	=>	$veryImportantData
-				);
-			}else{
-				return array( 'do' => $forAllMyChild);
-			}
+
+			return array(
+				'do'	=>	$forMyChild,
+				'data'	=>	$veryImportantData
+			);
+
 		}else{
 			//$this->install(11,59);
 			//var_dump($this);

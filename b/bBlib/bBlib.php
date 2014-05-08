@@ -44,7 +44,12 @@ abstract class bBlib{
 			case "__":
 				$block = get_class($this);
 				$element = sprintf('%s__%s', $block, substr($method, 2));
-				if(class_exists($element, false)){ return new $element($args, $this);}
+				
+				if(class_exists($element, false)){
+					return new $element($args, $this);
+				}
+				
+				throw new Exeption("Called block's element is not defined.(".$element.")");
 				
 				break;
 			
@@ -96,7 +101,7 @@ abstract class bBlib{
 	public function output(){}
 
 	/** INTERFACES */
-	public static function gate() {
+	final public static function gate() {
 		define("_BLIB", true);
 		self::autoload();
 		self::inputGlobals();

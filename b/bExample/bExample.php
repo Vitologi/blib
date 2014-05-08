@@ -10,8 +10,7 @@ class bExample extends bBlib{
 	
 	protected function input($data, $caller){
 		$this->caller = $caller;
-		
-		$this->__object(array('property' => 'value'));	//create child class (element)
+		//$this->__object(array('property' => 'value'));	//create child class (element)
 	}
 	
 
@@ -32,10 +31,10 @@ class bExample extends bBlib{
 			);
 
 		}else{
-			//$this->install(11,59);
+			$this->install();
 			//var_dump($this);
 			
-			var_dump($this);
+			//var_dump($this);
 			
 			//header('Content-Type: text/html; charset=utf-8');
 			//echo '<div>Hallo win.</div>';

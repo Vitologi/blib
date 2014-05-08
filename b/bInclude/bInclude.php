@@ -38,11 +38,13 @@ class bInclude extends bBlib{
 			"list"		=> $list
 		));
 		
-		header('Content-Type: application/json; charset=utf-8');
+		header('Content-Type: application/json; charset=UTF-8');
 		echo ($this->callback?sprintf('%1$s(%2$s);',$this->callback, $answer):$answer);
 		exit;
 
 	}
+	
+	/** ---------------------- */
 	
 	private function getCacheName(){
 		$arr = $this->list;

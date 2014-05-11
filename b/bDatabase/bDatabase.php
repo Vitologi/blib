@@ -34,17 +34,20 @@ class bDatabase extends bBlib{
 		return array(
 			//'install' => sprintf('CREATE TABLE IF NOT EXISTS `%1$s` (`%1$s__id` INT)', $this->callerName),
 			'uninstall'	=> sprintf('DROP TABLE IF EXISTS `%s`', $this->callerName),
+			'update'	=> sprintf('DROP TABLE IF EXISTS `%s`', $this->callerName),
 			'install'	=> array(
 				'create'	=> array(
 					$block	=> array(
 						'fields'	=> array(
-							$block.'_id'	=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'default'=>'null'),
-							'description'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL')
+							'id'			=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'index column'),
+							'description'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL'),
+							'bConfig_id'	=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL'),
+							'bTest_id'		=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL')
 						),
-						'primary'	=> array($block.'_id'),
+						'primary'	=> array('id'),
 						'foreign'	=> array(
-							'bConfig_id'	=> array('references'=>'bConfig'),
-							'bTest_id'		=> array('references'=>'bTest', 'ondelete'=>'cascade', 'onupdate'=>'cascade'),
+							'bConfig_id'	=> array('table'=>'bConfig', 'column' =>'id'),
+							'bTest_id'		=> array('table'=>'bTest',  'column' =>'id', 'ondelete'=>'cascade', 'onupdate'=>'cascade'),
 						),
 						'charset'	=> 'utf8',
 						'engine'	=> 'InnoDB',
@@ -86,18 +89,9 @@ class bDatabase extends bBlib{
 		
 		
 		
-		
-		'fields'	=> array(
-			$block.'_id'	=> array('INT(10)', 'UNSIGNED', 'NOT NULL', 'AUTO_INCREMENT'),
-			'description'	=> array('VARCHAR(45)', 'NULL')
-		),
-		'primary'	=> array($block.'_id'),
-		'foreign'	=> array(
-			'bConfig_id'	=> 'bConfig',
-			'bTest_id'		=> array('references'=>'bTest', 'ondelete'=>'cascade', 'onupdate'=>'cascade')),
-		)
 		FOREIGN KEY (`fot_parent`)	REFERENCES `wf`.`foto` (`fot_id`) ON DELETE CASCADE	ON UPDATE CASCADE,
 		
+
 	*/
 		
 	/** ------------- */
@@ -106,7 +100,23 @@ class bDatabase extends bBlib{
 		$temp = '';
 		
 		foreach($data as $key => $value){
-			$temp .= sprintf(' `%1$s` %2$s,', $key, implode(' ', $value));
+			
+			$type = is_string($value['type'])?$value['type']:'INT(10)';
+			$null = is_string($value['null'])?$value['null']:'NULL';
+			$extra = is_string($value['extra'])?$value['extra']:'';
+			$default = is_string($value['default'])?' DEFAULT "'.$value['default'].'" ':'';
+			$comment = is_string($value['comment'])?$value['comment']:'';
+			
+			$temp .= sprintf(
+				' `%1$s` %2$s %3$s %4$s %5$s COMMENT "%6$s",',
+				$key,		//1
+				$type,		//2
+				$null,		//3
+				$extra,		//4
+				$default,	//5
+				$comment	//6
+			);
+			
 		}
 		return substr($temp, 0, -1);
 	}
@@ -115,20 +125,28 @@ class bDatabase extends bBlib{
 		return sprintf(' , PRIMARY KEY (`%1$s`) ', implode('`,`', $data));
 	}
 	
-	private function getForeignFromParent(String $name, String $parent){
-		
-		if(isset($this->$parent)){
-			
-		}
-		
-		$block = new $parent();
-		//$block->bDatabase
-	}
+	
+	//fot_parent` `wf`.`foto` (`fot_id`) ON DELETE CASCADE	ON UPDATE CASCADE,
 	
 	private function parseForeign($foreing, &$fields){
+		$temp = '';
 		
 		foreach($foreing as $key =>$value){
-			if(is_srting($value)){}
+		
+			if(!$fields[$key]){throw new Exception("Foreign key does not found in the table");}
+			
+			$namingRule = explode('_', $key);
+			
+			$temp .= sprintf(
+				' FOREIGN KEY (`%1$s`)	REFERENCES `%2$s` (`%3$s`) ON DELETE %4$s ON UPDATE %5$s,',
+				$key,								//1
+				$value['table'] or $namingRule[0],	//2
+				$value['column'] or $namingRule[1],	//3
+				$value['ondelete'] or 'RESTRICT',	//4
+				$value['onupdate'] or 'CASCADE'		//5
+			);
+			
+			
 		}
 		return substr($temp, 0, -1);
 	}

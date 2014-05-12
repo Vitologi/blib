@@ -91,6 +91,7 @@ abstract class bBlib{
 	final protected function inputSystem($data){
 		$data = (is_array($data)?$data:array());
 		foreach($data as $key => $value){
+			if(isset($this->$key))continue;
 			$this->$key = $value;
 		}
 	}
@@ -102,13 +103,17 @@ abstract class bBlib{
 
 	/** INTERFACES */
 	final public static function gate() {
-		define("_BLIB", true);
-		self::autoload();
-		self::inputGlobals();
-		
-		if($blib = self::$global['_request']['blib']){
-			$block = new $blib(self::$global['_request']);
-			$block->output();
+		try{
+			define("_BLIB", true);
+			self::autoload();
+			self::inputGlobals();
+			
+			if($blib = self::$global['_request']['blib']){
+				$block = new $blib(self::$global['_request']);
+				$block->output();
+			}
+		}catch(Exception $e){
+			echo sprintf('(%1$s) [%2$s] - %3$s; ', $e->getFile(), $e->getLine(), $e->getMessage());
 		}
     }
 }

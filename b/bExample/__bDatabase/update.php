@@ -2,7 +2,7 @@
 defined('_BLIB') or die();
 return array(
 	
-	'1.0.1' => array(
+	'1.112.1' => array(
 		'create'	=> array(
 			'bConfig2'	=> array(
 				'fields'	=> array(
@@ -15,7 +15,7 @@ return array(
 		)
 	),
 	
-	'1.0.2' => array(
+	'1.2.1' => array(
 		'create'	=> array(
 			'bConfig3'	=> array(
 				'fields'	=> array(

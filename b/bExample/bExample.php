@@ -4,13 +4,12 @@ defined('_BLIB') or die;
 class bExample extends bBlib{	
 	
 	protected function inputSelf(){
-		$this->version = '1.0.0';
+		$this->version = '1.112.1';
 		$this->parents = array('bSystemAlias', 'bConfig', 'bDatabase');
 	}
 	
 	protected function input($data, $caller){
 		$this->caller = $caller;
-		$this->install = $this->install();
 	}
 	
 
@@ -31,7 +30,7 @@ class bExample extends bBlib{
 			);
 
 		}else{
-			
+
 			var_dump($this->install());
 			//var_dump($this->uninstall());
 			//var_dump($this->update());

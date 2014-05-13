@@ -15,8 +15,7 @@ class bDatabase extends bBlib{
 	}
 
 	protected function input($data, $caller){
-		$this->caller = $caller;
-		$this->callerName = get_class($this->caller);
+		$block = get_class($caller);
 		
 		if($this->_bDatabase){
 			$this->pdo = $this->_bDatabase;
@@ -25,15 +24,11 @@ class bDatabase extends bBlib{
 			$this->pdo = new PDO($dsn, $this->db['user'], $this->db['password'], array(PDO::ATTR_PERSISTENT => true));
 			$this->pdo->query("SET NAMES utf8");
 			$this->_bDatabase = $this->pdo;
-		}		
-	}
-	
-	
-	public function output(){
-		$block = $this->callerName;
-
-		return array(
-			'install' => array(				
+		}	
+		
+		$instal = $caller->getDatabaseMinion('install');
+		if($instal === null){
+			$this->install = array(				
 				'create' => array(
 					$block => array(
 						'fields' => array(
@@ -42,10 +37,20 @@ class bDatabase extends bBlib{
 						'primary' => array('id')
 					)
 				)
-			),
-			'uninstall'	=> array('drop' => array($block)),
-			'update'	=> array('1.0.0' => null)		
-		);
+			);
+			$this->uninstall = array('drop' => array($block));
+			$this->update = array('1.0.0' => null);		
+		}else{
+			$this->install = $instal;
+			$this->uninstall = $caller->getDatabaseMinion('uninstall');
+			$this->update = $caller->getDatabaseMinion('update');
+		}
+	}
+	
+	
+	public function output(){
+		$answer['bDatabase'] = $this;
+		return $answer;
 	}
 
 	
@@ -105,28 +110,14 @@ class bDatabase extends bBlib{
 		return $temp;
 	}
 	
-	
-	/*
-	
 
-		'select'=>array(
-			'bExample'=>array('bExample_id', 'description'),
-			'bTest'=>array('bTest_id', 'name', 'description')
-		),
-		'update'=>array(
-			'bExample'=>array('bExample_id'=>'6', 'description'=>'some description'),
-			'bTest'=>array('name'=>"Paris")
-		),
-		'where'=>array(
-			'bExample'=>array('bExample_id'=>'=3'),
-			'bTest'=>array('name'=>'LIKE "Moscow"')
-		)
-	
-	*/
-	
-	
-	
-	public function query($Q){
+	public function query($Q, $caller){
+		
+		//protect call from block
+		if(isset($caller)){
+			return $caller->bDatabase->query($Q);
+		}
+		
 		$temp = '';
 		
 		//for native sql queries
@@ -134,55 +125,84 @@ class bDatabase extends bBlib{
 			return $this->pdo->query($Q);
 		}
 		
-		//for serialise queries
-		if(is_array($Q)){
+		//if isn't serialise queries
+		if(!is_array($Q)){ throw new Exeption('Trying execute wrong sql query.');}
 			
-			if(array_key_exists('drop', $Q)){
-				
-				foreach($Q['drop'] as $key => $value){
-					$temp .= sprintf(
-						' DROP TABLE IF EXISTS `%s`; ',
-						$value	//1
-					);
-				}
-			}
+		if(array_key_exists('drop', $Q)){
 			
-			if(array_key_exists('create', $Q)){
-				$create = $Q['create'];
-				
-				foreach($create as $key => $value){
-					
-					$tableName = $key;
-					$foreing = is_array($value['foreign'])?$this->parseForeign($value['foreign'], $value['fields']):'';
-					$fields = $this->parseFields($value['fields']);
-					$primary = is_array($value['primary'])?$this->parsePrimary($value['primary']):'';
-					$engine = sprintf(' ENGINE = %1$s ', is_string($value['engine'])?$value['engine']:'MyISAM');
-					$charset = sprintf(' DEFAULT CHARACTER SET = %1$s ', is_string($value['charset'])?$value['charset']:'utf8');
-					$collate = sprintf(' COLLATE = %1$s', is_string($value['collate'])?$value['collate']:'utf8_general_ci');
-					
-					$temp .= sprintf(
-						'CREATE TABLE IF NOT EXISTS `%1$s` (%2$s %3$s %4$s) %5$s %6$s %7$s ;',
-						$tableName,	//1
-						$fields,	//2
-						$primary,	//3
-						$foreing,	//4
-						$engine,	//5
-						$charset,	//6
-						$collate	//7
-					);
-				}
+			foreach($Q['drop'] as $key => $value){
+				$temp .= sprintf(
+					' DROP TABLE IF EXISTS `%s`; ',
+					$value	//1
+				);
 			}
-
-			return;
-			//return $this->pdo->query($Q);			
 		}
 		
-		throw new Exeption('Trying execute wrong sql query.');
+		if(array_key_exists('create', $Q)){
+			
+			foreach($Q['create'] as $key => $value){
+				
+				$tableName = $key;
+				$foreing = is_array($value['foreign'])?$this->parseForeign($value['foreign'], $value['fields']):'';
+				$fields = $this->parseFields($value['fields']);
+				$primary = is_array($value['primary'])?$this->parsePrimary($value['primary']):'';
+				$engine = sprintf(' ENGINE = %1$s ', is_string($value['engine'])?$value['engine']:'MyISAM');
+				$charset = sprintf(' DEFAULT CHARACTER SET = %1$s ', is_string($value['charset'])?$value['charset']:'utf8');
+				$collate = sprintf(' COLLATE = %1$s', is_string($value['collate'])?$value['collate']:'utf8_general_ci');
+				
+				$temp .= sprintf(
+					'CREATE TABLE IF NOT EXISTS `%1$s` (%2$s %3$s %4$s) %5$s %6$s %7$s ;',
+					$tableName,	//1
+					$fields,	//2
+					$primary,	//3
+					$foreing,	//4
+					$engine,	//5
+					$charset,	//6
+					$collate	//7
+				);
+			}
+		}
+		
+		/*
+		
+
+			'select'=>array(
+				'bExample'=>array('bExample_id', 'description'),
+				'bTest'=>array('bTest_id', 'name', 'description')
+			),
+			'update'=>array(
+				'bExample'=>array('bExample_id'=>'6', 'description'=>'some description'),
+				'bTest'=>array('name'=>"Paris")
+			),
+			'where'=>array(
+				'bExample'=>array('bExample_id'=>'=3'),
+				'bTest'=>array('name'=>'LIKE "Moscow"')
+			)
+		
+		*/
+		if(array_key_exists('select', $Q)){
+			$select = 'SELECT ';
+			$from = ' FROM ';
+			
+			foreach($Q['select'] as $table => $columns){
+				
+				foreach($columns as $column){
+					$select .= sprintf(' `%1$s`.`%2$s`,', $table, $column);
+				}
+				
+				$from .= sprintf(' `%1$s`,', $table);
+			}
+		}
+		
+		
+		return;
+		//return $this->pdo->query($Q);			
 
 	}
 	
 	//methods for child blocks
-	public function getDatabaseMinion($name, $caller){
+	public function getDatabaseMinion($name, $caller = null){
+		if($caller === null){return;}
 		$localInstall = $caller->getBlockPath().'/__bDatabase/'.$name[0].'.php';
 
 		if(file_exists($localInstall)){
@@ -194,16 +214,32 @@ class bDatabase extends bBlib{
 		}
 	}
 	
-	public function install($data, $caller){
-		return $caller->getDatabaseMinion('install');
+	public function install($data, $caller = null){
+
+		if($caller != null){
+			return $caller->bDatabase->install($data);
+		}
+		
+		return $this->install;
 	}
 	
-	public function uninstall($data, $caller){
-		return $caller->getDatabaseMinion('uninstall');
+	public function uninstall($data, $caller = null){
+		if($caller != null){
+			return $caller->bDatabase->uninstall($data);
+		}
+		
+		return $this->uninstall;
 	}
 	
-	public function update($data, $caller){
-		return $caller->getDatabaseMinion('update');
+	public function update($data, $caller = null){
+		
+		if($caller != null){
+			return $caller->bDatabase->update($data);
+		}
+		
+		$temp = $this->update;
+		uksort($temp, 'version_compare');
+		return $temp;
 	}
 
 }

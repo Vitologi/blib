@@ -20,7 +20,7 @@ abstract class bBlib{
 		
 		foreach((array) $this->parents as $value){
 			$parent = new $value($data, $this);
-			$this->inputSystem(array_merge(array($value => $parent), (array)$parent->output()));
+			$this->inputSystem((array)$parent->output());
 		}
 
 		$this->input($data, $caller);

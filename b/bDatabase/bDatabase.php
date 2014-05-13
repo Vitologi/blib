@@ -49,8 +49,7 @@ class bDatabase extends bBlib{
 	
 	
 	public function output(){
-		$answer['bDatabase'] = $this;
-		return $answer;
+		return array('bDatabase' => $this);
 	}
 
 	
@@ -110,15 +109,39 @@ class bDatabase extends bBlib{
 		return $temp;
 	}
 	
+	private function parseRelation($query){
+	
+		$structure = $this->install['create'];
+		$temp = '';
+		if(!is_array($structure) || !($tables = array_intersect_key($structure, $query))){ return $temp; }
+		
+		foreach($tables as $selfTable => $table){
+			$foreings = $table['foreign'];
+			if(!is_array($foreings)){continue;}
+			
+			foreach($foreings as $selfColumn => $column){
+				if($column === null){
+					list($foreignTable, $foreignColumn) = explode('_', $selfColumn);
+				}
+				if($column['table']){$foreignTable = $column['table'];}
+				if($column['column']){$foreignColumn = $column['column'];}
+				
+				if(array_key_exists($foreignTable, $query)){
+					$temp .= sprintf(' `%1$s`.`%2$s` = `%3$s`.`%4$s` AND', $selfTable, $selfColumn, $foreignTable, $foreignColumn);
+				}
+			}
+		}
+		return ($temp!='')?substr($temp, 0, -3):$temp;		
+	}
+	
 
-	public function query($Q, $caller){
+	public function query($Q, $caller = null){
+		
 		
 		//protect call from block
-		if(isset($caller)){
-			return $caller->bDatabase->query($Q);
+		if($caller !== null){
+			return $caller->bDatabase->query($Q[0]);
 		}
-		
-		$temp = '';
 		
 		//for native sql queries
 		if(is_string($Q)){
@@ -126,19 +149,20 @@ class bDatabase extends bBlib{
 		}
 		
 		//if isn't serialise queries
-		if(!is_array($Q)){ throw new Exeption('Trying execute wrong sql query.');}
-			
-		if(array_key_exists('drop', $Q)){
+		if(!is_array($Q)){ throw new Exception('Trying execute wrong sql query.');}
+		
+		$temp = '';
+		
+		/** DROP TABLE */
+		if(array_key_exists('drop', $Q) && count($Q['drop'])){
 			
 			foreach($Q['drop'] as $key => $value){
-				$temp .= sprintf(
-					' DROP TABLE IF EXISTS `%s`; ',
-					$value	//1
-				);
+				$temp .= sprintf(' DROP TABLE IF EXISTS `%s`; ', $value);
 			}
 		}
 		
-		if(array_key_exists('create', $Q)){
+		/** CREATE TABLE */
+		if(array_key_exists('create', $Q) && count($Q['create'])){
 			
 			foreach($Q['create'] as $key => $value){
 				
@@ -163,40 +187,118 @@ class bDatabase extends bBlib{
 			}
 		}
 		
-		/*
+		/** INSERT */
 		
+		if(array_key_exists('insert', $Q) && count($Q['insert'])){
+			$query = $Q['insert'];
 
-			'select'=>array(
-				'bExample'=>array('bExample_id', 'description'),
-				'bTest'=>array('bTest_id', 'name', 'description')
-			),
-			'update'=>array(
-				'bExample'=>array('bExample_id'=>'6', 'description'=>'some description'),
-				'bTest'=>array('name'=>"Paris")
-			),
-			'where'=>array(
-				'bExample'=>array('bExample_id'=>'=3'),
-				'bTest'=>array('name'=>'LIKE "Moscow"')
-			)
-		
-		*/
-		if(array_key_exists('select', $Q)){
-			$select = 'SELECT ';
-			$from = ' FROM ';
-			
-			foreach($Q['select'] as $table => $columns){
-				
-				foreach($columns as $column){
-					$select .= sprintf(' `%1$s`.`%2$s`,', $table, $column);
+			foreach($query as $table => $columns){
+				$into = '';
+				$values = '';
+
+				foreach($columns as $columnName => $columnValue){
+					$into .= sprintf(' `%1$s` ,', $columnName);
+					$values .= sprintf(' "%1$s" ,', $columnValue);
 				}
 				
-				$from .= sprintf(' `%1$s`,', $table);
+				$into = substr($into, 0, -1);
+				$values = substr($values, 0, -1);
+				
+				$temp .= sprintf(
+					'INSERT INTO `%1$s` (%2$s) VALUES (%3$s); ',
+					$table,	//1
+					$into,	//2
+					$values	//3
+				);
 			}
 		}
 		
 		
-		return;
-		//return $this->pdo->query($Q);			
+		
+		/** WHERE STATEMENT */
+		if(array_key_exists('where', $Q) && count($Q['where'])){
+			$where = '';
+		
+			if(array_key_exists('where', $Q)){
+				foreach($Q['where'] as $table => $columns){
+					foreach($columns as $column => $value){
+						$where .= sprintf(' `%1$s`.`%2$s` %3$s AND', $table, $column, $value);
+					}
+				}
+			}
+		
+			$where = substr($where, 0, -3);
+		}
+		
+				
+		
+		/** UPDATE */
+		if(array_key_exists('update', $Q) && count($Q['update'])){
+			$query = $Q['update'];
+			$update = ' UPDATE ';
+			$set = ' SET ';
+			
+			foreach($query as $table => $columns){
+				
+				foreach($columns as $columnName => $columnValue){
+					$set .= sprintf(' `%1$s`.`%2$s` = "%3$s",', $table, $columnName, $columnValue);
+				}
+				
+				$update .= sprintf(' `%1$s`,', $table);
+			}
+			
+			$relation = $this->parseRelation($query);
+			
+			if($where && $relation){
+				$concatWhere = sprintf(' WHERE %1$s AND %2$s ', $where, $relation);
+			}elseif($where){
+				$concatWhere = sprintf(' WHERE %1$s ', $where);
+			}elseif($relation){
+				$concatWhere = sprintf(' WHERE %1$s ', $relation);
+			}else{
+				$concatWhere = '';
+			}
+			
+			
+			$update = substr($update, 0, -1);
+			$set = substr($set, 0, -1);
+			$temp .= $update.$set.$concatWhere.'; ';
+			
+			
+			
+		}
+		
+		/** SELECT */
+		if(array_key_exists('select', $Q) && count($Q['select'])){
+			$query = $Q['select'];
+			$select = ' SELECT ';
+			$from = ' FROM ';
+			foreach($query as $table => $columns){
+				foreach($columns as $column){
+					$select .= sprintf(' `%1$s`.`%2$s`,', $table, $column);
+				}
+				$from .= sprintf(' `%1$s`,', $table);
+			}
+			
+			$relation = $this->parseRelation($query);
+			
+			if($where && $relation){
+				$concatWhere = sprintf(' WHERE %1$s AND %2$s ', $where, $relation);
+			}elseif($where){
+				$concatWhere = sprintf(' WHERE %1$s ', $where);
+			}elseif($relation){
+				$concatWhere = sprintf(' WHERE %1$s ', $relation);
+			}else{
+				$concatWhere = '';
+			}
+			
+			$select = substr($select, 0, -1);
+			$from = substr($from, 0, -1);
+			$temp .= $select.$from.$concatWhere.'; ';
+		}
+		
+		//return $temp;
+		return $this->pdo->query($temp);			
 
 	}
 	
@@ -215,20 +317,11 @@ class bDatabase extends bBlib{
 	}
 	
 	public function install($data, $caller = null){
-
-		if($caller != null){
-			return $caller->bDatabase->install($data);
-		}
-		
-		return $this->install;
+		return ($caller === null)?$this->install:$caller->bDatabase->install($data);
 	}
 	
 	public function uninstall($data, $caller = null){
-		if($caller != null){
-			return $caller->bDatabase->uninstall($data);
-		}
-		
-		return $this->uninstall;
+		return ($caller === null)?$this->uninstall:$caller->bDatabase->uninstall($data);
 	}
 	
 	public function update($data, $caller = null){

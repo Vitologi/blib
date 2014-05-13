@@ -30,8 +30,76 @@ class bExample extends bBlib{
 			);
 
 		}else{
-
-			var_dump($this->install());
+			
+			/* testing */
+			
+			echo '<br />DROP<br />';
+			var_dump($this->query($this->uninstall()));
+			
+			
+			echo '<br />CREATE<br />';
+			var_dump($this->query($this->install()));
+			
+			echo '<br />INSERT';
+			echo '<br />[10]';
+			$q = array(
+				'insert'=>array(
+					'bConfig'=>array('id'=>'null', 'description'=>'some description'),
+					'bTest'=>array('id'=>'null', 'description'=>'some description')
+				)
+			);
+			for($i=0; $i<9; $i++){
+				$this->query($q);
+			}
+			var_dump($this->query($q));
+			echo '<br />[10]';
+			for($i=1; $i<=10; $i++){
+				$q = array(
+					'insert'=>array(
+						'bExample'=>array('id'=>'null', 'description'=>'some description', 'bTest_id'=>$i, 'bConfig_id'=>$i)
+					)
+				);
+				if($i==10)continue;
+				$this->query($q);
+			}
+			var_dump($this->query($q));
+			
+			echo '<br />UPDATE';
+			echo '<br />[5]';
+			for($i=6; $i<=10; $i++){
+				$q = array(
+					'update'=>array(
+						'bExample'=>array('description'=>'CHANGE description'),
+						'bTest'=>array()
+					),
+					'where'=>array(
+						'bTest'=>array('id'=>'='.$i)
+					)
+				);
+				if($i==10)continue;
+				$this->query($q);
+			}
+			var_dump($this->query($q));
+			
+			echo '<br />SELECT';
+			echo '<br />[5]';
+			for($i=6; $i<=10; $i++){
+				$q = array(
+					'select'=>array(
+						'bExample'=>array('id', 'description'),
+						'bTest'=>array('description')
+					),
+					'where'=>array(
+						'bTest'=>array('id'=>'='.$i)
+					)
+				);
+				echo '<br />['.($i-5).']';
+				var_dump($this->query($q));
+			}
+			
+			
+			
+			//var_dump($this->install());
 			//var_dump($this->uninstall());
 			//var_dump($this->update());
 			//var_dump($this);

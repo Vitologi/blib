@@ -44,8 +44,8 @@ class bExample extends bBlib{
 			echo '<br />[10]';
 			$q = array(
 				'insert'=>array(
-					'bConfig'=>array('id'=>'null', 'description'=>'some description'),
-					'bTest'=>array('id'=>'null', 'description'=>'some description')
+					'bExampleTest1'=>array('id'=>'null', 'description'=>'some description'),
+					'bExampleTest2'=>array('id'=>'null', 'description'=>'some description')
 				)
 			);
 			for($i=0; $i<9; $i++){
@@ -56,7 +56,7 @@ class bExample extends bBlib{
 			for($i=1; $i<=10; $i++){
 				$q = array(
 					'insert'=>array(
-						'bExample'=>array('id'=>'null', 'description'=>'some description', 'bTest_id'=>$i, 'bConfig_id'=>$i)
+						'bExample'=>array('id'=>'null', 'description'=>'some description', 'bExampleTest1_id'=>$i, 'bExampleTest2_id'=>$i)
 					)
 				);
 				if($i==10)continue;
@@ -70,10 +70,10 @@ class bExample extends bBlib{
 				$q = array(
 					'update'=>array(
 						'bExample'=>array('description'=>'CHANGE description'),
-						'bTest'=>array()
+						'bExampleTest1'=>array()
 					),
 					'where'=>array(
-						'bTest'=>array('id'=>'='.$i)
+						'bExampleTest1'=>array('id'=>'='.$i)
 					)
 				);
 				if($i==10)continue;
@@ -87,10 +87,10 @@ class bExample extends bBlib{
 				$q = array(
 					'select'=>array(
 						'bExample'=>array('id', 'description'),
-						'bTest'=>array('description')
+						'bExampleTest1'=>array('description')
 					),
 					'where'=>array(
-						'bTest'=>array('id'=>'='.$i)
+						'bExampleTest1'=>array('id'=>'='.$i)
 					)
 				);
 				echo '<br />['.($i-5).']';

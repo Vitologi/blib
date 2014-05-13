@@ -3,9 +3,9 @@ defined('_BLIB') or die();
 return array(
 	'drop' => array(
 		'bExample',
-		'bConfig',
-		'bTest',
-		'bConfig2',
-		'bConfig3'
+		'bExampleTest1',
+		'bExampleTest2',
+		'bExampleTest3',
+		'bExampleTest4'
 	)
 );

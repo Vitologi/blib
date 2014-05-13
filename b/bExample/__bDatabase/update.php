@@ -4,7 +4,7 @@ return array(
 	
 	'1.112.1' => array(
 		'create'	=> array(
-			'bConfig2'	=> array(
+			'bExampleTest4'	=> array(
 				'fields'	=> array(
 					'id'			=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'index column'),
 					'description'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL')
@@ -17,7 +17,7 @@ return array(
 	
 	'1.2.1' => array(
 		'create'	=> array(
-			'bConfig3'	=> array(
+			'bExampleTest3'	=> array(
 				'fields'	=> array(
 					'id'			=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'index column'),
 					'description'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL')

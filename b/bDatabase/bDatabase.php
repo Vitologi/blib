@@ -131,7 +131,7 @@ class bDatabase extends bBlib{
 				if($column['table']){$foreignTable = $column['table'];}
 				if($column['column']){$foreignColumn = $column['column'];}
 				
-				if(array_key_exists($foreignTable, $query)){
+				if(array_key_exists($foreignTable, $query) && $selfTable!=$foreignTable){
 					$temp .= sprintf(' `%1$s`.`%2$s` = `%3$s`.`%4$s` AND', $selfTable, $selfColumn, $foreignTable, $foreignColumn);
 				}
 			}
@@ -252,7 +252,7 @@ class bDatabase extends bBlib{
 					}
 				}else{			
 					foreach($columns as $column => $value){
-						$where .= sprintf(' `%1$s`.`%2$s` "%3$s" AND', $table, $column, $value);
+						$where .= sprintf(' `%1$s`.`%2$s` = "%3$s" AND', $table, $column, $value);
 					}
 				}
 			}

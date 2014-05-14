@@ -4,10 +4,10 @@ defined('_BLIB') or die;
 class bDatabase extends bBlib{	
 	
 	private $db = array(
-		'host'=>'127.0.0.1',
+		'host'=>'localhost',
 		'user'=>'root',
 		'password'=>'',
-		'database'=>'wf'
+		'database'=>'test'
 	);
 	
 	protected function inputSelf(){
@@ -27,7 +27,16 @@ class bDatabase extends bBlib{
 		}	
 		
 		$instal = $caller->getDatabaseMinion('install');
-		if($instal === null){
+		if($instal !== null){
+			$this->install = $instal;
+			$this->uninstall = $caller->getDatabaseMinion('uninstall');
+			$this->update = $caller->getDatabaseMinion('update');
+					
+		}elseif(isset($caller->install)){
+			$this->install = $caller->install;
+			$this->uninstall = $caller->uninstall;
+			$this->update = $caller->update;
+		}else{
 			$this->install = array(				
 				'create' => array(
 					$block => array(
@@ -39,11 +48,7 @@ class bDatabase extends bBlib{
 				)
 			);
 			$this->uninstall = array('drop' => array($block));
-			$this->update = array('1.0.0' => null);		
-		}else{
-			$this->install = $instal;
-			$this->uninstall = $caller->getDatabaseMinion('uninstall');
-			$this->update = $caller->getDatabaseMinion('update');
+			$this->update = array('1.0.0' => null);
 		}
 	}
 	
@@ -156,9 +161,13 @@ class bDatabase extends bBlib{
 		/** DROP TABLE */
 		if(array_key_exists('drop', $Q) && count($Q['drop'])){
 			
-			foreach($Q['drop'] as $key => $value){
-				$temp .= sprintf(' DROP TABLE IF EXISTS `%s`; ', $value);
+			$tables = '';
+			
+			foreach($Q['drop'] as $table){
+				$tables .= sprintf(' `%s`,', $table);
 			}
+			
+			$temp .= sprintf(' DROP TABLE IF EXISTS %s; ', substr($tables, 0, -1));
 		}
 		
 		/** CREATE TABLE */
@@ -167,7 +176,7 @@ class bDatabase extends bBlib{
 			foreach($Q['create'] as $key => $value){
 				
 				$tableName = $key;
-				$foreing = is_array($value['foreign'])?$this->parseForeign($value['foreign'], $value['fields']):'';
+				$foreing = is_array($value['foreign'] && $value['engine']=='InnoDB')?$this->parseForeign($value['foreign'], $value['fields']):'';
 				$fields = $this->parseFields($value['fields']);
 				$primary = is_array($value['primary'])?$this->parsePrimary($value['primary']):'';
 				$engine = sprintf(' ENGINE = %1$s ', is_string($value['engine'])?$value['engine']:'MyISAM');
@@ -193,19 +202,35 @@ class bDatabase extends bBlib{
 			$query = $Q['insert'];
 
 			foreach($query as $table => $columns){
+				
 				$into = '';
 				$values = '';
+				
+				if(is_array($columns[0])){
+					$into = $columns[0];
+					$intoLen = count($into);
+					$len = count($columns);
+					
+					for($i=1; $i<$len; $i++){
+						$full = array_pad($columns[$i], $intoLen, 'NULL');
+						$values .= sprintf(' ("%1$s") ,', implode('", "',$full));
+					}
+					
+					$into = sprintf('(`%1$s`)', implode('`, `',$into));
+					$values = substr($values, 0, -1);
+				}else{
 
-				foreach($columns as $columnName => $columnValue){
-					$into .= sprintf(' `%1$s` ,', $columnName);
-					$values .= sprintf(' "%1$s" ,', $columnValue);
+					foreach($columns as $columnName => $columnValue){
+						$into .= sprintf(' `%1$s` ,', $columnName);
+						$values .= sprintf(' "%1$s" ,', $columnValue);
+					}
+					
+					$into = sprintf('(%1$s)', substr($into, 0, -1));
+					$values = sprintf('(%1$s)', substr($values, 0, -1));
 				}
 				
-				$into = substr($into, 0, -1);
-				$values = substr($values, 0, -1);
-				
 				$temp .= sprintf(
-					'INSERT INTO `%1$s` (%2$s) VALUES (%3$s); ',
+					'INSERT INTO `%1$s` %2$s VALUES %3$s; ',
 					$table,	//1
 					$into,	//2
 					$values	//3
@@ -218,15 +243,18 @@ class bDatabase extends bBlib{
 		/** WHERE STATEMENT */
 		if(array_key_exists('where', $Q) && count($Q['where'])){
 			$where = '';
-		
-			if(array_key_exists('where', $Q)){
-				foreach($Q['where'] as $table => $columns){
+			foreach($Q['where'] as $table => $columns){
+				if(is_array($columns[0])){
+					foreach($columns as $value){
+						$value[2] = ($value[2])?$value[2]:'=';
+						$where .= sprintf(' `%1$s`.`%2$s` %3$s "%4$s" AND', $table, $value[0], $value[2], $value[1]);
+					}
+				}else{			
 					foreach($columns as $column => $value){
 						$where .= sprintf(' `%1$s`.`%2$s` %3$s AND', $table, $column, $value);
 					}
 				}
 			}
-		
 			$where = substr($where, 0, -3);
 		}
 		

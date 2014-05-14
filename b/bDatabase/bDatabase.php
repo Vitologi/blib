@@ -252,7 +252,7 @@ class bDatabase extends bBlib{
 					}
 				}else{			
 					foreach($columns as $column => $value){
-						$where .= sprintf(' `%1$s`.`%2$s` %3$s AND', $table, $column, $value);
+						$where .= sprintf(' `%1$s`.`%2$s` "%3$s" AND', $table, $column, $value);
 					}
 				}
 			}

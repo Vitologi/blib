@@ -6,6 +6,87 @@ class bExample extends bBlib{
 	protected function inputSelf(){
 		$this->version = '1.112.1';
 		$this->parents = array('bSystemAlias', 'bConfig', 'bDatabase');
+		
+		
+		//install testing
+		$insert = array(
+			'bExampleTest1'=>array(array('id', 'description')),
+			'bExampleTest2'=>array(array('id', 'description')),
+			'bExample'=>array(array('id', 'description', 'bExampleTest1_id', 'bExampleTest2_id'))
+		);
+		for($i=1; $i<=10; $i++){
+			$insert['bExampleTest1'][]=array('NULL', 'some description');
+			$insert['bExampleTest2'][]=array('NULL', 'some description');
+			$insert['bExample'][]=array('NULL', 'some description', $i, $i);
+		}
+		
+		$this->install = array(
+			'drop' => array(
+				'bExample',
+				'bExampleTest1',
+				'bExampleTest2',
+				'bExampleTest3',
+				'bExampleTest4'
+			),
+			'create'	=> array(
+				'bExampleTest1'	=> array(
+					'fields'	=> array(
+						'id'			=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'index column'),
+						'description'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL')
+					),
+					'primary'	=> array('id')
+				),
+				'bExampleTest2'	=> array(
+					'fields'	=> array(
+						'id'			=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'index column'),
+						'description'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL')
+					),
+					'primary'	=> array('id')
+				),
+				'bExampleTest3'	=> array(
+					'fields'	=> array(
+						'id'			=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'index column'),
+						'description'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL')
+					),
+					'primary'	=> array('id')
+				),
+				'bExampleTest4'	=> array(
+					'fields'	=> array(
+						'id'			=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'index column'),
+						'description'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL')
+					),
+					'primary'	=> array('id')
+				),
+				'bExample'	=> array(
+					'fields'	=> array(
+						'id'			=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'index column'),
+						'description'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL'),
+						'bExampleTest1_id'	=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL'),
+						'bExampleTest2_id'		=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL')
+					),
+					'primary'	=> array('id'),
+					'foreign'	=> array(
+						'bExampleTest1_id'	=> null,
+						'bExampleTest2_id'		=> array('table'=>'bExampleTest2',  'column' =>'id', 'ondelete'=>'cascade', 'onupdate'=>'cascade'),
+					),
+					'charset'	=> 'utf8',
+					'collate'	=> 'utf8_general_ci'
+				)
+			),
+			'insert'=>$insert,
+			'update'=>array(
+				'bExample'=>array('description'=>'CHANGE description'),
+				'bExampleTest1'=>array()
+			),
+			'select'=>array(
+				'bExample'=>array('id', 'description'),
+				'bExampleTest1'=>array('description')
+			),
+			'where'=>array(
+				'bExampleTest1'=>array(array('id',0,'>'),array('id',5,'<='))
+			)				
+		);
+		
 	}
 	
 	protected function input($data, $caller){
@@ -30,75 +111,12 @@ class bExample extends bBlib{
 			);
 
 		}else{
+						
+			var_dump($this);
 			
-			/* testing */
+			//var_dump($this->query($q));
 			
-			echo '<br />DROP<br />';
-			var_dump($this->query($this->uninstall()));
-			
-			
-			echo '<br />CREATE<br />';
-			var_dump($this->query($this->install()));
-			
-			echo '<br />INSERT';
-			echo '<br />[10]';
-			$q = array(
-				'insert'=>array(
-					'bExampleTest1'=>array('id'=>'null', 'description'=>'some description'),
-					'bExampleTest2'=>array('id'=>'null', 'description'=>'some description')
-				)
-			);
-			for($i=0; $i<9; $i++){
-				$this->query($q);
-			}
-			var_dump($this->query($q));
-			echo '<br />[10]';
-			for($i=1; $i<=10; $i++){
-				$q = array(
-					'insert'=>array(
-						'bExample'=>array('id'=>'null', 'description'=>'some description', 'bExampleTest1_id'=>$i, 'bExampleTest2_id'=>$i)
-					)
-				);
-				if($i==10)continue;
-				$this->query($q);
-			}
-			var_dump($this->query($q));
-			
-			echo '<br />UPDATE';
-			echo '<br />[5]';
-			for($i=6; $i<=10; $i++){
-				$q = array(
-					'update'=>array(
-						'bExample'=>array('description'=>'CHANGE description'),
-						'bExampleTest1'=>array()
-					),
-					'where'=>array(
-						'bExampleTest1'=>array('id'=>'='.$i)
-					)
-				);
-				if($i==10)continue;
-				$this->query($q);
-			}
-			var_dump($this->query($q));
-			
-			echo '<br />SELECT';
-			echo '<br />[5]';
-			for($i=6; $i<=10; $i++){
-				$q = array(
-					'select'=>array(
-						'bExample'=>array('id', 'description'),
-						'bExampleTest1'=>array('description')
-					),
-					'where'=>array(
-						'bExampleTest1'=>array('id'=>'='.$i)
-					)
-				);
-				echo '<br />['.($i-5).']';
-				var_dump($this->query($q));
-			}
-			
-			
-			
+			/** dumps */
 			//var_dump($this->install());
 			//var_dump($this->uninstall());
 			//var_dump($this->update());

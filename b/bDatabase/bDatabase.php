@@ -176,7 +176,7 @@ class bDatabase extends bBlib{
 			foreach($Q['create'] as $key => $value){
 				
 				$tableName = $key;
-				$foreing = is_array($value['foreign'] && $value['engine']=='InnoDB')?$this->parseForeign($value['foreign'], $value['fields']):'';
+				$foreing = (is_array($value['foreign']) && (strtolower($value['engine'])=='innodb'))?$this->parseForeign($value['foreign'], $value['fields']):'';
 				$fields = $this->parseFields($value['fields']);
 				$primary = is_array($value['primary'])?$this->parsePrimary($value['primary']):'';
 				$engine = sprintf(' ENGINE = %1$s ', is_string($value['engine'])?$value['engine']:'MyISAM');
@@ -194,6 +194,8 @@ class bDatabase extends bBlib{
 					$collate	//7
 				);
 			}
+			
+			echo $temp;
 		}
 		
 		/** INSERT */

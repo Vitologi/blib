@@ -194,8 +194,7 @@ class bDatabase extends bBlib{
 					$collate	//7
 				);
 			}
-			
-			echo $temp;
+
 		}
 		
 		/** INSERT */

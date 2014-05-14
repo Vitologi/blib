@@ -299,6 +299,12 @@ class bDatabase extends bBlib{
 		
 		/** SELECT */
 		if(array_key_exists('select', $Q) && count($Q['select'])){
+			
+			if($temp!=''){
+				if(!$this->pdo->query($temp)){throw new Exception('Wrong sql syntax.');}
+				$temp='';
+			}
+			
 			$query = $Q['select'];
 			$select = ' SELECT ';
 			$from = ' FROM ';

@@ -25,12 +25,12 @@ class bDatabase extends bBlib{
 
 	protected function input($data, $caller){
 		$block = get_class($caller);
+		$instal = $caller->getMinion(__class__, 'install');
 
-		$instal = $caller->getDatabaseMinion('install');
 		if($instal !== null){
 			$this->install = $instal;
-			$this->uninstall = $caller->getDatabaseMinion('uninstall');
-			$this->update = $caller->getDatabaseMinion('update');
+			$this->uninstall = $caller->getMinion(__class__, 'uninstall');
+			$this->update = $caller->getMinion(__class__, 'update');
 					
 		}elseif(isset($caller->install)){
 			$this->install = $caller->install;
@@ -338,19 +338,6 @@ class bDatabase extends bBlib{
 	}
 	
 	//methods for child blocks
-	public function getDatabaseMinion($name, $caller = null){
-		if($caller === null){return;}
-		$localInstall = $caller->getBlockPath().'/__bDatabase/'.$name[0].'.php';
-
-		if(file_exists($localInstall)){
-			return require($localInstall);
-		}elseif($caller->$name[0]){
-			return $caller->$name[0];
-		}else{
-			return null;
-		}
-	}
-	
 	public function install($data, $caller = null){
 		return ($caller === null)?$this->install:$caller->bDatabase->install($data);
 	}
@@ -369,5 +356,5 @@ class bDatabase extends bBlib{
 		uksort($temp, 'version_compare');
 		return $temp;
 	}
-
+		
 }

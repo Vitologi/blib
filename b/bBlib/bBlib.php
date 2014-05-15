@@ -69,7 +69,9 @@ abstract class bBlib{
 		
 		function _autoload($class){
 			$class = preg_replace('/\W/i', '', $class);
-			require_once(sprintf('%1$s/%2$s/%2$s.php',$class{0},$class));
+			$path = sprintf('%1$s/%2$s/%2$s.php',$class{0},$class);
+			if(!file_exists($path)){throw new Exception('Called class is missing.');}
+			require_once($path);
 		}
 		
 		if (version_compare(PHP_VERSION, '5.3.0') >= 0) {
@@ -113,7 +115,7 @@ abstract class bBlib{
 				$block->output();
 			}
 		}catch(Exception $e){
-			echo sprintf('(%1$s) [%2$s] - %3$s; ', $e->getFile(), $e->getLine(), $e->getMessage());
+			echo sprintf('(%1$s) [%2$s] - %3$s ', $e->getFile(), $e->getLine(), $e->getMessage());
 		}
     }
 }

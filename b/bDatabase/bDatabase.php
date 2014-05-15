@@ -15,8 +15,8 @@ class bDatabase extends bBlib{
 		if($this->_bDatabase){
 			$this->pdo = $this->_bDatabase;
 		}else{
-			$dsn = sprintf('mysql:host=%1$s;dbname=%2$s', $this->db['host'], $this->db['database']);
-			$this->pdo = new PDO($dsn, $this->db['user'], $this->db['password'], array(PDO::ATTR_PERSISTENT => true));
+			$dsn = sprintf('mysql:host=%1$s;dbname=%2$s', $db['host'], $db['database']);
+			$this->pdo = new PDO($dsn, $db['user'], $db['password'], array(PDO::ATTR_PERSISTENT => true));
 			$this->pdo->query("SET NAMES utf8");
 			$this->_bDatabase = $this->pdo;
 		}

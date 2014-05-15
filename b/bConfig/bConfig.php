@@ -15,25 +15,33 @@ class bConfig extends bBlib{
 	
 	
 	public function output(){
-		do{
-			$q = array(
-				'select' => array(
-					'bConfig'=>array('config', 'bConfig_id')
-				),
-				'where' => array(
-					'bConfig'=>array('name'=>'blib', 'value'=>$this->caller)
-				)
-			);
-			
-			if($default){$q['where']['bConfig']=array('id'=>$default);}
-			$result = $this->query($q)->fetch();
-			
-			$config = (array)$config + json_decode($result['config'],true);
-			$default = $result['bConfig_id'];
-	
-		}while($default);
 		
-		return $config;
+		if($this->caller){
+			do{
+				$Q = array(
+					'select' => array(
+						'bConfig'=>array('value', 'bConfig_id')
+					),
+					'where' => array(
+						'bConfig'=>array('group'=>'blib', 'name'=>$this->caller)
+					)
+				);
+				
+				if($default){
+					$Q['where']['bConfig']=array('id'=>$default);
+					$default = null;
+				}
+				
+				if($result = $this->query($Q)){
+					$row = $result->fetch();
+					$config = (array)$config + (array)json_decode($row['value'],true);
+					$default = $row['bConfig_id'];
+				}
+		
+			}while($default);
+
+			return $config;
+		}
 
 	}
 	

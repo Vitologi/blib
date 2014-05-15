@@ -2,21 +2,16 @@
 defined('_BLIB') or die;
 
 class bDatabase extends bBlib{	
-	
-	private $db = array(
-		'host'=>'localhost',
-		'user'=>'root',
-		'password'=>'',
-		'database'=>'test'
-	);
-	
+
 	protected function inputSelf(){
 		$this->version = '1.0.0';
-	}
+		$db = array(
+			'host'=>'localhost',
+			'user'=>'root',
+			'password'=>'',
+			'database'=>'test'
+		);
 
-	protected function input($data, $caller){
-		$block = get_class($caller);
-		
 		if($this->_bDatabase){
 			$this->pdo = $this->_bDatabase;
 		}else{
@@ -24,8 +19,13 @@ class bDatabase extends bBlib{
 			$this->pdo = new PDO($dsn, $this->db['user'], $this->db['password'], array(PDO::ATTR_PERSISTENT => true));
 			$this->pdo->query("SET NAMES utf8");
 			$this->_bDatabase = $this->pdo;
-		}	
-		
+		}
+
+	}
+
+	protected function input($data, $caller){
+		$block = get_class($caller);
+
 		$instal = $caller->getDatabaseMinion('install');
 		if($instal !== null){
 			$this->install = $instal;

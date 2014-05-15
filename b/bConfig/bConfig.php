@@ -5,7 +5,7 @@ class bConfig extends bBlib{
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
-		$this->parents = array('bSystemAlias', 'bDatabase');
+		$this->parents = array('bSystem', 'bDatabase');
 		
 	}
 	

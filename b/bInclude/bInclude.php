@@ -5,7 +5,7 @@ class bInclude extends bBlib{
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
-		$this->parents = array('bSystemAlias');
+		$this->parents = array('bSystem');
 	}
 	
 	protected function input($data){

@@ -214,7 +214,12 @@ class bDatabase extends bBlib{
 					
 					for($i=1; $i<$len; $i++){
 						$full = array_pad($columns[$i], $intoLen, 'NULL');
-						$values .= sprintf(' ("%1$s") ,', implode('", "',$full));
+						
+						for($j=0; $j<$intoLen; $j++){
+							$full[$j] = $this->pdo->quote($full[$j]);
+						}
+						
+						$values .= sprintf(' (%1$s) ,', implode(',',$full));
 					}
 					
 					$into = sprintf('(`%1$s`)', implode('`, `',$into));
@@ -223,7 +228,7 @@ class bDatabase extends bBlib{
 
 					foreach($columns as $columnName => $columnValue){
 						$into .= sprintf(' `%1$s` ,', $columnName);
-						$values .= sprintf(' "%1$s" ,', $columnValue);
+						$values .= sprintf(' %1$s ,', $this->pdo->quote($columnValue));
 					}
 					
 					$into = sprintf('(%1$s)', substr($into, 0, -1));
@@ -248,11 +253,11 @@ class bDatabase extends bBlib{
 				if(is_array($columns[0])){
 					foreach($columns as $value){
 						$value[2] = ($value[2])?$value[2]:'=';
-						$where .= sprintf(' `%1$s`.`%2$s` %3$s "%4$s" AND', $table, $value[0], $value[2], $value[1]);
+						$where .= sprintf(' `%1$s`.`%2$s` %3$s %4$s AND', $table, $value[0], $value[2], $this->pdo->quote($value[1]));
 					}
 				}else{			
 					foreach($columns as $column => $value){
-						$where .= sprintf(' `%1$s`.`%2$s` = "%3$s" AND', $table, $column, $value);
+						$where .= sprintf(' `%1$s`.`%2$s` = %3$s AND', $table, $column, $this->pdo->quote($value));
 					}
 				}
 			}
@@ -270,7 +275,7 @@ class bDatabase extends bBlib{
 			foreach($query as $table => $columns){
 				
 				foreach($columns as $columnName => $columnValue){
-					$set .= sprintf(' `%1$s`.`%2$s` = "%3$s",', $table, $columnName, $columnValue);
+					$set .= sprintf(' `%1$s`.`%2$s` = %3$s,', $table, $columnName, $this->pdo->quote($columnValue));
 				}
 				
 				$update .= sprintf(' `%1$s`,', $table);

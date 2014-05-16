@@ -39,30 +39,10 @@ abstract class bBlib{
 	}
 	
 	function __call($method, $args){
-		
-		switch(substr($method, 0, 2)){
-			case "__":
-				$block = get_class($this);
-				$element = sprintf('%s__%s', $block, substr($method, 2));
-				
-				if(class_exists($element, false)){
-					return new $element($args, $this);
-				}
-				
-				throw new Exeption("Called block's element is not defined.(".$element.")");
-				
-				break;
-			
-			default:
-				
-				foreach((array) $this->parents as $value){
-					if (!method_exists($value, $method)) continue;
-					return call_user_func_array(array($value, $method), array($args, $this));
-				}
-				
-				break;
-			
-		}		
+		foreach($this->local['parents'] as $value){
+			if (!method_exists($value, $method)) continue;
+			return call_user_func_array(array($value, $method), array($args, $this));
+		}
 	} 
 	
 	private static function autoload(){

@@ -26,6 +26,7 @@ abstract class bBlib{
 		$this->input($data, $caller);
 	}
 	
+	//increases the access time (local by 11 times)(global by 5 times) (1kk iteration test) need use $this->local['name'] or bBlib::$global['name'] for ignore it
 	function __get($property){
 		return (substr($property,0,1)==="_")?self::$global[$property]:$this->local[$property];
 	}
@@ -38,6 +39,7 @@ abstract class bBlib{
 		return array_key_exists($property, (substr($property,0,1)==="_")?self::$global:$this->local);
 	}
 	
+	//increases the access time by 6 times(1kk iteration test) need overload methods in child class for ignore it
 	function __call($method, $args){
 		foreach($this->local['parents'] as $value){
 			if (!method_exists($value, $method)) continue;
@@ -71,10 +73,10 @@ abstract class bBlib{
 	abstract protected function inputSelf();
 	
 	final protected function inputSystem($data){
-		$data = (is_array($data)?$data:array());
+		//$data = (is_array($data)?$data:array());
 		foreach($data as $key => $value){
-			if(isset($this->$key))continue;
-			$this->$key = $value;
+			if(isset($this->local[$key]))continue;
+			$this->local[$key] = $value;
 		}
 	}
 	

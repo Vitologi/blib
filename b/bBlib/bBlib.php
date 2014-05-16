@@ -10,7 +10,7 @@ abstract class bBlib{
 	
 	/** LOCAL DATA */
 	protected $local = array(
-		'parents' => array()
+		
 	);
 	
 	/** INTERCEPTION METHODS */
@@ -18,7 +18,8 @@ abstract class bBlib{
 		
 		$this->inputSelf();
 		
-		foreach((array) $this->local['parents'] as $value){
+		$parents = is_array($this->local['parents'])?$this->local['parents']:array();
+		foreach($parents as $value){
 			$parent = new $value($data, $this);
 			$this->inputSystem((array)$parent->output());
 		}
@@ -32,11 +33,11 @@ abstract class bBlib{
 	}
 	
 	function __set($property, $value){
-		return($property{0}==="_")?(self::$global[$property] or self::$global[$property] = $value):($this->local[$property] or $this->local[$property] = $value);
+		return($property{0}==="_")?(isset(self::$global[$property]) or self::$global[$property] = $value):(isset($this->local[$property]) or $this->local[$property] = $value);
 	}
 	
 	function __isset($property){
-		return array_key_exists($property, ($property{0}==="_")?self::$global:$this->local);
+		return ($property{0}==="_")?isset(self::$global[$property]):isset($this->local[$property]);
 	}
 	
 	//increases the access time by 6 times(1kk iteration test) need overload methods in child class for ignore it

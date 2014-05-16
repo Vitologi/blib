@@ -25,14 +25,12 @@ class bSystem extends bBlib{
 		return $path;
 	}
 	
-	public function getMinion($name, $caller = null){
-		if($caller === null){return;}
+	public function getMinion($name, bBlib $caller){
+
 		$localInstall = $caller->getBlockPath().'/__'.$name[0].'/'.$name[1].'.php';
 
 		if(file_exists($localInstall)){
 			return require($localInstall);
-		}elseif($caller->$name[1]){
-			return $caller->$name[1];
 		}else{
 			return null;
 		}

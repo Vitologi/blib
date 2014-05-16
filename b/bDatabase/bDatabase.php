@@ -2,7 +2,9 @@
 defined('_BLIB') or die;
 
 class bDatabase extends bBlib{	
-
+	
+	private $pdo;
+	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
 		$db = array(
@@ -12,32 +14,29 @@ class bDatabase extends bBlib{
 			'database'=>'test'
 		);
 
-		if($this->_bDatabase){
-			$this->pdo = $this->_bDatabase;
+		if(bBlib::$global['_bDatabase__pdo']){
+			$this->pdo = bBlib::$global['_bDatabase__pdo'];
 		}else{
 			$dsn = sprintf('mysql:host=%1$s;dbname=%2$s', $db['host'], $db['database']);
 			$this->pdo = new PDO($dsn, $db['user'], $db['password'], array(PDO::ATTR_PERSISTENT => true));
 			$this->pdo->query("SET NAMES utf8");
-			$this->_bDatabase = $this->pdo;
+			bBlib::$global['_bDatabase__pdo'] = $this->pdo;
 		}
 
 	}
 
-	protected function input($data, $caller){
+	protected function input($data, bBlib $caller){
+		
 		$block = get_class($caller);
 		$instal = $caller->getMinion(__class__, 'install');
 
 		if($instal !== null){
-			$this->install = $instal;
-			$this->uninstall = $caller->getMinion(__class__, 'uninstall');
-			$this->update = $caller->getMinion(__class__, 'update');
+			$this->local['install'] = $instal;
+			$this->local['uninstall'] = $caller->getMinion(__class__, 'uninstall');
+			$this->local['update'] = $caller->getMinion(__class__, 'update');
 					
-		}elseif(isset($caller->install)){
-			$this->install = $caller->install;
-			$this->uninstall = $caller->uninstall;
-			$this->update = $caller->update;
 		}else{
-			$this->install = array(				
+			$this->local['install'] = array(				
 				'create' => array(
 					$block => array(
 						'fields' => array(
@@ -47,9 +46,10 @@ class bDatabase extends bBlib{
 					)
 				)
 			);
-			$this->uninstall = array('drop' => array($block));
-			$this->update = array('1.0.0' => null);
+			$this->local['uninstall'] = array('drop' => array($block));
+			$this->local['update'] = array('1.0.0' => null);
 		}
+		
 	}
 	
 	
@@ -116,7 +116,7 @@ class bDatabase extends bBlib{
 	
 	private function parseRelation($query){
 	
-		$structure = $this->install['create'];
+		$structure = $this->local['install']['create'];
 		$temp = '';
 		if(!is_array($structure) || !($tables = array_intersect_key($structure, $query))){ return $temp; }
 		

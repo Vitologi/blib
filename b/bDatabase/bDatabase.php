@@ -66,8 +66,20 @@ class bDatabase extends bBlib{
 			$type = is_string($value['type'])?$value['type']:'INT(10)';
 			$null = is_string($value['null'])?$value['null']:'NULL';
 			$extra = is_string($value['extra'])?$value['extra']:'';
-			$default = is_string($value['default'])?' DEFAULT "'.$value['default'].'" ':'';
 			$comment = is_string($value['comment'])?$value['comment']:'';
+			
+			
+			if(is_string($value['default'])){
+				$upper = mb_strtoupper($value['default']);
+				
+				if($upper === 'NULL' or $upper === 'CURRENT_TIMESTAMP'){
+					$default = sprintf(' DEFAULT %1$s', $upper);
+				}else{
+					$default = sprintf(' DEFAULT %1$s', $this->pdo->quote($value['default']));
+				}
+			}else{
+				$default ='';
+			}
 			
 			$temp .= sprintf(
 				' `%1$s` %2$s %3$s %4$s %5$s COMMENT "%6$s",',
@@ -337,7 +349,7 @@ class bDatabase extends bBlib{
 			$temp .= $select.$from.$concatWhere.'; ';
 		}
 		
-		//return $temp;
+		//var_dump($temp);
 		return $this->pdo->query($temp);			
 
 	}

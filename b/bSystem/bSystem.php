@@ -26,8 +26,11 @@ class bSystem extends bBlib{
 	}
 	
 	public function getMinion($name, bBlib $caller){
-
-		$localInstall = $caller->getBlockPath().'/__'.$name[0].'/'.$name[1].'.php';
+		
+		$block = $caller->getBlockName();
+		$path = $caller->getBlockPath();
+		
+		$localInstall = sprintf('%1$s/__%3$s/%2$s__%3$s_%4$s.php', $path, $block, $name[0], $name[1]);
 
 		if(file_exists($localInstall)){
 			return require($localInstall);

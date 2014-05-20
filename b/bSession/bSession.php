@@ -15,6 +15,7 @@ class bSession extends bBlib{
 	
 	protected function input($data, $caller){
 		$this->caller = get_class($caller);
+		$this->sessionType = false;
 	}
 	
 	
@@ -31,7 +32,7 @@ class bSession extends bBlib{
 				$this->domen = '';
 				$this->secure = false;
 				$this->httponly = false;
-				$this->sessionType = "database";
+				
 				
 				if(isset($_COOKIE) && $_COOKIE['bSession']){
 					$Q = array(

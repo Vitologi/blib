@@ -1,7 +1,7 @@
 <?php
 defined('_BLIB') or die;
 
-class bPlugin extends bBlib{	
+class bHooks extends bBlib{	
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
@@ -9,7 +9,7 @@ class bPlugin extends bBlib{
 	}
 	
 	protected function input($data, $caller){
-		$this->caller = $caller;
+		
 	}
 
 	public function output(){
@@ -17,8 +17,8 @@ class bPlugin extends bBlib{
 	}
 
 	//point of listening
-	public function call($name, $args){
-		if($ref = self::$global['_reflection'][get_class($this)][$name]){
+	protected function call($data, $caller = null){
+		/*if($ref = self::$global['_reflection'][get_class($this)][$name]){
 			
 			foreach($ref as $key => $value){
 				$listener = new $value($args, $this);
@@ -34,8 +34,12 @@ class bPlugin extends bBlib{
 			
 			return $answer;
 		}
-		echo '['.get_class($this).']->'.$name.'<br>';
-		return $this->$name($args);
+		*/
+		
+		//echo '['.get_class().']->'.$data[0].'<br>';
+		$caller->local['version'] = '0000000000000000';
+		var_dump($caller->local);
+		//echo $caller->$data[0]($data[1]);
 	}
 	
 }

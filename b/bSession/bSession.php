@@ -48,7 +48,7 @@ class bSession extends bBlib{
 						$row = $result->fetch();
 						$this->id = $_COOKIE['bSession'];
 						$this->data = (array)json_decode($row['value'], true);
-						$this->_bSession = $this;
+						bBlib::$global['_bSession'] = $this;
 					}
 				}
 				
@@ -62,7 +62,7 @@ class bSession extends bBlib{
 					if(!$this->query($Q)){
 						throw new Exception('Can`t insert session information.');
 					}
-					$this->_bSession = $this;
+					bBlib::$global['_bSession'] = $this;
 					$expire = ($this->expire)?(time()+$this->expire):0;
 					setcookie('bSession', $this->id, $expire, $this->path, $this->domen, $this->secure, $this->httponly);
 				}
@@ -85,6 +85,7 @@ class bSession extends bBlib{
 				
 				
 				$this->data = $_SESSION[__class__];
+				bBlib::$global['_bSession'] = $this;
 				break;
 			
 		}
@@ -140,6 +141,6 @@ class bSession extends bBlib{
 			
 		}
 
-		bBlib::$global['bSession'] = $this;
+		bBlib::$global['_bSession'] = $this;
 	}
 }

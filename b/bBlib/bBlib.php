@@ -86,6 +86,10 @@ abstract class bBlib{
 	public function output(){}
 
 	/** INTERFACES */
+	final public function call($name, $args){
+		return call_user_func_array(array($this, $name), (array)$args);
+	}
+	
 	final public static function gate() {
 		try{
 			define("_BLIB", true);

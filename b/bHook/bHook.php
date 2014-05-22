@@ -11,22 +11,14 @@ class bHook extends bBlib{
 	
 	protected function input($data, $caller){
 		if(bBlib::$global['_bHook']){return;}
-		
-		$this->local['list'] = array(
-			'bExample' => array('plugin3', 'plugin2', 'plugin'),
-			'bTest' => array('plugin', 'plugin2', 'plugin3')			
-		);
-		
-		$this->local['handlers'] = array(
-			
-		);
-		
+		$this->local['list'] = $this->getHookList();
+		$this->local['handlers'] = array();
 		bBlib::$global['_bHook'] = $this;
 	}
 
 
 	//point of listening
-	public function hook($data, bBlib $caller){
+	public function _hook($data, bBlib $caller){
 		$method = $data[0];
 		$input = $data[1];
 		
@@ -39,7 +31,7 @@ class bHook extends bBlib{
 		if(!$handlers = $_bHook->local['handlers'][$block]){
 			$handlers = array();
 			foreach($list as $value){
-				$className = $caller->getMinion(__class__, $value);
+				$className = $caller->_getMinion(__class__, $value);
 				if(is_string($className)){
 					$handlers[$value] = new $className(array(), $caller);
 				}
@@ -67,4 +59,13 @@ class bHook extends bBlib{
 		return $output;
 	}
 	
+	
+	private function getHookList(){
+		
+		
+		return array(
+			'bExample' => array('plugin3', 'plugin2', 'plugin'),
+			'bTest' => array('plugin', 'plugin2', 'plugin3')			
+		);
+	}
 }

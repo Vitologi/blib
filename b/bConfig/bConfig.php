@@ -32,7 +32,7 @@ class bConfig extends bBlib{
 					$default = null;
 				}
 				
-				if($result = $this->query($Q)){
+				if($result = $this->_query($Q)){
 					$row = $result->fetch();
 					$config = (array)$config + (array)json_decode($row['value'],true);
 					$default = $row['bConfig_id'];

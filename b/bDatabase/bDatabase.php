@@ -28,12 +28,12 @@ class bDatabase extends bBlib{
 	protected function input($data, bBlib $caller){
 		
 		$block = get_class($caller);
-		$instal = $caller->getMinion(__class__, 'install');
+		$instal = $caller->_getMinion(__class__, 'install');
 
 		if($instal !== null){
 			$this->local['install'] = $instal;
-			$this->local['uninstall'] = $caller->getMinion(__class__, 'uninstall');
-			$this->local['update'] = $caller->getMinion(__class__, 'update');
+			$this->local['uninstall'] = $caller->_getMinion(__class__, 'uninstall');
+			$this->local['update'] = $caller->_getMinion(__class__, 'update');
 					
 		}else{
 			$this->local['install'] = array(				
@@ -152,12 +152,12 @@ class bDatabase extends bBlib{
 	}
 	
 
-	public function query($Q, $caller = null){
+	public function _query($Q, $caller = null){
 		
 		
 		//protect call from block
 		if($caller !== null){
-			return $caller->bDatabase->query($Q[0]);
+			return $caller->bDatabase->_query($Q[0]);
 		}
 		
 		//for native sql queries
@@ -355,18 +355,18 @@ class bDatabase extends bBlib{
 	}
 	
 	//methods for child blocks
-	public function install($data, $caller = null){
-		return ($caller === null)?$this->install:$caller->bDatabase->install($data);
+	public function _install($data, $caller = null){
+		return ($caller === null)?$this->install:$caller->bDatabase->_install($data);
 	}
 	
-	public function uninstall($data, $caller = null){
-		return ($caller === null)?$this->uninstall:$caller->bDatabase->uninstall($data);
+	public function _uninstall($data, $caller = null){
+		return ($caller === null)?$this->uninstall:$caller->bDatabase->_uninstall($data);
 	}
 	
-	public function update($data, $caller = null){
+	public function _update($data, $caller = null){
 		
 		if($caller != null){
-			return $caller->bDatabase->update($data);
+			return $caller->bDatabase->_update($data);
 		}
 		
 		$temp = $this->update;

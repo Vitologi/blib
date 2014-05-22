@@ -15,20 +15,20 @@ class bSystem extends bBlib{
 		
 	}
 	
-	public function getBlockName($data, $caller){
+	public function _getBlockName($data, $caller){
 		return get_class($caller);
 	}
 	
-	public function getBlockPath($data, $caller){
+	public function _getBlockPath($data, $caller){
 		$block = get_class($caller);
 		$path = sprintf('%1$s/%2$s',$block{0},$block);
 		return $path;
 	}
 	
-	public function getMinion($name, bBlib $caller){
+	public function _getMinion($name, bBlib $caller){
 		
-		$block = $caller->getBlockName();
-		$path = $caller->getBlockPath();
+		$block = $caller->_getBlockName();
+		$path = $caller->_getBlockPath();
 		
 		$localInstall = sprintf('%1$s/__%3$s/%2$s__%3$s_%4$s.php', $path, $block, $name[0], $name[1]);
 

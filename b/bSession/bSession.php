@@ -43,7 +43,7 @@ class bSession extends bBlib{
 							'bSession'=>array('id'=>$_COOKIE['bSession'])
 						)
 					);
-					if(!$result = $this->query($Q)){ throw new Exception('Can`t get session information.'); }
+					if(!$result = $this->_query($Q)){ throw new Exception('Can`t get session information.'); }
 					if($result->rowCount()){
 						$row = $result->fetch();
 						$this->id = $_COOKIE['bSession'];
@@ -59,7 +59,7 @@ class bSession extends bBlib{
 							'bSession'=>array('id'=>$this->id, 'value'=>json_encode($this->data))
 						)
 					);
-					if(!$this->query($Q)){
+					if(!$this->_query($Q)){
 						throw new Exception('Can`t insert session information.');
 					}
 					bBlib::$global['_bSession'] = $this;
@@ -73,7 +73,7 @@ class bSession extends bBlib{
 				if ( !isset($_SESSION) && !session_id() ) { 
 					
 					if(!$this->storePath){
-						$this->storePath = $this->getBlockPath().'/__storage';
+						$this->storePath = $this->_getBlockPath().'/__storage';
 						if(!ini_set('session.save_path', $this->storePath)){
 							throw new Exception('Canot set php session save path');
 						};
@@ -95,22 +95,22 @@ class bSession extends bBlib{
 	}
 	
 	/** for child */
-	public function getSession($data, bBlib $caller = null){
+	public function _getSession($data, bBlib $caller = null){
 		
 		if($caller != null){
 			$block = get_class($caller);
-			return $caller->bSession->getSession(array($block, $data[0]));
+			return $caller->bSession->_getSession(array($block, $data[0]));
 		}
 		
 		return $this->data[$data[0]][$data[1]];
 
 	}
 	
-	public function setSession($data, bBlib $caller = null){
+	public function _setSession($data, bBlib $caller = null){
 		
 		if($caller != null){
 			$block = get_class($caller);
-			return $caller->bSession->setSession(array('block'=>$block, 'data'=>$data));
+			return $caller->bSession->_setSession(array('block'=>$block, 'data'=>$data));
 		}
 
 		$this->data[$data['block']][$data['data'][0]] = $data['data'][1];
@@ -126,7 +126,7 @@ class bSession extends bBlib{
 					)
 				);
 				
-				if(!$this->query($Q)){
+				if(!$this->_query($Q)){
 					throw new Exception('Can`t insert session information.');
 				}
 

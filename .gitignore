@@ -2,4 +2,5 @@
 .idea
 b/bInclude/__cache/
 b/bExample/
-b/bSession/__storage/
+b/bSession/__storage/*
+!index.html

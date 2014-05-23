@@ -16,52 +16,24 @@ class bHook extends bBlib{
 		bBlib::$global['_bHook'] = $this;
 	}
 
-
-	//point of listening
-	public function _hook($data, bBlib $caller){
-		$method = $data[0];
-		$input = $data[1];
-		
-		$block = get_class($caller);
-		$_bHook = bBlib::$global['_bHook'];
-		$list = $_bHook->local['list'][$block];
-		$answer = array();
-		$returnFlag = false;
-		
-		if(!$handlers = $_bHook->local['handlers'][$block]){
-			$handlers = array();
-			foreach($list as $value){
-				$className = $caller->_getMinion(__class__, $value);
-				if(is_string($className)){
-					$handlers[$value] = new $className(array(), $caller);
-				}
-			}
-			$_bHook->local['handlers'][$block] = $handlers;
-		}
-		
-		foreach($handlers as $value){
-			if(!method_exists($value, $method)){continue;}
-			$answer = (array)$value->$method(array('input'=> $input, 'output'=> $output), $caller);
-
-			if($answer['input']){
-				$input = $answer['input'];
-			}
-			if($answer['output']){
-				$output = $answer['output'];
-				$returnFlag = true;
-			}
-		}
-		
-		if(!$returnFlag && method_exists($caller, $method)){
-			$output = $caller->call($method, $input);
-		}
-		
-		return $output;
+	private function getHookList(){
+		return array(
+			'bExample' => array('bExample_color', 'bExample__bHook_plugin2', 'bExample__bHook_plugin'),
+			'bTest' => array('bTest__bHook_plugin3', 'bTest__bHook_plugin2', 'bTest__bHook_plugin')			
+		);
 	}
 	
-	
-	private function getHookList(){
+	public function setHookList($block, $name){
 		
+		$_bHook = bBlib::$global['_bHook'];
+		
+		$Q = array(
+			'insert'=>array(
+				'bHook'=>array(
+					array('id', 'blib', 'name', 'version', 'enabled', 'json')
+				)
+			)
+		);
 		
 		return array(
 			'bExample' => array('plugin3', 'plugin2', 'plugin'),

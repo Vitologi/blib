@@ -28,12 +28,13 @@ class bDatabase extends bBlib{
 	protected function input($data, bBlib $caller){
 		
 		$block = get_class($caller);
-		$instal = $caller->_getMinion(__class__, 'install');
+		$path = bBlib::path($block.'__'.__class__.'_install','php');
+		$instal = (file_exists($path))?require_once($path):null;//$caller->_getMinion(__class__, 'install');
 
 		if($instal !== null){
 			$this->local['install'] = $instal;
-			$this->local['uninstall'] = $caller->_getMinion(__class__, 'uninstall');
-			$this->local['update'] = $caller->_getMinion(__class__, 'update');
+			$this->local['uninstall'] = require_once(bBlib::path($block.'__'.__class__.'_uninstall','php'));//$caller->_getMinion(__class__, 'uninstall');
+			$this->local['update'] = require_once(bBlib::path($block.'__'.__class__.'_update','php'));//$caller->_getMinion(__class__, 'update');
 					
 		}else{
 			$this->local['install'] = array(				

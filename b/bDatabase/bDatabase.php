@@ -72,7 +72,7 @@ class bDatabase extends bBlib{
 			if(is_string($value['default'])){
 				$upper = mb_strtoupper($value['default']);
 				
-				if($upper === 'NULL' or $upper === 'CURRENT_TIMESTAMP'){
+				if($upper === 'NULL' or $upper === 'CURRENT_TIMESTAMP' or $upper === 'FALSE'){
 					$default = sprintf(' DEFAULT %1$s', $upper);
 				}else{
 					$default = sprintf(' DEFAULT %1$s', $this->pdo->quote($value['default']));
@@ -276,7 +276,30 @@ class bDatabase extends bBlib{
 			$where = substr($where, 0, -3);
 		}
 		
-				
+		/** DELETE */
+		if(array_key_exists('delete', $Q) && count($Q['delete'])){
+			
+			$query = $Q['delete'];
+			$delete = ' DELETE FROM ';
+			foreach($query as $table => $columns){
+				$delete .= sprintf(' `%1$s`,', $table);
+			}
+			
+			$relation = $this->parseRelation($query);
+			
+			if($where && $relation){
+				$concatWhere = sprintf(' WHERE %1$s AND %2$s ', $where, $relation);
+			}elseif($where){
+				$concatWhere = sprintf(' WHERE %1$s ', $where);
+			}elseif($relation){
+				$concatWhere = sprintf(' WHERE %1$s ', $relation);
+			}else{
+				$concatWhere = '';
+			}
+			
+			$delete = substr($delete, 0, -1);
+			$temp .= $delete.$concatWhere.'; ';
+		}
 		
 		/** UPDATE */
 		if(array_key_exists('update', $Q) && count($Q['update'])){
@@ -304,14 +327,11 @@ class bDatabase extends bBlib{
 			}else{
 				$concatWhere = '';
 			}
-			
-			
+
 			$update = substr($update, 0, -1);
 			$set = substr($set, 0, -1);
 			$temp .= $update.$set.$concatWhere.'; ';
-			
-			
-			
+	
 		}
 		
 		/** SELECT */

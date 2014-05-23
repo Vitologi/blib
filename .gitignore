@@ -3,4 +3,5 @@
 b/bInclude/__cache/
 b/bExample/
 b/bSession/__storage/*
+b/bBlib/__hook/*
 !index.html

@@ -51,9 +51,8 @@ abstract class bBlib{
 	private static function autoload(){
 		
 		function _autoload($class){
-			$class = preg_replace('/\W/i', '', $class);
-			$path = sprintf('%1$s/%2$s/%2$s.php',$class{0},$class);
-			if(!file_exists($path)){throw new Exception('Called class is missing.');}
+			$path = bBlib::path($class).$class.'.php';
+			if(!file_exists($path)){throw new Exception('Called class '.$class.' is missing.');}
 			require_once($path);
 		}
 		
@@ -90,6 +89,11 @@ abstract class bBlib{
 		return call_user_func_array(array($this, $name), (array)$args);
 	}
 	
+	final public function path($name = null){
+		$name = ($name)?$name:get_class($this);
+		return $name{0}.'/'.preg_replace('/(_+)/i', '/${1}', $name).'/';		
+	}
+
 	final public static function gate() {
 		try{
 			define("_BLIB", true);

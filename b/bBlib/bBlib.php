@@ -46,7 +46,8 @@ abstract class bBlib{
 	
 	//increases the access time by 6 times(1kk iteration test) need overload methods in child class for ignore it
 	function __call($method, $args){
-		foreach($this->local['parents'] as $value){
+		$parents = is_array($this->local['parents'])?$this->local['parents']:array();
+		foreach($parents as $value){
 			if (!method_exists($value, $method)) continue;
 			return call_user_func_array(array($value, $method), array($args, $this));
 		}

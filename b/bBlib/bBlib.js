@@ -21,7 +21,7 @@
 				'data':{}
 			},
 			'system':{
-				'server':''
+				
 			},
 			'user':{}
         };
@@ -34,16 +34,6 @@
 			'sort':[].sort,
 			'splice':[].splice
 		},
-		Blib = function(){
-            return new init(arguments);
-        },
-        init = function(args){
-
-			if(typeof(args[0]) === "function"){return Blib.ready(args[0]);}
-			
-			return merge(this, getElement(args));
-
-        },
 		is = function(obj, type){
 			
 			switch(type){
@@ -128,6 +118,70 @@
 			}
 			return temp;
 		},
+		
+		extend = function() {
+			var options, name, src, copy, copyIsArray, clone,
+				target = arguments[0] || {},
+				i = 1,
+				length = arguments.length,
+				deep = false;
+
+			// Handle a deep copy situation
+			if ( is(target, 'boolean') ) {
+				deep = target;
+				target = arguments[1] || {};
+				// skip the boolean and the target
+				i = 2;
+			}
+
+			// Handle case when target is a string or something (possible in deep copy)
+			if ( !is(target, 'object') && !is(target, 'function') ) {
+				target = {};
+			}
+
+			// extend jQuery itself if only one argument is passed
+			if ( length === i ) {
+				target = this;
+				--i;
+			}
+
+			for ( ; i < length; i++ ) {
+				// Only deal with non-null/undefined values
+				if ( (options = arguments[ i ]) != null ) {
+					// Extend the base object
+					for ( name in options ) {
+						src = target[ name ];
+						copy = options[ name ];
+
+						// Prevent never-ending loop
+						if ( target === copy ) {
+							continue;
+						}
+
+						// Recurse if we're merging plain objects or arrays
+						if ( deep && copy && ( is(copy, 'object') || (copyIsArray = is(copy, 'array')) ) ) {
+							if ( copyIsArray ) {
+								copyIsArray = false;
+								clone = src && is(src, 'array') ? src : [];
+
+							} else {
+								clone = src && is(src, 'object') ? src : {};
+							}
+
+							// Never move original objects, clone them
+							target[ name ] = extend( deep, clone, copy );
+
+						// Don't bring in undefined values
+						} else if ( copy !== undefined ) {
+							target[ name ] = copy;
+						}
+					}
+				}
+			}
+
+			// Return the modified object
+			return target;
+		},
 		merge = function( first, second ) {
 			var len = second.length,
 				i = first.length,
@@ -206,12 +260,24 @@
 			}else{
 				localStorage.setItem("blib", JSON.stringify(config.store.data));
 			}
-		};
+		},
+		Blib = function(){
+            return new init(arguments);
+        },
+        init = function(args){
+
+			if(typeof(args[0]) === "function"){return Blib.ready(args[0]);}
+			
+			return merge(this, getElement(args));
+
+        };
 	
 	
 	/** LIBRARY METHODS */
 	Blib.is		= is;
 	Blib.clone	= clone;
+	Blib.navigate	= navigate;
+	Blib.extend	= extend;
 	
 	/**
 	 * Method for work with blib configuration
@@ -424,6 +490,8 @@
 	};
 	
 	
+	
+	
 	/** MAGIC */
     init.prototype = Blib.fn = Blib.prototype;
 	if ( typeof window === "object" && typeof window.document === "object" ) {
@@ -434,22 +502,6 @@
 	
 	
 })( window );
-
-/** захреначить find на основе getElement.call(obj, handle) */
-
-/** EXAMPLE FOR EXTEND LIBRARY & OBJECT METHODS */
-(function( Blib ){
-	//add object method
-	Blib.fn.test = function(){
-		console.log('object method');
-	}
-	
-	//add library method
-	Blib.test = function(){
-		console.log('library method');
-	}
-})(blib);
-
 
 /**
  * Blib.include library. Allows get all script or style file in one. And store in local cache.
@@ -476,7 +528,7 @@
 		 * @return {string} 			- url
 		 */
 		block2url = function(name, extension, path){
-			var server = Blib.config('system.server');
+			var server = Blib.config('system.server')||"";
 			if(is(path,"string")) return server+path+name+"."+extension;
 			return server+name.substr(0,1)+"/"+name+"/"+name+"."+extension;
 		},
@@ -568,7 +620,7 @@
 	*/
 	Blib.include =  function(blocks, target){
 		var version = config.version,
-			server = Blib.config('system.server'),
+			server = Blib.config('system.server') || "",
 			domElement;
 		
 		if(is(blocks, "string")){
@@ -632,3 +684,236 @@
 	
 })( window.blib );
 
+/**
+ * Blib.build library. For construct html from blocks.
+ * 
+ */
+(function( Blib ){
+	
+	var is = Blib.is,
+		navigate = Blib.navigate,
+		extend = Blib.extend,
+		//local config
+		config = {
+			'block': {},
+			'tree':[]
+		},
+		baseProto = {
+			'testMethod':function(){alert(this.action);},
+			'action':{
+				'onSetMod':{
+					'js':{
+						'init':function(){alert('block inited')}
+					}
+				}
+			}
+		};
+		
+		
+	Blib.config("bBuild", config);
+	Blib.config("_private.bBuild", true);	
+	
+	var /** применение отложенных заданий*/
+		deferredTask = {},
+		applyDeferredTask = function(){
+			var set=false;
+			for(key in deferredTask){
+				if(!Blib(key).length){continue;}
+				set=true;
+				var tObj = deferredTask[key]['block'],
+					tKey = key,
+					tData = (tObj)?JSON.parse(JSON.stringify(deferredTask[key])):deferredTask[key], /* 0_0 риск удалить дом элемент*/
+					temp;
+					
+				delete deferredTask[key];
+				temp = (tObj)?applyConstructor(tData.block, tData):tData; 
+				if(temp){Blib(key).html("").append(temp);}
+			}
+			if(set){applyDeferredTask()};
+			deferredTask={};
+		},
+		
+		/** сборка серверного ответа */
+		build = function(data, currentBlock){
+			if(!data){return false;}
+			
+			
+			
+			//[первый в ответе, текущий блок, имя обьекта, ДОМ-результат, есть ли контейнер]
+			var parent = (!currentBlock)?true:false,
+				currentBlock = (data['block'])?data['block']:(currentBlock?currentBlock:"noname"),
+				currentClass = (data['elem'])?(currentBlock+"__"+data['elem']):currentBlock,
+				result = document.createElement(data['tag']||"div"),
+				container = (data['container'])?(Blib(data['container']).length>0):false;
+
+			if(temp = navigate(config.block, currentClass.replace('__','.'))){
+				console.log(temp);
+			}
+			
+			//чистим контейнер, т.к. если это не альтернативный обработчик, нужно почистить
+			if(container){Blib(data['container']).html("");}
+				
+			//оформляем классом
+			if(currentClass){result.className = currentClass};
+			//устанавливаем модификаторы
+			if(currentClass && data['mods']){
+				for(key in data['mods']){
+					result.className +=' '+currentClass+"_"+key+((data['mods'][key])?"_"+data['mods'][key]:"");
+				}
+			}
+			//задаем атрибуты
+			if(data['attrs']){
+				for(key in data['attrs']){
+					var attr = data['attrs'][key], temp;
+					
+					switch(typeof(attr)){
+						case "object":
+							temp = JSON.stringify(attr);
+						break;
+						case "function":
+							result[key]=attr;
+							continue;
+						break;
+						default:
+							temp = attr;
+						break;
+					}
+
+					if(key=="className"){
+						result[key] += " "+temp;
+					}else if(result.setAttribute){
+						result.setAttribute(key, temp);
+					}else{
+						result[key] = temp;
+					}
+				}
+			}
+			
+			//проверяем есть ли вложенность и рекурсивно обрабатываем если есть
+			switch(typeof(data['content'])){
+				case "object":
+					for(key in data['content']){
+						var temp = build(data['content'][key],currentBlock);
+						if(!temp)continue;
+						if(typeof(temp)=="object"){result.appendChild(temp);}else{result.innerHTML+=temp;}
+					}
+				break;
+				case "string":
+					result.innerHTML+=data['content'];
+				break;
+			}
+			
+			
+			
+
+			//если есть контейнер то добавляем в него
+			if(container){
+				Blib(data['container']).html("").append(result);
+				applyDeferredTask();
+			}else if(data['container']){
+				deferredTask[data['container']]=result;
+				return false;
+			}else{
+				if(parent && !data['container']){applyDeferredTask();}
+				return result;
+			}
+			
+	
+			
+		},
+		
+		/** колбэки после получения ответа и перестройки дерева */
+		readyFunctions = [];
+		ready = function(obj){
+			if(typeof(obj)=="function"){readyFunctions.push(obj);return true;}
+			
+			for(var len = readyFunctions.length, i=0; i<len; i++){
+				readyFunctions[i](obj);
+			}
+			
+		};
+		
+
+
+	
+	//заносим блок/елемент в коллекцию
+	var define = function(name, data){
+		if(!is(data, 'object') && !is(name.block, 'string'))return;
+			
+		var factory = is(data.factory, 'function')?data.factory:function(){};
+
+		extend(
+			true,
+			factory.prototype,
+			{'action': data.action},
+			{'template': data.template},
+			{'constructor': data.factory},
+			baseProto
+		);
+		
+		if(name.elem){ name.block = name.block+'.'+name.elem; }
+		
+		return navigate(config.block, name.block, factory);
+
+	};
+	
+
+	build.handler = build;
+	build.ready = ready;
+	build.define = define;
+	
+	Blib.build = build;	
+	
+})(blib);
+
+blib.build.define(
+	{'block':'bExample'},
+	{
+		'factory':function(){
+			/* block */
+		},
+		'template':{
+			'block':'bExample',
+			'mods':{'color':'red'},
+			'content':[
+				{'elem':'header', 'content':'elem header'},
+				{'elem':'item'}
+			]
+		},
+		'action':{
+			'onclick':function(){alert('onclick');},
+			'onmouseover':function(){alert('mouse over');}
+		}
+	}
+);
+
+var test = function(){
+			/* element */
+		};
+test.prototype = {
+	'action':{
+			'onclick':'test',
+			'onmouseover':'test'
+		}
+}
+
+blib.build.define(
+	{'block':'bExample', 'elem':'item'},
+	{
+		'factory':test,
+		'template':{
+			'block':'bExample',
+			'elem':'item',
+			'mods':{'size':'normal'},
+			'content':"element simple text"
+		},
+		'action':{
+			'onclick':function(){alert('elem onclick');},
+			'onmouseover':function(){alert('elem mouse over');}
+		}
+	}
+);
+
+blib.build({block:'bExample', elem:'item'});
+
+/** захреначить find на основе getElement.call(obj, handle) */

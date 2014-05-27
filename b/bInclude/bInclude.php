@@ -115,7 +115,7 @@ class bInclude extends bBlib{
 		foreach($cache as $key => $value){
 			
 			foreach($cache as $key2 => $value2){
-				if(in_array($key,$value2[0])) continue 2;					
+				if(in_array($key,(array)$value2[0])) continue 2;					
 			}
 			
 			$answer['list'][] = $key;

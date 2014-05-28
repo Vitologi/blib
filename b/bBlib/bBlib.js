@@ -691,6 +691,7 @@
 (function( Blib ){
 	
 	var is = Blib.is,
+		clone = Blib.clone,
 		navigate = Blib.navigate,
 		extend = Blib.extend,
 		//local config
@@ -699,13 +700,31 @@
 			'tree':[]
 		},
 		baseProto = {
-			'testMethod':function(){alert(this.action);},
+			'testMethod':function(){console.log(this);},
 			'action':{
-				'onSetMod':{
+				'onSetMode':{
 					'js':{
 						'init':function(){alert('block inited')}
 					}
 				}
+			},
+			'template':{},
+			'setTemplate':function(tmpl){
+				this.constructor.prototype.template = tmpl;
+			},
+			'setAction':function(act){
+				this.constructor.prototype.action = extend(true, act, this.action);
+			},
+			'setDom':function(dom){
+				this.dom = dom;
+			},
+			'setElement':function(name, elem){
+				if(!this.elem){this.elem = [];};
+				if(!this.elem[name]){this.elem[name] = [];};
+				this.elem[name].push(elem);
+			},
+			'setBlock':function(block){
+				this.block = block;
 			}
 		};
 		
@@ -734,20 +753,34 @@
 		},
 		
 		/** сборка серверного ответа */
-		build = function(data, currentBlock){
+		build = function(data, blockName, block){
 			if(!data){return false;}
 			
+			if(!data['block']){
+				data['block'] = (blockName)?blockName:"bNoname";
+			}
 			
+			if(factory = navigate(config.block, (data['elem'])?(data['block']+"."+data['elem']):data['block'])){
+				obj = new factory(data);
+				data = obj.template;
+			}
 			
 			//[первый в ответе, текущий блок, имя обьекта, ДОМ-результат, есть ли контейнер]
-			var parent = (!currentBlock)?true:false,
-				currentBlock = (data['block'])?data['block']:(currentBlock?currentBlock:"noname"),
-				currentClass = (data['elem'])?(currentBlock+"__"+data['elem']):currentBlock,
+			var currentClass = (data['elem'])?(data['block']+"__"+data['elem']):data['block'],
 				result = document.createElement(data['tag']||"div"),
-				container = (data['container'])?(Blib(data['container']).length>0):false;
+				container = (data['container'])?(Blib(data['container']).length>0):false,
+				obj, factory;
 
-			if(temp = navigate(config.block, currentClass.replace('__','.'))){
-				console.log(temp);
+			if(obj){
+				result.blib = obj;
+				obj.setDom(result);
+
+				if(data['elem']){
+					block.setElement(currentClass, obj);
+					obj.setBlock(block);
+				}else{
+					block = obj;
+				}
 			}
 			
 			//чистим контейнер, т.к. если это не альтернативный обработчик, нужно почистить
@@ -755,6 +788,7 @@
 				
 			//оформляем классом
 			if(currentClass){result.className = currentClass};
+			
 			//устанавливаем модификаторы
 			if(currentClass && data['mods']){
 				for(key in data['mods']){
@@ -793,7 +827,7 @@
 			switch(typeof(data['content'])){
 				case "object":
 					for(key in data['content']){
-						var temp = build(data['content'][key],currentBlock);
+						var temp = build(data['content'][key], data['block'], block);
 						if(!temp)continue;
 						if(typeof(temp)=="object"){result.appendChild(temp);}else{result.innerHTML+=temp;}
 					}
@@ -802,9 +836,6 @@
 					result.innerHTML+=data['content'];
 				break;
 			}
-			
-			
-			
 
 			//если есть контейнер то добавляем в него
 			if(container){
@@ -814,7 +845,7 @@
 				deferredTask[data['container']]=result;
 				return false;
 			}else{
-				if(parent && !data['container']){applyDeferredTask();}
+				if(!blockName){applyDeferredTask();}
 				return result;
 			}
 			
@@ -831,34 +862,17 @@
 				readyFunctions[i](obj);
 			}
 			
+		},
+	
+		//заносим блок/елемент в коллекцию
+		define = function(name, factory){
+			if(!is(factory, 'function') && !is(name.block, 'string'))return;
+			extend(true, factory.prototype, baseProto);
+			if(name.elem){ name.block = name.block+'.'+name.elem; }
+
+			return navigate(config.block, name.block, factory);
 		};
-		
-
-
 	
-	//заносим блок/елемент в коллекцию
-	var define = function(name, data){
-		if(!is(data, 'object') && !is(name.block, 'string'))return;
-			
-		var factory = is(data.factory, 'function')?data.factory:function(){};
-
-		extend(
-			true,
-			factory.prototype,
-			{'action': data.action},
-			{'template': data.template},
-			{'constructor': data.factory},
-			baseProto
-		);
-		
-		if(name.elem){ name.block = name.block+'.'+name.elem; }
-		
-		return navigate(config.block, name.block, factory);
-
-	};
-	
-
-	build.handler = build;
 	build.ready = ready;
 	build.define = define;
 	
@@ -868,52 +882,69 @@
 
 blib.build.define(
 	{'block':'bExample'},
-	{
-		'factory':function(){
-			/* block */
-		},
-		'template':{
+	function(data){
+		/* block */
+		
+		this.setTemplate({
 			'block':'bExample',
+			'mix':[{'block':'bTest'}],
 			'mods':{'color':'red'},
 			'content':[
 				{'elem':'header', 'content':'elem header'},
-				{'elem':'item'}
-			]
-		},
-		'action':{
-			'onclick':function(){alert('onclick');},
+				{'elem':'item', 'text':'55'}
+			],
+			'test': data
+		});
+		
+		this.setAction({
+			'onclick':function(){alert('onclick'); this.setMode('');},
 			'onmouseover':function(){alert('mouse over');}
-		}
+		});
 	}
 );
-
-var test = function(){
-			/* element */
-		};
-test.prototype = {
-	'action':{
-			'onclick':'test',
-			'onmouseover':'test'
-		}
-}
 
 blib.build.define(
 	{'block':'bExample', 'elem':'item'},
-	{
-		'factory':test,
-		'template':{
-			'block':'bExample',
-			'elem':'item',
-			'mods':{'size':'normal'},
-			'content':"element simple text"
-		},
-		'action':{
-			'onclick':function(){alert('elem onclick');},
-			'onmouseover':function(){alert('elem mouse over');}
+	(function(){
+		
+		var count = 0;
+		
+		return function(data){
+			/* element */
+			count++;
+			this.text = data.text;
+			console.log(this);
+			
+			this.setTemplate({
+				'block':'bExample',
+				'elem':'item',
+				'mods':{'size':'normal'},
+				'content':this.text+count
+			});
+			
+			this.setAction({
+				'onSetMode':{
+					'size':{
+						'normal':function(){
+							alert('elem change modifier size normal');
+						}
+					}
+				},
+				'onclick':function(){alert('elem onclick');},
+				'onmouseover':function(){alert('elem mouse over');}
+			});
 		}
-	}
+	})()
 );
 
-blib.build({block:'bExample', elem:'item'});
+blib.build.define(
+	{'block':'bExample', 'elem':'header'},
+	function(data){	this.setTemplate(data);}
+);
 
+
+blib('body').append(blib.build({block:'bExample'}));
+blib('body').append(blib.build({block:'bExample'}));
+//blib.build({block:'bExample', elem:'item', test:55});
+//blib.build({block:'bExample', elem:'item', test:66});
 /** захреначить find на основе getElement.call(obj, handle) */

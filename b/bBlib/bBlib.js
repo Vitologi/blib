@@ -700,7 +700,6 @@
 			'tree':[]
 		},
 		baseProto = {
-			'testMethod':function(){console.log(this);},
 			'action':{
 				'onSetMode':{
 					'js':{
@@ -880,71 +879,5 @@
 	
 })(blib);
 
-blib.build.define(
-	{'block':'bExample'},
-	function(data){
-		/* block */
-		
-		this.setTemplate({
-			'block':'bExample',
-			'mix':[{'block':'bTest'}],
-			'mods':{'color':'red'},
-			'content':[
-				{'elem':'header', 'content':'elem header'},
-				{'elem':'item', 'text':'55'}
-			],
-			'test': data
-		});
-		
-		this.setAction({
-			'onclick':function(){alert('onclick'); this.setMode('');},
-			'onmouseover':function(){alert('mouse over');}
-		});
-	}
-);
 
-blib.build.define(
-	{'block':'bExample', 'elem':'item'},
-	(function(){
-		
-		var count = 0;
-		
-		return function(data){
-			/* element */
-			count++;
-			this.text = data.text;
-			console.log(this);
-			
-			this.setTemplate({
-				'block':'bExample',
-				'elem':'item',
-				'mods':{'size':'normal'},
-				'content':this.text+count
-			});
-			
-			this.setAction({
-				'onSetMode':{
-					'size':{
-						'normal':function(){
-							alert('elem change modifier size normal');
-						}
-					}
-				},
-				'onclick':function(){alert('elem onclick');},
-				'onmouseover':function(){alert('elem mouse over');}
-			});
-		}
-	})()
-);
-
-blib.build.define(
-	{'block':'bExample', 'elem':'header'},
-	function(data){	this.setTemplate(data);}
-);
-
-
-blib('body').append(blib.build({block:'bExample'}));
-blib('body').append(blib.build({block:'bExample'}));
-//blib.build({block:'bExample', elem:'item', test:55});
-//blib.build({block:'bExample', elem:'item', test:66});
 /** захреначить find на основе getElement.call(obj, handle) */

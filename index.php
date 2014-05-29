@@ -1,4 +1,5 @@
 <?php
+	if(!$_GET['blib']){$_GET['blib']='bIndex';}
 	$vremiya_starta = microtime(true);
  
 	require_once("b/bBlib/bBlib.php");

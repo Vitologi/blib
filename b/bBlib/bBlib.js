@@ -800,6 +800,10 @@
 			},
 			'setBlock':function(block){
 				this.block = block;
+			},
+			'setMode':function(name, value){
+				console.log(this.dom.className);
+				this.dom.className = ' '+this.template.block+'_'+name+'_'+value+' '+this.dom.className; //0_0
 			}
 		};
 		

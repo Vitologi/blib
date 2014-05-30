@@ -785,10 +785,10 @@
 			},
 			'template':{},
 			'setTemplate':function(tmpl){
-				this.constructor.prototype.template = tmpl;
+				extend(true, this.constructor.prototype.template, tmpl);
 			},
 			'setAction':function(act){
-				this.constructor.prototype.action = extend(true, act, this.action);
+				extend(true, this.constructor.prototype.action, act);
 			},
 			'setDom':function(dom){
 				this.dom = dom;
@@ -833,12 +833,7 @@
 			
 			if(!data['block']){
 				data['block'] = (blockName)?blockName:"bNoname";
-			}/*else{
-				if(!navigate(config.block, data['block'])){
-					console.log(data['block'], config);
-					blib.include(data['block']);
-				}
-			}*/
+			}
 			
 			if(factory = navigate(config.block, (data['elem'])?(data['block']+"."+data['elem']):data['block'])){
 				obj = new factory(data);
@@ -849,12 +844,35 @@
 			var currentClass = (data['elem'])?(data['block']+"__"+data['elem']):data['block'],
 				result = document.createElement(data['tag']||"div"),
 				container = (data['container'])?(Blib(data['container']).length>0):false,
-				obj, factory;
+				obj, factory, action;
 
 			if(obj){
 				result.blib = obj;
 				obj.setDom(result);
+				
+				for(evt in obj.action){
+					if(!is(obj.action[evt], 'function') || evt.substr(0,2) !== "on" || evt === 'onSetMode')continue;
 
+					if (result.addEventListener){   
+						result.addEventListener(evt.substr(2,evt.length-1), obj.action[evt], false); 		
+					} else if (result.attachEvent){ 
+						result.attachEvent(evt, obj.action[evt]); 
+					} else{ 
+						if(result[evt]){
+							obj.action[evt] = (function (){
+								var old = result[evt],
+									now = obj.action[evt];
+								return function(){
+									old();
+									now();
+								};								
+							})();
+						}
+						
+						result[evt] = obj.action[evt];
+					}
+				}
+				
 				if(data['elem']){
 					block.setElement(currentClass, obj);
 					obj.setBlock(block);
@@ -952,9 +970,28 @@
 
 			return navigate(config.block, name.block, factory);
 		};
+		
+		//переопределяем блок/елемент в коллекцию
+		redefine = function(name, factory){
+			if(!is(factory, 'function') && !is(name.block, 'string'))return;
+			if(name.elem){ name.block = name.block+'.'+name.elem; }
+			var oldFactory = navigate(config.block, name.block);
+				newFactory = function(data){
+					extend(true, factory.prototype, new oldFactory(data));
+					return new factory(data);
+				};
+			
+			for(key in oldFactory){
+				newFactory[key]=oldFactory[key];
+			}
+			
+			return navigate(config.block, name.block, newFactory);
+			
+		};
 	
 	build.ready = ready;
 	build.define = define;
+	build.redefine = redefine;
 	
 	Blib.build = build;	
 	

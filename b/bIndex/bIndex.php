@@ -7,4 +7,8 @@ class bIndex extends bBlib{
 		$this->version = '1.0.0';
 	}
 	
+	public function output(){
+		require_once("b/bIndex/bIndex.html");
+	}
+	
 }

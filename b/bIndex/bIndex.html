@@ -5,12 +5,16 @@
     <title>Blib</title>
 	<script type="text/javascript" src="b/bBlib/bBlib.js"></script>
 	<script>
+		//blib.config('system.server', "/");
 		blib.include();
+		blib.include.complete(function(){
+			blib('body').append(blib.build({block:'bExample'}));
+		});
+
+		
 	</script>
 </head>
 <body>
-	<div id="a" class="a" onclick="alert('uuuu');">
-		-------------
-	</div>
+
 </body>
 </html>

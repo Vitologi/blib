@@ -86,7 +86,7 @@ class bInclude extends bBlib{
 
 		$arr = opendir($dir);
 		while($v = readdir($arr)){
-			if($v == '.' or $v == '..' or $v == '__cache' or $v == 'bBlib') continue;
+			if($v == '.' or $v == '..' or $v == 'bInclude' or $v == 'bBlib') continue;
 			
 			if(is_dir($dir.'/'.$v)){
 				$cache = array_merge($cache, $this->scan($dir.'/'.$v, $extention, $list, $cache, $deep+1));
@@ -131,7 +131,7 @@ class bInclude extends bBlib{
 		
 		if(!$deep){
 			$answer['list'] = array_reverse ($answer['list']);
-			$answer['code'] = implode(array_reverse ($answer['code']));
+			$answer['code'] = implode(array_reverse ((array)$answer['code']));
 		}
 		
 		return $answer;

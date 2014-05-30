@@ -4,18 +4,9 @@
     var config = {
 			'_private':{
 				'version':true,
-				'ajax':true,
 				'store':true
 			},
             'version':'0.2.0',
-			'ajax':{
-				'dataType':"text",
-				'success':function(){},
-				'data':null,
-				'type':"POST",
-				'url':"/",
-				'headers':["X-Requested-With","XMLHttpRequest"]
-			},
 			'store':{
 				'isset':('localStorage' in window && window['localStorage'] !== null)?true:false,
 				'data':{}
@@ -338,7 +329,7 @@
 	}
 	
 	//set handler on DOM ready event
-	Blib.ready = function(handler){
+	Blib.ready = function(handler, deep){
 		var called = false;
 
 		function onReady(){
@@ -347,31 +338,32 @@
 			handler();
 		}
 		
-		if(document.readyState=="complete"){return handler()}; //can use rotate window.onload for crosbrowser
-		
-		if( document.addEventListener ){
-			document.addEventListener( "DOMContentLoaded", function(){onReady();}, false );
-		}else if( document.attachEvent ){
-			if( document.documentElement.doScroll && window == window.top ){
-				function tryScroll(){
-					if(called){return false;}
-					if(!document.body){return false;}
-					try{
-						document.documentElement.doScroll("left");
-						onReady();
-					} catch(e) {
-						setTimeout(tryScroll, 0);
+		if(!deep){
+			if( document.addEventListener ){
+				document.addEventListener( "DOMContentLoaded", function(){onReady();}, false );
+			}else if( document.attachEvent ){
+				if( document.documentElement.doScroll && window == window.top ){
+					function tryScroll(){
+						if(called){return false;}
+						if(!document.body){return false;}
+						try{
+							document.documentElement.doScroll("left");
+							onReady();
+						} catch(e) {
+							setTimeout(tryScroll, 0);
+						}
 					}
+					tryScroll();
 				}
-				tryScroll();
+		
+				document.attachEvent("onreadystatechange", function(){		
+					if(document.readyState === "complete"){
+						onReady();
+					}
+				})
 			}
-	
-			document.attachEvent("onreadystatechange", function(){		
-				if(document.readyState === "complete"){
-					onReady();
-				}
-			})
 		}
+		
 		if (window.addEventListener){
 			window.addEventListener('load', onReady, false);
 		}else if (window.attachEvent){
@@ -381,65 +373,96 @@
 		}
 	};
 	
+	
+	
 	//ajax
-	Blib.ajax = function(dataObject) {
-		var xhr;
-		if (window.XMLHttpRequest) xhr = new XMLHttpRequest();
-		else if (window.ActiveXObject) {
-			try {
-				xhr = new ActiveXObject('Msxml2.XMLHTTP');
-			} catch (e){}
-			try {
-				xhr = new ActiveXObject('Microsoft.XMLHTTP');
-			} catch (e){}
-		}
-		if (!xhr) {return this;}
+	Blib.ajax = (function() {
+		var salt = 0;
 		
-		for(key in config.ajax){
-			if(!(key in dataObject)){
-				dataObject[key]=config.ajax[key];
+		return function(param){
+			var dataType	= param['dataType'] || "text",
+				success		= param['success'] || function(){},
+				data		= param['data'] || null,
+				type		= param['type'] || "POST",
+				url			= param['url'] || "/",
+				headers		= param['headers'] || ["X-Requested-With","XMLHttpRequest"],
+				head 		= getElement(['head'])[0],
+				jsonpElement, temp;
+				
+			
+			if(is(data, 'object') && type !== "DATA"){
+				temp = "";
+				for(key in data){
+					if(is(data[key],['array', 'object'])){ data[key]=JSON.stringify(data[key]); }
+					temp+=key+"="+data[key]+"&";
+				}
+				data = temp.substr(0, temp.length-1);
 			}
-		}
+			
+			if(type==='JSONP'){
+				temp = "jsonp"+salt++;
+				console.log(temp);
+				
+				Blib.ajax[temp] = function(){
+					success.apply(null, arguments);
+					delete Blib.ajax[temp];
+				}
+				
+				jsonpElement  = document.createElement('script');
+				jsonpElement.type="text/javascript";
+				jsonpElement.src = url += (url.indexOf("?")!=-1?"&":"?")+data+'&callback=Blib.ajax.'+temp;
+				head.appendChild(jsonpElement);
+				
+				window.setTimeout(function(){
+					head.removeChild(jsonpElement);
+				},10000);
+				
+				return;
+			}
+			
+			var xhr;
+			if (window.XMLHttpRequest) xhr = new XMLHttpRequest();
+			else if (window.ActiveXObject) {
+				try {
+					xhr = new ActiveXObject('Msxml2.XMLHTTP');
+				} catch (e){}
+				try {
+					xhr = new ActiveXObject('Microsoft.XMLHTTP');
+				} catch (e){}
+			}
+			if (!xhr) {return this;}
 
-		xhr.onreadystatechange = function(){
-			if (xhr.readyState === 4 && xhr.status === 200) {
-				var rData = (dataObject['dataType']=="json")?JSON.parse(xhr.responseText):xhr.responseText;
-				dataObject['success'](rData);
+			xhr.onreadystatechange = function(){
+				if (xhr.readyState === 4 && xhr.status === 200) {
+					temp = (dataType==="json")?JSON.parse(xhr.responseText):xhr.responseText;
+					success(temp);
+				}
 			}
-		}
-		
-		if(typeof(dataObject['data'])=="object" && dataObject['type']!="DATA"){
-			var temp = "";
-			for(key in dataObject['data']){
-				temp+=key+"="+dataObject['data'][key]+"&";
+			
+			switch(type){
+				case "GET":
+					headers = ["Content-Type", "text/html"];
+					url += (url.indexOf("?")!=-1?"&":"?")+data;
+					data = null;
+				break;
+				
+				case "POST":
+					headers=["Content-Type", "application/x-www-form-urlencoded"];
+				break;
+				
+				case "DATA":
+					headers = ["Content-Type", "application/json"];
+					data = JSON.stringify(data);
+					type = "POST";
+				break;
+				
 			}
-			dataObject['data'] = temp.substr(0, temp.length-1);
-		}
-		
-		switch(dataObject['type']){
-			case "GET":
-				dataObject['headers']=["Content-Type", "text/html"];
-				dataObject['url']+=(dataObject['url'].indexOf("?")!=-1?"&":"?")+dataObject['data'];
-				dataObject['data']=null;
-			break;
-			
-			case "POST":
-				dataObject['headers']=["Content-Type", "application/x-www-form-urlencoded"];
-			break;
-			
-			case "DATA":
-				dataObject['headers']=["Content-Type", "application/json"];
-				dataObject['data']=JSON.stringify(dataObject['data']);
-				dataObject['type']="POST";
-			break;
-			
-		}
 
-		xhr.open(dataObject['type'], dataObject['url'], true);
-		xhr.setRequestHeader(dataObject['headers'][0],dataObject['headers'][1]);
-		xhr.send(dataObject['data']);
-		
-	};
+			xhr.open(type, url, true);
+			xhr.setRequestHeader(headers[0],headers[1]);
+			xhr.send(data);
+		};
+	})();
 	
 	/** OBJECT METHODS */
 	Blib.prototype = {
@@ -533,6 +556,10 @@
 			return server+name.substr(0,1)+"/"+name+"/"+name+"."+extension;
 		},
 		
+		wait = 0,
+		handlers = [],
+		tick,
+		
 		/**
 		 * Function for manipulate blocks in site (add or delete them from DOM)
 		 * 
@@ -591,6 +618,9 @@
 							domElement.type="text/javascript";
 							domElement.id = id;
 							domElement.src = link;
+							domElement.async = false;
+							wait++;
+							
 							
 							break;
 						
@@ -598,14 +628,32 @@
 							break;
 					}	
 					
-				
+					
 					if(!config.head.appendChild(domElement)){return console.log("error(missing:"+link+")");};
-					if(param.extention === "js") blocks[param.name] = {'version':version, 'list':param.list};
+					if(param.extention === "js"){
+						blocks[param.name] = {'version':version, 'list':param.list};
+						
+						domElement  = document.createElement('script');
+						domElement.type="text/javascript";
+						domElement.src = block2url('bInclude__decrement', 'js', 'b/bInclude/__decrement/');
+						domElement.async = false;					
+						config.head.appendChild(domElement);
+						
+						window.setTimeout(function(){
+							config.head.removeChild(domElement);
+						},10000);
+						
+					}
+					
+					
+					
 					break;
 					
 				default:
 					break;
 			}
+			
+
 		};
 	
 	
@@ -631,6 +679,8 @@
 		
 		if(blocks.length !== 1){
 			
+			wait++;
+			
 			if(server === ""){
 				Blib.ajax({
 					url:'/',
@@ -641,17 +691,22 @@
 						config.version = data['version'];
 						combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
 						combine({'action':"add", 'extention':"js", 'name':data['name'] , 'list':data['list']});
+						wait--;
 					}
 				});
 			}else{
-				domElement  = document.createElement('script');
-				domElement.type="text/javascript";
-				domElement.src = server+'?blib=bInclude&callback=Blib.include.callback&list='+JSON.stringify(blocks);
-				config.head.appendChild(domElement);
-				
-				window.setTimeout(function(){
-					config.head.removeChild(domElement);
-				},10000);
+				Blib.ajax({
+					url:'/',
+					data:{'blib':'bInclude', 'list':blocks},
+					type:"JSONP",
+					dataType: "json",
+					success: function(data){
+						config.version = data['version'];
+						combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
+						combine({'action':"add", 'extention':"js", 'name':data['name'] , 'list':data['list']});
+						wait--;
+					}
+				});
 			}
 			
 			return;
@@ -662,12 +717,14 @@
 		
 		if(target){
 			var target = Blib(target);
+			wait++;
 			Blib.ajax({
 				url:block2url(blocks[0], "html") + '?ver='+version, //html ajax work only with self server
 				dataType: "html",
 				success: function(data){
 					target.html(data);
 					combine({'action':"add", 'extention':'js', 'name':blocks[0]});
+					wait--;
 				}
 			});
 		}else{
@@ -676,11 +733,30 @@
 
 	};
 	
-	Blib.include.callback = function(data){
-		config.version = data['version'];
-		combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
-		combine({'action':"add", 'extention':"js", 'name':data['name'] , 'list':data['list']});
+	Blib.include.decrement = function(){
+		wait--;
 	}
+	
+	Blib.include.complete = function(handler, delay){
+		
+		handlers.push(handler);
+		if(tick){window.clearInterval(tick);}
+		
+		tick = window.setInterval(function(){
+
+			if(wait>0) return;
+			wait = 0;
+			window.clearInterval(tick);
+			
+			for(key in handlers){
+				temp = handlers[key];
+				delete handlers[key];
+				temp();
+			};
+			
+		},delay || 100);
+	}
+	
 	
 })( window.blib );
 
@@ -757,7 +833,12 @@
 			
 			if(!data['block']){
 				data['block'] = (blockName)?blockName:"bNoname";
-			}
+			}/*else{
+				if(!navigate(config.block, data['block'])){
+					console.log(data['block'], config);
+					blib.include(data['block']);
+				}
+			}*/
 			
 			if(factory = navigate(config.block, (data['elem'])?(data['block']+"."+data['elem']):data['block'])){
 				obj = new factory(data);

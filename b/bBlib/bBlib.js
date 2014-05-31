@@ -714,7 +714,7 @@
 				});
 			}
 			
-			return;
+			return Blib.include;
 			
 		}
 		
@@ -735,7 +735,8 @@
 		}else{
 			combine({'action':"add", 'extention':'js', 'name':blocks[0]});
 		}
-
+		
+		return Blib.include;
 	};
 	
 	Blib.include.decrement = function(){

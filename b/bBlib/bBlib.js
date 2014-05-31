@@ -869,7 +869,8 @@
 			var currentClass = (data['elem'])?(data['block']+"__"+data['elem']):data['block'],
 				result = document.createElement(data['tag']||"div"),
 				container = (data['container'])?(Blib(data['container']).length>0):false,
-				obj, factory, action;
+				obj, factory, action,
+				attr, temp;
 
 			if(obj){
 				result.blib = obj;
@@ -906,9 +907,6 @@
 				}
 			}
 			
-			//чистим контейнер, т.к. если это не альтернативный обработчик, нужно почистить
-			if(container){Blib(data['container']).html("");}
-				
 			//оформляем классом
 			if(currentClass){result.className = currentClass};
 			
@@ -918,12 +916,14 @@
 					result.className +=' '+currentClass+"_"+key+((data['mods'][key])?"_"+data['mods'][key]:"");
 				}
 			}
+			
 			//задаем атрибуты
 			if(data['attrs']){
 				for(key in data['attrs']){
-					var attr = data['attrs'][key], temp;
+					attr = data['attrs'][key];
 					
-					switch(typeof(attr)){
+					switch(is(attr)){
+						case "array":
 						case "object":
 							temp = JSON.stringify(attr);
 						break;
@@ -947,10 +947,10 @@
 			}
 			
 			//проверяем есть ли вложенность и рекурсивно обрабатываем если есть
-			switch(typeof(data['content'])){
+			switch(is(data['content'])){
 				case "object":
 					for(key in data['content']){
-						var temp = build(data['content'][key], data['block'], block);
+						temp = build(data['content'][key], data['block'], block);
 						if(!temp)continue;
 						if(typeof(temp)=="object"){result.appendChild(temp);}else{result.innerHTML+=temp;}
 					}
@@ -977,9 +977,9 @@
 		},
 		
 		/** колбэки после получения ответа и перестройки дерева */
-		readyFunctions = [];
+		readyFunctions = [],
 		ready = function(obj){
-			if(typeof(obj)=="function"){readyFunctions.push(obj);return true;}
+			if(is(obj, 'function')){return readyFunctions.push(obj);}
 			
 			for(var len = readyFunctions.length, i=0; i<len; i++){
 				readyFunctions[i](obj);

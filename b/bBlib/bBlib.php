@@ -170,13 +170,10 @@ abstract class bBlib{
 			$_list = json_decode(file_get_contents($path), true);
 		}
 		
-		if(!$_list[$block]){return;}
-		
 		$files = array();
-		$list = $_list[$block];
-		
 		$files = bBlib::compileGlue($block, $files);
-
+		$list = ($_list[$block]?$_list[$block]:array());
+		
 		foreach($list as $value){
 			$files = bBlib::compileGlue($value, $files);
 		}

@@ -131,7 +131,7 @@ class bInclude extends bBlib{
 		
 		if(!$deep){
 			$answer['list'] = array_reverse ($answer['list']);
-			$answer['code'] = implode(array_reverse ((array)$answer['code']));
+			$answer['code'] = implode("\n\n",array_reverse((array)$answer['code']));
 		}
 		
 		return $answer;

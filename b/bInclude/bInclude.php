@@ -5,7 +5,7 @@ class bInclude extends bBlib{
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
-		$this->parents = array('bSystem');
+		$this->parents = array('bSystem', 'bConfig');
 	}
 	
 	protected function input($data){
@@ -13,6 +13,7 @@ class bInclude extends bBlib{
 		$this->callback = $this->_request['callback'];
 		$this->cache = $this->path."/__cache/bInclude__cache.ini";
 		$this->list = $this->callback?json_decode($this->_request['list']):(array)$data['list'] or array();
+		$this->disableCache = false;
 	}
 	
 	public function output(){
@@ -20,7 +21,7 @@ class bInclude extends bBlib{
 		//get name
 		$name = $this->getCacheName();
 		
-		if(!file_exists($this->path.'/__cache/'.$name.'.js')){
+		if($this->disableCache || !file_exists($this->path.'/__cache/'.$name.'.js')){
 			$this->setCache($name, $this->list);
 		}
 		

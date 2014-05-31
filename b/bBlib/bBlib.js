@@ -801,9 +801,30 @@
 			'setBlock':function(block){
 				this.block = block;
 			},
-			'setMode':function(name, value){
-				console.log(this.dom.className);
-				this.dom.className = ' '+this.template.block+'_'+name+'_'+value+' '+this.dom.className; //0_0
+			'setMode':function(mode, value){
+				var block = this.template.block,
+					elem = (this.template.elem?'__'+this.template.elem:''),
+					_mode = '_'+mode,
+					_value = (is(value,'string')?'_'+value:''),
+					regexp = new RegExp('('+block+elem+_mode+'\\S*)'),
+					changed = false,
+					fullName = block+elem+_mode+_value
+					newClass = this.dom.className.replace(regexp, function(handle){
+						changed = true;
+						return (value)?fullName:'';
+					}),
+					handler = navigate(this.action.onSetMode, mode+(is(value,'string')?'.'+value:''));
+					
+				if(changed){
+					this.dom.className = newClass;
+				}else{
+					this.dom.className += ' '+fullName;
+				}
+				
+				if(is(handler, 'function')){
+					handler.call(this);
+				};
+				
 			}
 		};
 		
@@ -969,7 +990,8 @@
 		//заносим блок/елемент в коллекцию
 		define = function(name, factory){
 			if(!is(factory, 'function') && !is(name.block, 'string'))return;
-			extend(true, factory.prototype, baseProto);
+			
+			extend(true, factory.prototype, {'template':name}, baseProto);
 			if(name.elem){ name.block = name.block+'.'+name.elem; }
 
 			return navigate(config.block, name.block, factory);

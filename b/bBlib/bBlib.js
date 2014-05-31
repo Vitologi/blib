@@ -483,9 +483,14 @@
 		},
 		
 		'html':function(obj){
-			if(typeof(obj)=="undefined")return this[0].innerHTML;
+			if(is(obj,"undefined"))return this[0].innerHTML;
 			for(var len = this.length, i=0; i<len; i++){
-				this[i].innerHTML = obj;
+				this[i].innerHTML = '';
+				if(obj.cloneNode){
+					this[i].appendChild(obj);
+				}else{
+					this[i].innerHTML = obj;
+				}
 			}
 			return this;
 		},

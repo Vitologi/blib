@@ -265,7 +265,8 @@ class bDatabase extends bBlib{
 				if(is_array($columns[0])){
 					foreach($columns as $value){
 						$value[2] = ($value[2])?$value[2]:'=';
-						$where .= sprintf(' `%1$s`.`%2$s` %3$s %4$s AND', $table, $value[0], $value[2], $this->pdo->quote($value[1]));
+						$value[3] = ($value[3])?' OR ':' AND';
+						$where .= sprintf(' `%1$s`.`%2$s` %3$s %4$s %5$s', $table, $value[0], $value[2], $this->pdo->quote($value[1]), $value[3]);
 					}
 				}else{			
 					foreach($columns as $column => $value){

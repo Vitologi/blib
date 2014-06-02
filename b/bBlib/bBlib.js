@@ -956,6 +956,7 @@
 			
 			//проверяем есть ли вложенность и рекурсивно обрабатываем если есть
 			switch(is(data['content'])){
+				case "object":
 				case "array":
 					for(key in data['content']){
 						temp = build(data['content'][key], data['block'], block);

@@ -790,10 +790,12 @@
 				}
 			},
 			'template':{},
-			'setTemplate':function(tmpl){
+			'setTemplate':function(tmpl, reset){
+				if(reset){ this.constructor.prototype.template = tmpl; }
 				extend(true, this.constructor.prototype.template, tmpl);
 			},
-			'setAction':function(act){
+			'setAction':function(act, reset){
+				if(reset){ return this.constructor.prototype.action = act; }
 				extend(true, this.constructor.prototype.action, act);
 			},
 			'setDom':function(dom){

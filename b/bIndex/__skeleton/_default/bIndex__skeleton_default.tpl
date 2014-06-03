@@ -7,7 +7,7 @@
 	<meta name="description" content="'{description}'">
     <title>'{title}'</title>
 	<script type="text/javascript" src="b/bBlib/bBlib.js"></script>
-	<script> blib.include().complete(function(){ blib('body').html(blib.build('{data}')); }); </script>
+	<script> blib.include().complete(function(){ blib('body').html(blib.build('{template}')); }); </script>
 </head>
 <body>
 	<center>Site work on blib platform.</center>

@@ -9,8 +9,9 @@ class bIndex extends bBlib{
 	}
 	
 	protected function input($data, $caller){
+		$this->data = $this->hook('getData', array($data));
 		$this->defaultPage = 1;
-		$this->pageId = ($data['pageId']?$data['pageId']:$this->defaultPage);
+		if(!$this->data['pageId']){$this->local['data']['pageId'] = $this->defaultPage;}
 		$this->ajax = $data['ajax'];
 		$this->skeleton = "bIndex__skeleton_default";
 		$this->cache = 0;		
@@ -23,7 +24,7 @@ class bIndex extends bBlib{
 				'bIndex' => array('meta', 'bTemplate_id', 'bCategory_id')
 			),
 			'where' => array(
-				'bIndex' => array('id'=>$this->pageId)
+				'bIndex' => array('id'=>$this->data['pageId'])
 			)
 		);
 		
@@ -43,6 +44,10 @@ class bIndex extends bBlib{
 			echo str_replace(array_keys($data), array_values($data), $skeleton);
 		}
 
+	}
+	
+	protected function getData($data){
+		return $data;
 	}
 	
 }

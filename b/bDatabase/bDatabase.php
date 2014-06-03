@@ -157,8 +157,10 @@ class bDatabase extends bBlib{
 		
 		//protect call from block
 		if($caller !== null){
-			return $caller->bDatabase->_query($Q[0]);
+			return $caller->bDatabase->_query($Q);
 		}
+		$debug = $Q[1];
+		$Q = $Q[0];
 		
 		//for native sql queries
 		if(is_string($Q)){
@@ -339,7 +341,7 @@ class bDatabase extends bBlib{
 		if(array_key_exists('select', $Q) && count($Q['select'])){
 			
 			if($temp!=''){
-				if(!$this->pdo->query($temp)){throw new Exception('Wrong sql syntax.');}
+				if(!$this->pdo->query($temp)){throw new Exception('Wrong sql syntax.'.$temp);}
 				$temp='';
 			}
 			
@@ -370,8 +372,7 @@ class bDatabase extends bBlib{
 			$temp .= $select.$from.$concatWhere.'; ';
 		}
 		
-		//var_dump($temp);
-		return $this->pdo->query($temp);			
+		return ($debug)?$temp:$this->pdo->query($temp);			
 
 	}
 	

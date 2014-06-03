@@ -862,7 +862,7 @@
 		
 		/** сборка серверного ответа */
 		build = function(data, blockName, block){
-			if(!data){return false;}
+			if(!data){return;}
 			
 			if(!data['block']){
 				data['block'] = (blockName)?blockName:"bNoname";

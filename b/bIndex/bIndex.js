@@ -2,7 +2,7 @@ blib.build.define(
 	{'block':'bIndex'},
 	function(data){
 		
-		if(data.reset){
+		if(data.ajax){
 			this.setTemplate(data, true);
 		}else{
 			this.setTemplate(data);

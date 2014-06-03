@@ -556,9 +556,9 @@
 		 * @return {string} 			- url
 		 */
 		block2url = function(name, extension, path){
-			var server = Blib.config('system.server')||"";
+			var server = Blib.config('system.server')||window.location.protocol+"//"+window.location.host;
 			if(is(path,"string")) return server+path+name+"."+extension;
-			return server+name.substr(0,1)+"/"+name+"/"+name+"."+extension;
+			return server+"/"+name.substr(0,1)+"/"+name+"/"+name+"."+extension;
 		},
 		
 		wait = 0,
@@ -573,7 +573,7 @@
 		 */
 		combine = function(param){
 			var version = config.version,
-				cachePath = is(param.list, "array")?"b/bInclude/__cache/":false,
+				cachePath = is(param.list, "array")?"/b/bInclude/__cache/":false,
 				link = block2url(param.name, param.extention, cachePath)+"?version="+version,
 				id = param.name+"."+param.extention,
 				blocks = config.blocks,
@@ -640,7 +640,7 @@
 						
 						domElement  = document.createElement('script');
 						domElement.type="text/javascript";
-						domElement.src = block2url('bInclude__decrement', 'js', 'b/bInclude/__decrement/');
+						domElement.src = block2url('bInclude__decrement', 'js', '/b/bInclude/__decrement/');
 						domElement.async = false;					
 						config.head.appendChild(domElement);
 						
@@ -673,7 +673,8 @@
 	*/
 	Blib.include =  function(blocks, target){
 		var version = config.version,
-			server = Blib.config('system.server') || "",
+			server = block2url('index', 'php', '/'),
+			ajaxType = "DATA",
 			domElement;
 		
 		if(is(blocks, "string")){
@@ -683,36 +684,22 @@
 		}
 		
 		if(blocks.length !== 1){
-			
 			wait++;
 			
-			if(server === ""){
-				Blib.ajax({
-					url:'/',
-					data:{'blib':'bInclude', 'list':blocks},
-					type:"DATA",
-					dataType: "json",
-					success: function(data){
-						config.version = data['version'];
-						combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
-						combine({'action':"add", 'extention':"js", 'name':data['name'] , 'list':data['list']});
-						wait--;
-					}
-				});
-			}else{
-				Blib.ajax({
-					url:'/',
-					data:{'blib':'bInclude', 'list':blocks},
-					type:"JSONP",
-					dataType: "json",
-					success: function(data){
-						config.version = data['version'];
-						combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
-						combine({'action':"add", 'extention':"js", 'name':data['name'] , 'list':data['list']});
-						wait--;
-					}
-				});
-			}
+			if(Blib.config('system.server')){ ajaxType = "JSONP";}
+			
+			Blib.ajax({
+				url:server,
+				data:{'blib':'bInclude', 'list':blocks},
+				type:ajaxType,
+				dataType: "json",
+				success: function(data){
+					config.version = data['version'];
+					combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
+					combine({'action':"add", 'extention':"js", 'name':data['name'] , 'list':data['list']});
+					wait--;
+				}
+			});
 			
 			return Blib.include;
 			

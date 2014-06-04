@@ -3,6 +3,7 @@ defined('_BLIB') or die;
 
 class bConfig extends bBlib{	
 	
+	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
 		$this->parents = array('bSystem', 'bDatabase');
@@ -15,34 +16,150 @@ class bConfig extends bBlib{
 	
 	
 	public function output(){
-		
 		if($this->caller){
-			do{
-				$Q = array(
-					'select' => array(
-						'bConfig'=>array('value', 'bConfig_id')
-					),
-					'where' => array(
-						'bConfig'=>array('group'=>'blib', 'name'=>$this->caller)
-					)
-				);
-				
-				if($default){
-					$Q['where']['bConfig']=array('id'=>$default);
-					$default = null;
-				}
-				
-				if($result = $this->_query($Q)){
-					$row = $result->fetch();
-					$config = (array)$config + (array)json_decode($row['value'],true);
-					$default = $row['bConfig_id'];
-				}
-		
-			}while($default);
-
+			$config = $this->getConfig($this->caller, array('group'=>'blib'));
+			$config['bConfig']=$this;
 			return $config;
 		}
+	}
+	
+	/** 
+	* Private method for get configuration
+	*
+	* @param {string} $name - name of configuration
+	* @param {mixed}[] $param - other parameters
+	*   {string} group - change config group (default 'blib')
+	*   {bollean} deep - get config concat with parents value (default true)
+	* @return {array} - associative array with configuration
+	*/
+	private function getConfig($name, $param){
+		$param = (array) $param + array('group'=>'blib', 'deep'=>true);
+		$used = array();
+		do{
+			$Q = array(
+				'select' => array(
+					'bConfig'=>array('id', 'value', 'bConfig_id')
+				),
+				'where' => array(
+					'bConfig'=>array('group'=>$param['group'], 'name'=>$name)
+				)
+			);
+			
+			if($default){
+				$Q['where']['bConfig']=array('id'=>$default);
+				$default = null;
+			}
+			
+			if($result = $this->_query($Q)){
+				$row = $result->fetch();
+				$config = (array)$config + (array)json_decode($row['value'],true);
+				if($param['deep'] && !in_array($row['bConfig_id'], $used)){
+					$used[] = $default = $row['bConfig_id'];
+				}
+			}
+	
+		}while($default);
+		return $config;
+	}
+	
+	/** 
+	* Private method for set configuration
+	*
+	* @param {string} $name - name of configuration
+	* @param {array} $value - configuration array
+	* @param {mixed}[] $param - other parameters
+	*   {string} group - change config group (default 'blib')
+	*   {bollean} correct - set on old configuration values (default true)
+	*   {number} parent - change parent config
+	* @return {number} - id updated or new item
+	*/
+	private function setConfig($name, Array $value, $param){
+		$param = (array) $param + array('group'=>'blib', 'correct'=>true);
+
+		$value = is_array($value)?$value:array();
+		
+		$Q = array(
+			'select' => array('bConfig'=>array('id', 'value', 'bConfig_id')),
+			'where' => array('bConfig'=>array('group'=>$param['group'], 'name'=>$name))
+		);
+		
+		$result = $this->_query($Q);
+				
+		if($result->rowCount()){
+			$row = $result->fetch();
+			
+			if($param['correct']){
+				$value = $value + (array) json_decode($row['value'], true);
+			}
+			
+			$value = json_encode($value);
+				
+			$Q = array(
+				'update' => array('bConfig'=>array('value'=>$value)),
+				'where' => array('bConfig'=>array('id'=>$row['id']))
+			);
+			
+			if(isset($param['parent'])){$Q['update']['bConfig']['bConfig_id'] = $param['parent'];}
+			if(!$this->_query($Q)){	throw new Exception('Can`t rewrite config');}
+			return $row['id'];
+			
+			
+		}else{
+			
+			$value = json_encode($value);
+				
+			$Q = array(
+				'insert' => array(
+					'bConfig'=>array(
+						'group'=>$param['group'],
+						'name'=>$name,
+						'value'=>$value
+					)
+				)
+			);
+			
+			if(isset($param['parent'])){$Q['insert']['bConfig']['bConfig_id'] = $param['parent'];}
+			if(!$this->_query($Q)){throw new Exception('Can`t rewrite config');}
+			bBlib::$global['_bDatabase__pdo']->lastInsertId ();			
+		}
+		
+		
+	}
+	
+	/** 
+	* Method for extend other class
+	* @param {array} $data - arguments
+	*   {string} 0 - config name
+	*   {array} 1 - additional parameters (group, deep)
+	* @param {bBlib} $caller - method initiator
+	* @return {array} - configuration
+	*/
+	public function _getConfig($data, $caller = null){
+		if($caller !== null){
+			if(!$data[1]['group']){$data[1]['group'] = get_class($caller);}
+			return $caller->local['bConfig']->_getConfig($data);
+		}
+		return $this->getConfig($data[0], $data[1]);
+	}
+	
+	/** 
+	* Method for extend other class
+	* @param {array} $data - arguments
+	*   {string} 0 - config name
+	*   {array} 1 - config value
+	*   {array} 2 - additional parameters (group, correct, parent)
+	* @param {bBlib} $caller - method initiator
+	* @return {string} - id changed/new configuration
+	*/
+	public function _setConfig($data, $caller = null){
+		
+		if($caller !== null){
+			if(!$data[2]['group']){$data[2]['group'] = get_class($caller);}
+			return $caller->local['bConfig']->_setConfig($data);
+		}
+		return $this->setConfig($data[0], $data[1], $data[2]);
 
 	}
+	
 	
 }

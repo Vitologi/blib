@@ -1,6 +1,6 @@
 <?php
 defined('_BLIB') or die;
-sleep(3);
+
 class bInclude extends bBlib{	
 	
 	protected function inputSelf(){

@@ -129,14 +129,15 @@ class bConfig extends bBlib{
 	/** 
 	* Method for get default config value
 	* @param {array} $data - arguments
-	*   {bool} 0 - combine or not
+	*   {string} 0 - name of config item/block/other
+	*   {bool} 1 - combine or not
 	* @return {array} - configuration
 	*/
 	public function _getDefaultConfig($data, $caller = null){
 		if($caller === null){return;}
-		$combine = $data[0]?$data[0]:true;
-		$path = bBlib::path(get_class($caller).'__'.__class__.'_default','php');
-		
+		$name = $data[0]?$data[0]:'item';
+		$combine = $data[1]?$data[1]:true;
+		$path = bBlib::path(get_class($caller).'__'.__class__.'_'.$name,'php');
 		if(!file_exists($path)){return array();}
 		
 		$config = (array) require_once($path);

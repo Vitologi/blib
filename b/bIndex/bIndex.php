@@ -21,7 +21,7 @@ class bIndex extends bBlib{
 		
 		$Q = array(
 			'select'	=> array(
-				'bIndex' => array('meta', 'bTemplate_id', 'bCategory_id')
+				'bIndex' => array('bConfig_id', 'bTemplate_id', 'bCategory_id')
 			),
 			'where' => array(
 				'bIndex' => array('id'=>$this->data['pageId'])
@@ -30,7 +30,11 @@ class bIndex extends bBlib{
 		
 		$result = $this->_query($Q);
 		$row = $result->fetch();
-		$data = json_decode($row['meta'], true);
+		$config = $this->_getConfig($this->data['pageId']);
+		
+		$data["'{keywords}'"] = $config["'{keywords}'"];
+		$data["'{description}'"] = $config["'{description}'"];
+		$data["'{title}'"] = $config["'{title}'"];
 		$data["'{template}'"] = $this->_getTemplate($row['bTemplate_id']);
 		
 		if($this->ajax){
@@ -50,4 +54,17 @@ class bIndex extends bBlib{
 		return $data;
 	}
 	
+	private function setbIndex(){
+		$newConfig = $this->_setConfig($this->data['pageId'], $this->_getDefaultConfig());
+		var_dump($newConfig, $this->_getConfig($this->data['pageId']));
+	}
+	
+	public function _install($data = array(), $caller = null){
+		if($caller !== null){return $caller->local['bDatabase']->install;}
+		
+		//var_dump($this->_getDefaultConfig('block'));
+		$this->_setConfig('bIndex', $this->_getDefaultConfig('block'), array('group'=>'blib', 'correct'=>false));
+		$this->_setConfig('uncategorised', $this->_getDefaultConfig(), array('correct'=>false));
+		return $this->local['bDatabase']->install;
+	}
 }

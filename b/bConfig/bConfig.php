@@ -127,6 +127,35 @@ class bConfig extends bBlib{
 	}
 	
 	/** 
+	* Method for get default config value
+	* @param {array} $data - arguments
+	*   {bool} 0 - combine or not
+	* @return {array} - configuration
+	*/
+	public function _getDefaultConfig($data, $caller = null){
+		if($caller === null){return;}
+		$combine = $data[0]?$data[0]:true;
+		$path = bBlib::path(get_class($caller).'__'.__class__.'_default','php');
+		
+		if(!file_exists($path)){return array();}
+		
+		$config = (array) require_once($path);
+		
+		if($combine){
+			$temp = array();
+			foreach($config as  $item){
+				if(!(isset($item['name'])&&isset($item['name'])))continue;
+				$temp[$item['name']]=$item['value'];
+			}
+			$config = $temp;
+			
+		}
+		
+		return $config;
+
+	}
+	
+	/** 
 	* Method for extend other class
 	* @param {array} $data - arguments
 	*   {string} 0 - config name

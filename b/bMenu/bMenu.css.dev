@@ -1,0 +1,18 @@
+.bIndex{
+	width: 80%;
+	margin: 0 auto;}
+	.bIndex__header{
+		height: 50px;
+		border: 1px solid rgb(219, 219, 219);
+		border-top: 0;}
+	.bIndex__body{
+		background-color: rgb(243, 243, 243);
+		border: 1px solid rgb(190, 190, 190);
+		border-top: 0;}
+	.bIndex__helper{
+		width: 250px;
+		float: left;}
+	.bIndex__content{
+		background: white;
+		margin-left: 250px;
+		border-left: 1px solid rgb(190, 190, 190);}

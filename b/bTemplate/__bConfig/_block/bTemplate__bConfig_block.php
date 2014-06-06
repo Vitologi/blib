@@ -1,7 +1,5 @@
 <?php
 defined('_BLIB') or die();
 return array(
-	'drop' => array(
-		'bTemplate'
-	)
+	array("name"=>"type", "value"=>"array")
 );

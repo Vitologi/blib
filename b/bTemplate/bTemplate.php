@@ -31,16 +31,21 @@ class bTemplate extends bBlib{
 		
 		$Q = array(
 			'select'	=> array(
-				'bTemplate' => array('id', 'template', 'involved', 'name')
+				'bTemplate' => array('id', 'name', 'blib', 'template', 'involved', )
 			),
 			'where'		=> array(
 				'bTemplate' => $id
 			)
 		);
 		
-		$result = $this->_query($Q);
+		if(!$result = $this->_query($Q)){throw new Exception('Can`t get template from database.');}
 
 		while($row = $result->fetch()){
+			if($row['blib']){
+				$block = new $row['blib'](array($row['template']));
+				$return = $block->output();
+				$row['template'] = is_array($return)?json_encode($return):$return;
+			}
 			$this->local['stack']['"{'.$row['id'].'}"'] = $row['template'];
 			$involved = ($row['involved']!==null)?explode(',', $row['involved']):false;
 			if($involved){ $this->addTempStack($involved);}
@@ -51,6 +56,12 @@ class bTemplate extends bBlib{
 	private function glueTempStack($template){
 		$temp = str_replace(array_keys($this->stack), array_values($this->stack), $template);
 		return (preg_match('/"{\S}"/', $temp))?$this->glueTempStack($temp):$temp;
+	}
+	
+	public function _install($data = array(), $caller = null){
+		if($caller !== null){return $caller->local['bDatabase']->install;}
+		$this->_setConfig('bTemplate', $this->_getDefaultConfig('block'), array('group'=>'blib', 'correct'=>false));
+		return $this->local['bDatabase']->install;
 	}
 	
 	public function _getTemplate($id, $caller = null){

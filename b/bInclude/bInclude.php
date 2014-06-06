@@ -9,7 +9,7 @@ class bInclude extends bBlib{
 	}
 	
 	protected function input($data){
-		$this->path = $this->_getBlockPath();
+		$this->path = $this->path();
 		$this->callback = $this->_request['callback'];
 		$this->cache = $this->path."/__cache/bInclude__cache.ini";
 		$this->list = $this->callback?json_decode($this->_request['list']):(array)$data['list'] or array();

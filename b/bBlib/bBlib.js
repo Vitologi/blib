@@ -857,20 +857,24 @@
 		},
 		
 		/** сборка серверного ответа */
-		build = function(data, blockName, block){
+		build = function(data, blockName, block, deep){
 			if(!data){return;}
 			
-			if(!data['block']){
-				data['block'] = (blockName)?blockName:"bNoname";
+			
+			if(data['block']){
+				blockName = data['block'];// = (blockName)?blockName:"bNoname";
 			}
 			
-			if(factory = navigate(config.block, (data['elem'])?(data['block']+"."+data['elem']):data['block'])){
-				obj = new factory(data);
-				data = obj.template;
+			
+			if(factory = navigate(config.block, (data['elem'])?(blockName+"."+data['elem']):blockName)){
+				if(!block || factory !== block.constructor){
+					obj = new factory(data);
+					data = obj.template;
+				}
 			}
 			
 			//[первый в ответе, текущий блок, имя обьекта, ДОМ-результат, есть ли контейнер]
-			var currentClass = (data['elem'])?(data['block']+"__"+data['elem']):data['block'],
+			var currentClass = (data['elem'])?(blockName+"__"+data['elem']):data['block'],
 				result = document.createElement(data['tag']||"div"),
 				container = (data['container'])?(Blib(data['container']).length>0):false,
 				obj, factory, action,
@@ -955,7 +959,7 @@
 				case "object":
 				case "array":
 					for(key in data['content']){
-						temp = build(data['content'][key], data['block'], block);
+						temp = build(data['content'][key], blockName, block, deep+1);
 						if(!temp)continue;
 						if(typeof(temp)=="object"){result.appendChild(temp);}else{result.innerHTML+=temp;}
 					}
@@ -973,7 +977,7 @@
 				deferredTask[data['container']]=result;
 				return false;
 			}else{
-				if(!blockName){applyDeferredTask();}
+				if(!deep){applyDeferredTask();}
 				return result;
 			}
 			

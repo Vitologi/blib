@@ -74,7 +74,7 @@ class bConfig extends bBlib{
 	* @return {number} - id updated or new item
 	*/
 	private function setConfig($name, Array $value, $param){
-		$param = (array) $param + array('group'=>'blib', 'correct'=>true);
+		$param = (array) $param + array('group'=>'blib', 'correct'=>false);
 
 		$value = is_array($value)?$value:array();
 		
@@ -130,19 +130,19 @@ class bConfig extends bBlib{
 	* Method for get default config value
 	* @param {array} $data - arguments
 	*   {string} 0 - name of config item/block/other
-	*   {bool} 1 - combine or not
+	*   {bool} 1 - reduced or not
 	* @return {array} - configuration
 	*/
 	public function _getDefaultConfig($data, $caller = null){
 		if($caller === null){return;}
-		$name = $data[0]?$data[0]:'item';
-		$combine = $data[1]?$data[1]:true;
+		$name = $data[0]?$data[0]:'block';
+		$reduced = $data[1]?$data[1]:true;
 		$path = bBlib::path(get_class($caller).'__'.__class__.'_'.$name,'php');
 		if(!file_exists($path)){return array();}
 		
 		$config = (array) require_once($path);
 		
-		if($combine){
+		if($reduced){
 			$temp = array();
 			foreach($config as  $item){
 				if(!(isset($item['name'])&&isset($item['name'])))continue;

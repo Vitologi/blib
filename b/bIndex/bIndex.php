@@ -55,16 +55,15 @@ class bIndex extends bBlib{
 	}
 	
 	private function setbIndex(){
-		$newConfig = $this->_setConfig($this->data['pageId'], $this->_getDefaultConfig());
+		$newConfig = $this->_setConfig($this->data['pageId'], $this->_getDefaultConfig('item'));
 		var_dump($newConfig, $this->_getConfig($this->data['pageId']));
 	}
 	
 	public function _install($data = array(), $caller = null){
 		if($caller !== null){return $caller->local['bDatabase']->install;}
-		
-		//var_dump($this->_getDefaultConfig('block'));
-		$this->_setConfig('bIndex', $this->_getDefaultConfig('block'), array('group'=>'blib', 'correct'=>false));
-		$this->_setConfig('uncategorised', $this->_getDefaultConfig(), array('correct'=>false));
+
+		$this->_setConfig('bIndex', $this->_getDefaultConfig(), array('group'=>'blib'));
+		$this->_setConfig('uncategorised', $this->_getDefaultConfig('item'));
 		return $this->local['bDatabase']->install;
 	}
 }

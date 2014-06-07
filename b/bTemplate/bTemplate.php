@@ -41,13 +41,15 @@ class bTemplate extends bBlib{
 		if(!$result = $this->_query($Q)){throw new Exception('Can`t get template from database.');}
 
 		while($row = $result->fetch()){
+			
 			if($row['blib']){
 				$block = new $row['blib'](array($row['template']));
 				$return = $block->output();
 				$row['template'] = is_array($return)?json_encode($return):$return;
 			}
 			$this->local['stack']['"{'.$row['id'].'}"'] = $row['template'];
-			$involved = ($row['involved']!==null)?explode(',', $row['involved']):false;
+			$involved = ($row['involved'])?explode(',', $row['involved']):false;
+			
 			if($involved){ $this->addTempStack($involved);}
 		}
 		
@@ -55,7 +57,7 @@ class bTemplate extends bBlib{
 	
 	private function glueTempStack($template){
 		$temp = str_replace(array_keys($this->stack), array_values($this->stack), $template);
-		return (preg_match('/"{\S}"/', $temp))?$this->glueTempStack($temp):$temp;
+		return (preg_match('/"{\S}"/', $temp))?$this->glueTempStack($temp):$temp; //0_0 loop if template isnt in stack
 	}
 	
 	public function _install($data = array(), $caller = null){

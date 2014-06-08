@@ -111,30 +111,31 @@ abstract class bBlib{
 			$_list = json_decode(file_get_contents($path), true);
 		}
 		
-		if(!$_list[$block]){return;}
-		
-		$list = $_list[$block];
-		$answer = array();
 		$returnFlag = false;
-		
-		if(!$handlers = $_hook['handlers'][$block]){
-			$handlers = array();
-			foreach($list as $value){
-				$handlers[$value] = new $value(array(), $this);
+		if($_list[$block]){
+				
+			$list = $_list[$block];
+			$answer = array();
+			
+			if(!$handlers = $_hook['handlers'][$block]){
+				$handlers = array();
+				foreach($list as $value){
+					$handlers[$value] = new $value(array(), $this);
+				}
+				$_hook['handlers'][$block] = $handlers;
 			}
-			$_hook['handlers'][$block] = $handlers;
-		}
-		
-		foreach($handlers as $value){
-			if(!method_exists($value, $method)){continue;}
-			$answer = (array)$value->$method(array('input'=> $input, 'output'=> $output), $this);
+			
+			foreach($handlers as $value){
+				if(!method_exists($value, $method)){continue;}
+				$answer = (array)$value->$method(array('input'=> $input, 'output'=> $output), $this);
 
-			if($answer['input']){
-				$input = $answer['input'];
-			}
-			if($answer['output']){
-				$output = $answer['output'];
-				$returnFlag = true;
+				if($answer['input']){
+					$input = $answer['input'];
+				}
+				if($answer['output']){
+					$output = $answer['output'];
+					$returnFlag = true;
+				}
 			}
 		}
 		

@@ -43,7 +43,7 @@ class bTemplate extends bBlib{
 		while($row = $result->fetch()){
 			
 			if($row['blib']){
-				$block = new $row['blib'](array($row['template']));
+				$block = new $row['blib'](json_decode($row['template'],true));
 				$return = $block->output();
 				$row['template'] = is_array($return)?json_encode($return):$return;
 			}

@@ -1,2 +1,60 @@
 .bMenu{
-	border:1px solid;}
+	display: block;
+	position: relative;
+	z-index: 1;
+	padding: 0;
+	margin:0;
+	max-width:400px;}
+	
+	
+	
+	.bMenu_position_horizontal{
+		}
+		.bMenu_position_horizontal .bMenu__item{
+			/*float:left;*/}
+			
+.bMenu_style_amtel{
+	max-width: 150px;
+	background: white;
+	border: 1px solid #FF6600;
+	border-top: 0px solid white;
+	margin-top: -1px;
+}
+.bMenu > .bMenu__item{
+	position: relative;
+	display:block;
+	padding: 8px 12px;
+	line-height: 14px;}
+	
+.bMenu__item:hover,
+.bMenu__item_active{
+	background-color: rgb(255, 230, 199);}
+	
+.bMenu__item:hover > .bMenu__item{
+	display:block;
+	margin-left: 50px;}
+	
+.bMenu a{
+	color: #08c;
+	text-decoration: none;}
+	
+.bMenu__item{
+	position:absolute;
+	display:none;
+	z-index: 1000;
+	min-width: 160px;
+	padding: 5px 0;
+	margin: 2px 0 0;
+	list-style: none;
+	background-color: #fff;
+	border: 1px solid #ccc;
+	border: 1px solid rgba(0,0,0,0.2);
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	-webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+	-moz-box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+	box-shadow: 0 5px 10px rgba(0,0,0,0.2);
+	-webkit-background-clip: padding-box;
+	-moz-background-clip: padding;
+	background-clip: padding-box;}

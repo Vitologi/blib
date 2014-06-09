@@ -20,21 +20,33 @@ class bTemplate extends bBlib{
 		);
 	}
 	
-	private function addTempStack($id){
-		if(!is_array($id)){
-			$id = array(array('id', $id));
-		}else{
-			foreach($id as $key =>$value){
-				$id[$key]=array('id', $value, '=', true);
-			}
+	/** Get all template nums */
+	private function usedTemplate($array, $result = array(), $deep = 0){
+		foreach ($array as $value) { 
+			if(is_array($value)) {
+				$result = $this->usedTemplate($value, $result, $deep+1);
+			}else{ 
+				$result[$value]=true; 
+			} 
+		} 
+		return ($deep?$result:array_keys($result));
+	}
+	
+	/** Get all template from database */
+	private function addTempStack(Array $list){
+		
+		$where = array();
+		$all = $this->usedTemplate($list);
+		foreach($all as $id){
+			$where[] = array('id', $id, '=', true);
 		}
 		
 		$Q = array(
 			'select'	=> array(
-				'bTemplate' => array('id', 'name', 'blib', 'template', 'involved', )
+				'bTemplate' => array('id', 'name', 'blib', 'template')
 			),
 			'where'		=> array(
-				'bTemplate' => $id
+				'bTemplate' => $where
 			)
 		);
 		
@@ -47,17 +59,28 @@ class bTemplate extends bBlib{
 				$return = $block->output();
 				$row['template'] = is_array($return)?json_encode($return):$return;
 			}
-			$this->local['stack']['"{'.$row['id'].'}"'] = $row['template'];
-			$involved = ($row['involved'])?explode(',', $row['involved']):false;
-			
-			if($involved){ $this->addTempStack($involved);}
+
+			$this->local['stack'][$row['id']] = $row['template'];
 		}
 		
 	}
 	
-	private function glueTempStack($template){
-		$temp = str_replace(array_keys($this->stack), array_values($this->stack), $template);
-		return (preg_match('/"{\S}"/', $temp))?$this->glueTempStack($temp):$temp; //0_0 loop if template isnt in stack
+	private function glueTempStack(Array $list){
+		
+		$template = $this->stack[$list[0]];
+		$levelTemplate = array();
+		
+		foreach($list as $key => $value){
+			if((int)$key === 0){
+				continue;
+			}elseif(is_array($value)){
+				$levelTemplate['"{'.$key.'}"'] = $this->glueTempStack($value);
+			}else{
+				$levelTemplate['"{'.$key.'}"'] = $this->stack[$value];
+			}
+		}
+
+		return str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
 	}
 	
 	public function _install($data = array(), $caller = null){
@@ -66,9 +89,10 @@ class bTemplate extends bBlib{
 		return $this->local['bDatabase']->install;
 	}
 	
-	public function _getTemplate($id, $caller = null){
-		if($caller !== null){return $caller->local['bTemplate']->_getTemplate($id[0]);};
-		$this->addTempStack($id);
-		return $this->glueTempStack($this->stack['"{'.$id.'}"']);
+	public function _getTemplate($data, $caller = null){
+		if($caller !== null){return $caller->local['bTemplate']->_getTemplate($data[0]);};
+		if(!is_array($data)){$data = array($data);}
+		$this->addTempStack($data);
+		return $this->glueTempStack($data);
 	}
 }

@@ -1,12 +1,8 @@
 .bMenu{
 	display: block;
-	position: relative;
-	z-index: 1;
 	padding: 0;
 	margin:0;
 	max-width:400px;}
-	
-	
 	
 	.bMenu_position_horizontal{
 		}
@@ -21,7 +17,6 @@
 	margin-top: -1px;
 }
 .bMenu > .bMenu__item{
-	position: relative;
 	display:block;
 	padding: 8px 12px;
 	line-height: 14px;}
@@ -32,6 +27,7 @@
 	
 .bMenu__item:hover > .bMenu__item{
 	display:block;
+	position:absolute;
 	margin-left: 50px;}
 	
 .bMenu a{
@@ -39,9 +35,8 @@
 	text-decoration: none;}
 	
 .bMenu__item{
-	position:absolute;
+	cursor:pointer;
 	display:none;
-	z-index: 1000;
 	min-width: 160px;
 	padding: 5px 0;
 	margin: 2px 0 0;

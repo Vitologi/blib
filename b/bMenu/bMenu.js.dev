@@ -45,7 +45,7 @@ blib.build.define(
 			}
 		},
 		'onclick':function(){
-			self.setMode('position','vertical');
+			this.blib.setMode('position','vertical');
 		}
 	}
 );

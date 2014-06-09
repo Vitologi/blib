@@ -23,9 +23,9 @@ return array(
 		'bMenu' => array(
 			array('menu', 'name', 'link', 'bMenu_id'),
 			array('1', 'main'),
-			array('1', 'glagna', 'glagna/', '1'),
-			array('1', 'about', 'about/', '1'),
-			array('1', 'map', 'map/', '2')
+			array('1', 'glagna', '/glagna/', '1'),
+			array('1', 'about', '/about/', '1'),
+			array('1', 'map', '/map/', '2')
 		)
 	)
 );

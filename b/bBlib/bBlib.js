@@ -860,9 +860,12 @@
 		build = function(data, blockName, block, deep){
 			if(!data){return;}
 			
+			var currentClass, result, container,
+				obj, factory, action,
+				attr, temp;
 			
 			if(data['block']){
-				blockName = data['block'];// = (blockName)?blockName:"bNoname";
+				blockName = data['block'];
 			}
 			
 			
@@ -874,11 +877,9 @@
 			}
 			
 			//[первый в ответе, текущий блок, имя обьекта, ДОМ-результат, есть ли контейнер]
-			var currentClass = (data['elem'])?(blockName+"__"+data['elem']):data['block'],
-				result = document.createElement(data['tag']||"div"),
-				container = (data['container'])?(Blib(data['container']).length>0):false,
-				obj, factory, action,
-				attr, temp;
+			currentClass = (data['elem'])?(blockName+"__"+data['elem']):data['block'];
+			result = document.createElement(data['tag']||"div");
+			container = (data['container'])?(Blib(data['container']).length>0):false;
 
 			if(obj){
 				result.blib = obj;
@@ -997,10 +998,13 @@
 		},
 	
 		//заносим блок/елемент в коллекцию
-		define = function(name, factory){
+		define = function(name, factory, template, action){
 			if(!is(factory, 'function') && !is(name.block, 'string'))return;
 			
 			extend(true, factory.prototype, {'template':name}, baseProto);
+			if(is(template, 'object')){factory.prototype.setTemplate(template)};
+			if(is(action, 'object')){factory.prototype.setAction(action)};
+			
 			if(name.elem){ name.block = name.block+'.'+name.elem; }
 
 			return navigate(config.block, name.block, factory);

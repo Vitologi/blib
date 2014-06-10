@@ -202,12 +202,14 @@
 			return first;
 		},
 		getElement = function(selector){
-			if(typeof(selector)==="String")selector = [selector];
-			var els = document.getElementsByTagName('*'),
+			if(is(selector, "string"))selector = [selector];
+			context = (this.cloneNode)?this:window.document;
+			var els = context.getElementsByTagName('*'),
 				elsLen=els.length,
 				elements=[];
 			
 			for(var len=selector.length, i=0; i<len; i++){
+				if(selector[i].cloneNode){ elements.push(selector[i]);}
 				if(typeof(selector[i])!='string'){continue;}
 				var element=selector[i],
 					point = element.substr(0,1),
@@ -221,16 +223,15 @@
 						}
 					}
 				}else if(point=="#"){
-					var temp = document.getElementById(pattern);
+					var temp = context.getElementById(pattern);
 					if(temp){elements.push(temp);}
 				}else{
-					var temp = document.getElementsByTagName(element);
+					var temp = context.getElementsByTagName(element);
 					for(var tagLen=temp.length,j=0; j<tagLen; j++){
 						elements.push(temp[j]);
 					}
 				};
 			}
-			
 			return elements;
 		},
 		navigate = function(obj, selector, value){
@@ -484,6 +485,25 @@
 			return [].slice.call( this );
 		},
         
+		'find':function(needle){
+			var result = [],
+				temp = [],
+				temp2 = [],
+				i = j = len = lenJ = 0;
+			this.each(function(){
+				temp = getElement.call(this,needle);
+				
+				loop:
+				for(i=0,len=temp.length; i<len;i++){
+					for(j=0,lenJ=result.length; j<lenJ;j++){
+						if(temp[i]===result[j])continue loop;
+					}
+					result.push(temp[i]);
+				}
+			});
+			return result;
+		},
+		
 		'each':function(handler){
 			for(var len = this.length, i=0; i<len; i++){
 				handler.apply(this[i]); //0_0 call + arguments

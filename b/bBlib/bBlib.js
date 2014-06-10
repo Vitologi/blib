@@ -861,7 +861,7 @@
 			if(!data){return;}
 			
 			var currentClass, result, container,
-				obj, factory, action,
+				obj, factory,
 				attr, temp;
 			
 			if(data['block']){
@@ -887,16 +887,22 @@
 				
 				for(evt in obj.action){
 					if(!is(obj.action[evt], 'function') || evt.substr(0,2) !== "on" || evt === 'onSetMode')continue;
-
+					
+					var wrappedAction = function(event){
+						if(is(event, "undefined")){event = {};}
+						event.blib = obj;
+						return obj.action[evt].call(this, event);
+					}
+					
 					if (result.addEventListener){   
-						result.addEventListener(evt.substr(2,evt.length-1), obj.action[evt], false); 		
+						result.addEventListener(evt.substr(2,evt.length-1), wrappedAction, false); 		
 					} else if (result.attachEvent){ 
-						result.attachEvent(evt, obj.action[evt]); 
+						result.attachEvent(evt, wrappedAction); 
 					} else{ 
 						if(result[evt]){
-							obj.action[evt] = (function (){
+							wrappedAction = (function (){
 								var old = result[evt],
-									now = obj.action[evt];
+									now = wrappedAction;
 								return function(){
 									old();
 									now();
@@ -904,7 +910,7 @@
 							})();
 						}
 						
-						result[evt] = obj.action[evt];
+						result[evt] = wrappedAction;
 					}
 				}
 				
@@ -922,7 +928,7 @@
 			//устанавливаем модификаторы
 			if(currentClass && data['mods']){
 				for(key in data['mods']){
-					result.className +=' '+currentClass+"_"+key+((data['mods'][key])?"_"+data['mods'][key]:"");
+					result.className +=' '+currentClass+"_"+key+(is(data['mods'][key], "string")?"_"+data['mods'][key]:"");
 				}
 			}
 			

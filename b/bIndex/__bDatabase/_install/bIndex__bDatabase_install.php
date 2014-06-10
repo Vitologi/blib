@@ -19,7 +19,7 @@ return array(
 	'insert' => array(
 		'bIndex' => array(
 			array('template', 'bConfig_id'),
-			array('{"0":1, "1":2, "2":3, "3":{"0":4, "1":2}}', 1),
+			array('{"0":1, "1":2, "2":3, "3":4, "4":{"0":5}}', 1),
 		)
 	)
 );

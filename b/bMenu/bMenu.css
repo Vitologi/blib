@@ -32,10 +32,10 @@
 		}
 		.bMenu_position_horizontal >.bMenu__item{
 			float:left;}
-		.bMenu_position_horizontal  .bMenu__item:hover > .bMenu__child{
+		.bMenu_position_horizontal  .bMenu__item > .bMenu__child{
 			margin-top: -1.7em;
 			margin-left: 100%;}
-		.bMenu_position_horizontal >.bMenu__item:hover > .bMenu__child{
+		.bMenu_position_horizontal >.bMenu__item > .bMenu__child{
 			margin-top: 0;
 			margin-left: 0px;}
 		
@@ -56,7 +56,7 @@
 		
 		.bMenu_default .bMenu__item:hover,
 		.bMenu_default .bMenu__item_active{
-			background-color: rgb(250, 250, 250);}
+			background-color: rgb(240, 240, 240);}
 		
 		/*
 		.bMenu__opener:hover > .bMenu__child{

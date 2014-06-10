@@ -60,6 +60,7 @@ blib.build.define(
 			content.push({'elem':'child', 'content':data.content});
 		}		
 		
+		this.opened = false;
 		this.template = blib.clone(this.template);
 		this.template.content = content;
 		
@@ -70,15 +71,13 @@ blib.build.define(
 	},
 	//actions
 	{
-		'onclick':(function(){
-			var triger = true;
-			
-			return function(e){
-				e.blib.setMode('active',triger);
-				e.blib.setMode('opened',triger);
-				triger = !triger;
-			}
-		})()
+		'onclick':function(e){
+			e.blib.opened = !e.blib.opened;
+			e.blib.setMode('active',e.blib.opened);
+			e.blib.setMode('opened',e.blib.opened);
+			e.stopPropagation?e.stopPropagation():e.cancelBubble = true;
+		}
+		
 	}
 );
 
@@ -92,7 +91,7 @@ blib.build.define(
 		'onclick':function(e){
 			var link = e.blib.template.attrs.href;
 			if(!link || blib.is(link,"null")){
-				e.preventDefault();
+				e.preventDefault ? e.preventDefault() : e.returnValue = false;
 				return false;
 			}
 		}

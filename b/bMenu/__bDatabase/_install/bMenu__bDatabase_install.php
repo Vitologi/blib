@@ -21,11 +21,19 @@ return array(
 	),
 	'insert' => array(
 		'bMenu' => array(
-			array('menu', 'name', 'link', 'bMenu_id'),
-			array('1', 'main'),
-			array('1', 'glagna', '/glagna/', '1'),
-			array('1', 'about', '/about/', '1'),
-			array('1', 'map', '/map/', '2')
+			array('id', 'menu', 'name', 'link', 'bMenu_id'),
+			array('1', '1', 'main'),
+			array('2', '1', 'Home', '/', '1'),
+			array('3', '1', 'Documentation', null, '1'),
+			array('4', '1', 'Base', '/documentation/base/', '3'),
+			array('5', '1', 'API', null, '3'),
+			array('6', '1', 'Backend', '/documentation/api/backend/', '5'),
+			array('7', '1', 'Frontend', '/documentation/api/frontend/', '5'),
+			array('8', '1', 'FAQ', '/documentation/faq/', '3'),
+			array('9', '1', 'Downloads', '/downloads/', '1'),
+			array('10', '1', 'Analitics', null, '1'),
+			array('11', '1', 'Grafics', '/analitics/grafics/', '10'),
+			array('12', '1', 'Examples', '/analitics/examples/', '10')
 		)
 	)
 );

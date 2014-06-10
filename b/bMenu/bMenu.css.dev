@@ -1,55 +1,66 @@
 .bMenu{
 	display: block;
 	padding: 0;
-	margin:0;
-	max-width:400px;}
+	margin:0;}
+	
+	.bMenu__child{
+		display: none;
+		padding: 0;
+		margin:0;}
+		
+	.bMenu__item{
+		cursor:pointer;
+		list-style: none;}
+		.bMenu__item_opened > .bMenu__child{
+			display:block;
+			position:absolute;
+			margin: -1px 0 0 10px;}
+			
+	.bMenu__link{
+		display: block;
+		text-decoration: none;
+		color:black;}
+		
+	.bMenu__clear{
+		display: block;
+		clear:both;}
+
+	
+	
 	
 	.bMenu_position_horizontal{
 		}
-		.bMenu_position_horizontal .bMenu__item{
-			/*float:left;*/}
-			
-.bMenu_style_amtel{
-	max-width: 150px;
-	background: white;
-	border: 1px solid #FF6600;
-	border-top: 0px solid white;
-	margin-top: -1px;
-}
-.bMenu > .bMenu__item{
-	display:block;
-	padding: 8px 12px;
-	line-height: 14px;}
-	
-.bMenu__item:hover,
-.bMenu__item_active{
-	background-color: rgb(255, 230, 199);}
-	
-.bMenu__item:hover > .bMenu__item{
-	display:block;
-	position:absolute;
-	margin-left: 50px;}
-	
-.bMenu a{
-	color: #08c;
-	text-decoration: none;}
-	
-.bMenu__item{
-	cursor:pointer;
-	display:none;
-	min-width: 160px;
-	padding: 5px 0;
-	margin: 2px 0 0;
-	list-style: none;
-	background-color: #fff;
-	border: 1px solid #ccc;
-	border: 1px solid rgba(0,0,0,0.2);
-	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px;
-	border-radius: 6px;
-	-webkit-box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-	-moz-box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-	box-shadow: 0 5px 10px rgba(0,0,0,0.2);
-	-webkit-background-clip: padding-box;
-	-moz-background-clip: padding;
-	background-clip: padding-box;}
+		.bMenu_position_horizontal >.bMenu__item{
+			float:left;}
+		.bMenu_position_horizontal  .bMenu__item:hover > .bMenu__child{
+			margin-top: -1.7em;
+			margin-left: 100%;}
+		.bMenu_position_horizontal >.bMenu__item:hover > .bMenu__child{
+			margin-top: 0;
+			margin-left: 0px;}
+		
+
+	.bMenu_default{
+		background-color:white;}
+		.bMenu_default .bMenu__child{
+			min-width:200px;
+			background-color:white;
+			border: 1px solid rgb(240, 240, 240);}
+		.bMenu_default .bMenu__item{
+			border-bottom: 1px dotted rgb(248, 248, 248);}
+			.bMenu_default .bMenu__item:last-child{
+				border-bottom: 0;}
+		
+		.bMenu_default .bMenu__link{
+			padding:5px;}
+		
+		.bMenu_default .bMenu__item:hover,
+		.bMenu_default .bMenu__item_active{
+			background-color: rgb(250, 250, 250);}
+		
+		/*
+		.bMenu__opener:hover > .bMenu__child{
+			display:block;
+			position:absolute;
+			margin: -1px 0 0 10px;}
+		*/

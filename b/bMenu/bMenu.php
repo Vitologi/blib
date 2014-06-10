@@ -15,7 +15,6 @@ class bMenu extends bBlib{
 	public function output(){
 	
 		if(!$this->data['menu']){return array();}
-		if(!$this->data['position']){$this->data['position']="horizontal";}
 		
 		$Q = array(
 			'select'	=> array(
@@ -34,7 +33,7 @@ class bMenu extends bBlib{
 			$menu[] = array('id'=>$row['id'], 'name'=>$row['name'], 'config'=>$config, 'link'=>$row['link'], 'parent'=>$row['bMenu_id']);
 		}
 
-		return array('block'=>__class__, 'mods'=>array('position'=>$this->data['position']), 'content'=>$menu);
+		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'content'=>$menu);
 	}
 	
 	protected function getData($data){

@@ -30,6 +30,7 @@ blib.build.define(
 		temp = glueMenuItem(combine);
 		this.template = blib.clone(this.template);
 		this.template.mods = data.mods;
+		temp.content.push({'elem':'clear'});
 		this.template.content = temp.content;
 	},
 	{
@@ -41,11 +42,11 @@ blib.build.define(
 			'position':{
 				'horizontal':function(){
 					console.log('position -> horizontal');
+				},
+				'vertical':function(){
+					console.log('position -> vertical');
 				}
 			}
-		},
-		'onclick':function(){
-			this.blib.setMode('position','vertical');
 		}
 	}
 );
@@ -53,10 +54,15 @@ blib.build.define(
 blib.build.define(
 	{'block':'bMenu', 'elem':'item'},
 	function(data){
-		if(!data.content){data.content=[];}
-		[].unshift.call(data.content, {'tag':'a', 'attrs':{'href':data.link}, 'content':data.name});
+		var content = [{'elem':'link', 'tag':'a', 'attrs':{'href':data.link}, 'content':data.name}];
+		
+		if(data.content){
+			content.push({'elem':'child', 'content':data.content});
+		}		
+		this.open = false;
 		this.template = blib.clone(this.template);
-		this.template.content = data.content;
+		this.template.content = content;
+		
 	},
 	//template
 	{
@@ -64,8 +70,46 @@ blib.build.define(
 	},
 	//actions
 	{
-		'onclick':function(){
-			alert('elem click');
+		'closeItem':function(){
+			this.setMode('active',false);
+			this.setMode('opened',false);
+		},
+		'onclick':function(e){
+			e.stopPropagation();
+			e.blib.open = !e.blib.open;
+			e.blib.setMode('active',e.blib.open);
+			e.blib.setMode('opened',e.blib.open);
 		}
 	}
+);
+
+blib.build.define(
+	{'block':'bMenu', 'elem':'link'},
+	function(data){
+		this.template = data;		
+	},
+	false,
+	{
+		'onclick':function(e){
+			var link = e.blib.template.attrs.href;
+			if(!link || blib.is(link,"null")){
+				e.preventDefault();
+				return false;
+			}
+		}
+	}
+);
+
+blib.build.define(
+	{'block':'bMenu', 'elem':'child'},
+	function(data){
+		this.template = blib.clone(this.template);
+		this.template.content = data.content;
+	},
+	//template
+	{
+		'tag':'ul'
+	},
+	//actions
+	false
 );

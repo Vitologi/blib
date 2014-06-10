@@ -15,10 +15,11 @@ return array(
 	'insert'	=> array(
 		'bTemplate' => array(
 			array('id', 'name', 'blib', 'template'),
-			array(1, 'index', null,  '{"block":"bIndex","content":[{"elem":"header","content":["{1}"]},{"elem":"body","content":[{"elem":"helper","content":["{2}"]},{"elem":"content","content":"content"}]},{"elem":"footer","content":["{3}"]}]}'),
+			array(1, 'index', null,  '{"block":"bIndex","content":[{"elem":"header","content":["{1}"]},{"elem":"tools","content":["{2}"]},{"elem":"body","content":[{"elem":"helper","content":["{3}"]},{"elem":"content","content":"content"},{"elem":"clear"}]},{"elem":"footer","content":["{4}"]}]}'),
 			array(2, 'logo', null, '{"block":"bImageSprite","mods":{"sprite":"blib","type":"logo"}}'),
-			array(3, 'menu', "bMenu", '{"menu":1, "position":"gorisontal"}'),
-			array(4, 'test', null, '{"block":"bTest","mods":{"sprite":"blib","type":"logo"}, "content":["{1}", {"block":"bTest2", "content":"test"}]}')
+			array(3, 'menu', "bMenu", '{"menu":1, "mods":{"position":"horizontal", "default":true}}'),
+			array(4, 'menu', "bMenu", '{"menu":1, "mods":{"position":"vertical", "default":true}}'),
+			array(5, 'footer', null, '{"block":"bStrip", "mods":{"position":"center"}, "content":"footer"}')
 		)
 	)
 );

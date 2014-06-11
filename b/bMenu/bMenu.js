@@ -57,6 +57,7 @@ blib.build.define(
 		var content = [{'elem':'link', 'tag':'a', 'attrs':{'href':data.link}, 'content':data.name}];
 		
 		if(data.content){
+			content.unshift({'elem':'checker', 'attrs':{'style':'float:right;'}, 'content':"v"});
 			content.push({'elem':'child', 'content':data.content});
 		}		
 		
@@ -72,25 +73,20 @@ blib.build.define(
 	//actions
 	{
 		'onclick':function(e){
-			var concurents = e.blib.dom.parentNode.children;
+			var concurents = e.blib.parent.children['bMenu__item'];
 			
 			for(key in concurents){
-				console.log(concurents[key]);
+				if(!concurents[key].opened || concurents[key]===e.blib)continue;
+				concurents[key].opened=false;
+				concurents[key].setMode('active',e.blib.opened);
+				concurents[key].setMode('opened',e.blib.opened);
 			}
 			
 			e.blib.opened = !e.blib.opened;
 			e.blib.setMode('active',e.blib.opened);
 			e.blib.setMode('opened',e.blib.opened);
 			e.stopPropagation?e.stopPropagation():e.cancelBubble = true;
-		},
-		'closeitem':function(e){
-			if(e.blib.opened){
-				e.blib.opened=false;
-				e.blib.setMode('active',e.blib.opened);
-				e.blib.setMode('opened',e.blib.opened);
-			}
-		}
-		
+		}		
 	}
 );
 

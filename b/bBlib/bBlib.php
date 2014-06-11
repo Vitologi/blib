@@ -107,8 +107,9 @@ abstract class bBlib{
 		
 		if(!$_list = $_hook['list']){
 			$path = bBlib::path('bBlib__hook', 'ini');
-			if(!file_exists($path)){return;}
-			$_list = json_decode(file_get_contents($path), true);
+			if(file_exists($path)){
+				$_list = json_decode(file_get_contents($path), true);
+			}
 		}
 		
 		$returnFlag = false;

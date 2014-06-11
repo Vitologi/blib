@@ -411,7 +411,6 @@
 			
 			if(type==='JSONP'){
 				temp = "jsonp"+salt++;
-				console.log(temp);
 				
 				Blib.ajax[temp] = function(){
 					success.apply(null, arguments);
@@ -817,12 +816,20 @@
 			'setDom':function(dom){
 				this.dom = dom;
 			},
-			'setElement':function(name, elem){
-				if(!this.elem){this.elem = [];};
-				if(!this.elem[name]){this.elem[name] = [];};
-				this.elem[name].push(elem);
+			'setChildren':function(name, elem){
+				if(!this.children){this.children = [];};
+				if(!this.children[name]){this.children[name] = [];};
+				this.children[name].push(elem);
 			},
-			'setBlock':function(block){
+			'setParent':function(elem){
+				this.parent = elem;
+			},
+			'setBlock':function(block, deep){
+				if(deep){
+					while(is(block.block,'object')){
+						block = block.block;
+					}
+				}
 				this.block = block;
 			},
 			'setMode':function(mode, value){
@@ -850,8 +857,10 @@
 				};
 				
 			}
-		};
-		
+		},
+		defaultBlock = function(){};
+	
+	defaultBlock.prototype = baseProto;
 		
 	Blib.config("bBuild", config);
 	Blib.config("_private.bBuild", true);	
@@ -879,7 +888,8 @@
 		/** сборка серверного ответа */
 		build = function(data, blockName, block, deep){
 			if(!data){return;}
-			
+			if(is(deep,['NaN','undefined'])){deep=0;}
+						
 			var currentClass, result, container,
 				obj, factory,
 				attr, temp;
@@ -894,6 +904,8 @@
 					obj = new factory(data);
 					data = obj.template;
 				}
+			}else{
+				obj=new defaultBlock();
 			}
 			
 			//[первый в ответе, текущий блок, имя обьекта, ДОМ-результат, есть ли контейнер]
@@ -901,44 +913,45 @@
 			result = document.createElement(data['tag']||"div");
 			container = (data['container'])?(Blib(data['container']).length>0):false;
 
-			if(obj){
-				result.blib = obj;
-				obj.setDom(result);
-				
-				for(evt in obj.action){
-					if(!is(obj.action[evt], 'function') || evt.substr(0,2) !== "on" || evt === 'onSetMode')continue;
-					
-					var wrappedAction = function(event){
-						if(is(event, "undefined")){event = {};}
-						event.blib = obj;
-						return obj.action[evt].call(this, event);
-					}
-					
-					if (result.addEventListener){   
-						result.addEventListener(evt.substr(2,evt.length-1), wrappedAction, false); 		
-					} else if (result.attachEvent){ 
-						result.attachEvent(evt, wrappedAction); 
-					} else{ 
-						if(result[evt]){
-							wrappedAction = (function (){
-								var old = result[evt],
-									now = wrappedAction;
-								return function(){
-									old();
-									now();
-								};								
-							})();
-						}
-						
-						result[evt] = wrappedAction;
-					}
+			
+			result.blib = obj;
+			obj.setDom(result);
+			obj.setParent(block);
+			if(block){
+				block.setChildren(currentClass, obj);
+				if(!data['block'] || data['elem']){
+					obj.setBlock(block, data['elem']?true:false);
+				}
+			};
+			
+			
+			for(evt in obj.action){
+				if(!is(obj.action[evt], 'function') || evt.substr(0,2) !== "on" || evt === 'onSetMode')continue;
+
+				var wrap = obj.action[evt],
+					wrappedAction = function(event){
+					if(is(event, "undefined")){event = {};}
+					event.blib = obj;
+					return wrap.call(this, event);
 				}
 				
-				if(data['elem']){
-					block.setElement(currentClass, obj);
-					obj.setBlock(block);
-				}else{
-					block = obj;
+				if (result.addEventListener){   
+					result.addEventListener(evt.substr(2,evt.length-1), wrappedAction, false); 		
+				} else if (result.attachEvent){ 
+					result.attachEvent(evt, wrappedAction); 
+				} else{ 
+					if(result[evt]){
+						wrappedAction = (function (){
+							var old = result[evt],
+								now = wrappedAction;
+							return function(){
+								old();
+								now();
+							};								
+						})();
+					}
+					
+					result[evt] = wrappedAction;
 				}
 			}
 			
@@ -986,9 +999,9 @@
 				case "object":
 				case "array":
 					for(key in data['content']){
-						temp = build(data['content'][key], blockName, block, deep+1);
-						if(!temp)continue;
-						if(typeof(temp)=="object"){result.appendChild(temp);}else{result.innerHTML+=temp;}
+						temp = build(data['content'][key], blockName, obj, deep+1);
+						if(!temp.dom)continue;
+						if(typeof(temp.dom)=="object"){result.appendChild(temp.dom);}else{result.innerHTML+=temp.dom;}
 					}
 				break;
 				case "string":
@@ -1005,7 +1018,7 @@
 				return false;
 			}else{
 				if(!deep){applyDeferredTask();}
-				return result;
+				return (!deep)?result:{'dom':result, 'obj':obj};
 			}
 			
 	

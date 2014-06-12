@@ -826,7 +826,7 @@
 			},
 			'setBlock':function(block, deep){
 				if(deep){
-					while(is(block.block,'object')){
+					while(block && is(block.block,'object')){
 						block = block.block;
 					}
 				}
@@ -889,7 +889,7 @@
 		build = function(data, blockName, block, deep){
 			if(!data){return;}
 			if(is(deep,['NaN','undefined'])){deep=0;}
-						
+
 			var currentClass, result, container,
 				obj, factory,
 				attr, temp;
@@ -899,7 +899,7 @@
 			}
 			
 			
-			if(factory = navigate(config.block, (data['elem'])?(blockName+"."+data['elem']):blockName)){
+			if(factory = navigate(config.block, (data['elem'])?(blockName+"."+data['elem']):data['block'])){
 				if(!block || factory !== block.constructor){
 					obj = new factory(data);
 					data = obj.template;
@@ -918,7 +918,7 @@
 			obj.setDom(result);
 			obj.setParent(block);
 			if(block){
-				block.setChildren(currentClass, obj);
+				block.setChildren(currentClass||"noname", obj);
 				if(!data['block'] || data['elem']){
 					obj.setBlock(block, data['elem']?true:false);
 				}
@@ -993,6 +993,7 @@
 					}
 				}
 			}
+			
 			
 			//проверяем есть ли вложенность и рекурсивно обрабатываем если есть
 			switch(is(data['content'])){

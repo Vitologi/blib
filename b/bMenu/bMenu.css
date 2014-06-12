@@ -10,17 +10,29 @@
 		
 	.bMenu__item{
 		cursor:pointer;
-		list-style: none;}
+		list-style: none;
+		word-wrap: break-word;}
 		.bMenu__item_opened > .bMenu__child{
 			display:block;
 			position:absolute;
 			margin: -1px 0 0 10px;}
+		.bMenu__item_opened > .bMenu__link > .bMenu__flyout{
+			border-color: #ffffff transparent;}
 			
 	.bMenu__link{
 		display: block;
 		text-decoration: none;
 		color:black;}
-		
+		.bMenu__link-text{
+			margin-right: 20px;}
+		.bMenu__flyout{
+			border-color: #909090 transparent;
+			border-style: solid;
+			border-width: 4px 4px 0 4px;
+			width: 0;
+			height: 0;
+			float: right;
+			margin: 0.4em 6px;}
 	.bMenu__clear{
 		display: block;
 		clear:both;}
@@ -43,14 +55,13 @@
 	.bMenu_default{
 		background-color:white;}
 		.bMenu_default .bMenu__child{
-			min-width:200px;
+			width:200px;
 			background-color:white;
 			border: 1px solid rgb(240, 240, 240);}
 		.bMenu_default .bMenu__item{
 			border-bottom: 1px dotted rgb(248, 248, 248);}
 			.bMenu_default .bMenu__item:last-child{
 				border-bottom: 0;}
-		
 		.bMenu_default .bMenu__link{
 			padding:5px;}
 		

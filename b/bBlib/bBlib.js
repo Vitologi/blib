@@ -1016,6 +1016,7 @@
 				case "array":
 					for(key in data['content']){						
 						temp = build(data['content'][key], blockName, obj, (obj.template.block && !obj.template.elem?merge([obj],blocks):blocks), deep+1);
+						temp = temp || {};
 						if(!temp.dom)continue;
 						if(typeof(temp.dom)=="object"){result.appendChild(temp.dom);}else{result.innerHTML+=temp.dom;}
 					}
@@ -1027,7 +1028,7 @@
 
 			//если есть контейнер то добавляем в него
 			if(container){
-				Blib(data['container']).html("").append(result);
+				Blib(data['container']).html(result);
 				applyDeferredTask();
 			}else if(data['container']){
 				deferredTask[data['container']]=result;

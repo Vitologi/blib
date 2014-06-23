@@ -88,7 +88,7 @@ class bTemplate extends bBlib{
 			
 			$levelTemplate['"{'.$key.'}"'] = '{"block":"bTemplate", "elem":"position", "content":['.$levelTemplate['"{'.$key.'}"'].'] ,"template":"'.$deep.'.'.$key.'" }';
 		}
-		//var_dump($template, $list, $list[0]);
+		
 		return str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
 	}
 	

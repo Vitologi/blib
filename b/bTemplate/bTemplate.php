@@ -65,21 +65,30 @@ class bTemplate extends bBlib{
 		
 	}
 	
-	private function glueTempStack(Array $list){
+	private function glueTempStack(Array $list, $deep = false){
 		
-		$template = $this->stack[$list[0]];
+		if(!$deep){
+			$deep = $list[0];
+			$template = '{"block":"bTemplate", "content":['.$this->stack[$list[0]].'] ,"template":'.json_encode($list).' }';
+		}else{
+			$template = $this->stack[$list[0]];
+		}
+		
+		
 		$levelTemplate = array();
 		
 		foreach($list as $key => $value){
 			if((int)$key === 0){
 				continue;
 			}elseif(is_array($value)){
-				$levelTemplate['"{'.$key.'}"'] = $this->glueTempStack($value);
+				$levelTemplate['"{'.$key.'}"'] = $this->glueTempStack($value, $deep.'.'.$key);
 			}else{
 				$levelTemplate['"{'.$key.'}"'] = $this->stack[$value];
 			}
+			
+			$levelTemplate['"{'.$key.'}"'] = '{"block":"bTemplate", "elem":"position", "content":['.$levelTemplate['"{'.$key.'}"'].'] ,"template":"'.$deep.'.'.$key.'" }';
 		}
-
+		//var_dump($template, $list, $list[0]);
 		return str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
 	}
 	

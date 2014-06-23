@@ -279,6 +279,7 @@
 	Blib.clone	= clone;
 	Blib.navigate	= navigate;
 	Blib.extend	= extend;
+	Blib.merge = merge;
 	
 	/**
 	 * Method for work with blib configuration
@@ -791,6 +792,7 @@
 		clone = Blib.clone,
 		navigate = Blib.navigate,
 		extend = Blib.extend,
+		merge = Blib.merge,
 		//local config
 		config = {
 			'block': {},
@@ -886,18 +888,30 @@
 		},
 		
 		/** сборка серверного ответа */
-		build = function(data, blockName, block, deep){
+		build = function(data, blockName, parent, blocks, deep){
 			if(!data){return;}
 			if(is(deep,['NaN','undefined'])){deep=0;}
-
+			if(!blocks){blocks=[];}
+			
 			var currentClass, result, container,
 				obj, factory,
-				attr, temp;
+				attr, temp,
+				block = false;
 			
 			if(data['block']){
 				blockName = data['block'];
 			}
 			
+			if(blocks.length && data['block'] && data['elem'] && data['block'] !== block[0]){
+				for(key in blocks){
+					if(blocks[key].template.block === data['block']){
+						block = blocks[key];
+						break;
+					}
+				}
+			}else if(blocks.length){
+				block = blocks[0];
+			}
 			
 			if(factory = navigate(config.block, (data['elem'])?(blockName+"."+data['elem']):data['block'])){
 				if(!block || factory !== block.constructor){
@@ -906,6 +920,7 @@
 				}
 			}else{
 				obj=new defaultBlock();
+				obj.template.block = blockName;
 			}
 			
 			//[первый в ответе, текущий блок, имя обьекта, ДОМ-результат, есть ли контейнер]
@@ -916,8 +931,8 @@
 			
 			result.blib = obj;
 			obj.setDom(result);
-			obj.setParent(block);
-			if(block){
+			obj.setParent(parent);
+			if(parent){
 				block.setChildren(currentClass||"noname", obj);
 				if(!data['block'] || data['elem']){
 					obj.setBlock(block, data['elem']?true:false);
@@ -999,8 +1014,8 @@
 			switch(is(data['content'])){
 				case "object":
 				case "array":
-					for(key in data['content']){
-						temp = build(data['content'][key], blockName, obj, deep+1);
+					for(key in data['content']){						
+						temp = build(data['content'][key], blockName, obj, (obj.template.block && !obj.template.elem?merge([obj],blocks):blocks), deep+1);
 						if(!temp.dom)continue;
 						if(typeof(temp.dom)=="object"){result.appendChild(temp.dom);}else{result.innerHTML+=temp.dom;}
 					}

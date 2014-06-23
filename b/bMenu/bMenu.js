@@ -108,22 +108,17 @@ blib.build.define(
 					data:{'ajax':true},
 					dataType:'json',
 					'success':function(data){
-						blib('body').html(blib.build(data));
+						console.log(data);
+						var a = blib.build(data,false,false,1);
+						//blib('body').html();
+						console.log(a);
 						
 						if(history.pushState){
 							history.pushState({}, location.host , link);
 						}else{
-							//window.chHashFlag = true;
-							location.hash = link;
-							/*
-							if(!location.pathname || location.pathname ==='/'){
-								alert(location.pathname);alert(location.host);
-								
-							}else{
-								location.href = location.protocol+'//'+location.host;
-								location.hash = link;
-							}
-							*/
+							window.chHashFlag = true;
+							if(location.pathname){location.href = location.host+"#"+link;}else{
+							location.hash = link;}
 						}
 					}
 				});

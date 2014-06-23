@@ -933,7 +933,8 @@
 			obj.setDom(result);
 			obj.setParent(parent);
 			if(parent){
-				block.setChildren(currentClass||"noname", obj);
+				if(parent!==block && parent.setChildren){parent.setChildren(currentClass||"noname", obj);}
+				if(block){block.setChildren(currentClass||"noname", obj);}
 				if(!data['block'] || data['elem']){
 					obj.setBlock(block, data['elem']?true:false);
 				}

@@ -917,11 +917,14 @@
 				if(!block || factory !== block.constructor){
 					obj = new factory(data);
 					data = obj.template;
+					if(!data)return;
 				}
 			}else{
 				obj=new defaultBlock();
 				obj.template.block = blockName;
 			}
+			
+			
 			
 			//[первый в ответе, текущий блок, имя обьекта, ДОМ-результат, есть ли контейнер]
 			currentClass = (data['elem'])?(blockName+"__"+data['elem']):data['block'];

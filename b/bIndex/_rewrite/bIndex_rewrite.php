@@ -10,13 +10,15 @@ class bIndex_rewrite extends bBlib{
 
 	public function getData($data, $caller = null){
 		
+		$url = parse_url($_SERVER['REQUEST_URI']);
+		
 		$Q = array(
 			'select' => array(
 				'bIndex_rewrite' => array('data')
 			),
 			'where' => array(
 				'bIndex_rewrite' => array(
-					'url' => $_SERVER['REQUEST_URI']
+					'url' =>  $url['path']
 				)
 			)
 		);

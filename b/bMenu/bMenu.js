@@ -98,20 +98,20 @@ blib.build.define(
 	false,
 	{
 		'onclick':function(e){
-			var link = e.blib.template.attrs.href;
+			var link = e.blib.template.attrs.href,
+				template;
 			if(!link || blib.is(link,"null")){
 				e.preventDefault ? e.preventDefault() : e.returnValue = false;
 				return false;
 			}else{
+				template = blib('.bTemplate')[0].blib.template.template;
+				
 				blib.ajax({
 					url:link,
-					data:{'ajax':true},
+					data:{'ajax':true, 'template':template},
 					dataType:'json',
 					'success':function(data){
-						console.log(data);
-						var a = blib.build(data,false,false,1);
-						//blib('body').html();
-						console.log(a);
+						blib('body').html(blib.build(data));
 						
 						if(history.pushState){
 							history.pushState({}, location.host , link);

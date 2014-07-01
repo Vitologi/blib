@@ -902,7 +902,7 @@
 				blockName = data['block'];
 			}
 			
-			if(blocks.length && data['block'] && data['elem'] && data['block'] !== block[0]){
+			if(blocks.length && data['block'] && data['elem'] && data['block'] !== blocks[0]){
 				for(key in blocks){
 					if(blocks[key].template.block === data['block']){
 						block = blocks[key];
@@ -912,7 +912,7 @@
 			}else if(blocks.length){
 				block = blocks[0];
 			}
-			
+						
 			if(factory = navigate(config.block, (data['elem'])?(blockName+"."+data['elem']):data['block'])){
 				if(!block || factory !== block.constructor){
 					obj = new factory(data);
@@ -921,7 +921,7 @@
 				}
 			}else{
 				obj=new defaultBlock();
-				obj.template.block = blockName;
+				obj.template = {'block':blockName};
 			}
 			
 			
@@ -1018,8 +1018,9 @@
 			switch(is(data['content'])){
 				case "object":
 				case "array":
+					var objStack = (obj.template.block && !obj.template.elem?merge([obj],blocks):blocks);
 					for(key in data['content']){						
-						temp = build(data['content'][key], blockName, obj, (obj.template.block && !obj.template.elem?merge([obj],blocks):blocks), deep+1);
+						temp = build(data['content'][key], blockName, obj, objStack, deep+1);
 						temp = temp || {};
 						if(!temp.dom)continue;
 						if(typeof(temp.dom)=="object"){result.appendChild(temp.dom);}else{result.innerHTML+=temp.dom;}

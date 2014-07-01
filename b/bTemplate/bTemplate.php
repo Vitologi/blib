@@ -75,7 +75,14 @@ class bTemplate extends bBlib{
 		}
 		
 		
-		$levelTemplate = array();
+		$template = preg_replace_callback(
+			'/"{(\d+)}"/',
+			create_function(
+				'$matches',
+				'return \'{"block":"bTemplate", "elem":"position", "content":[\'.$matches[0].\'] ,"template":"'.$deep.'.\'.$matches[1].\'" }\';'
+			),
+			$template
+		);
 		
 		foreach($list as $key => $value){
 			if((int)$key === 0){
@@ -85,8 +92,6 @@ class bTemplate extends bBlib{
 			}else{
 				$levelTemplate['"{'.$key.'}"'] = $this->stack[$value];
 			}
-			
-			$levelTemplate['"{'.$key.'}"'] = '{"block":"bTemplate", "elem":"position", "content":['.$levelTemplate['"{'.$key.'}"'].'] ,"template":"'.$deep.'.'.$key.'" }';
 		}
 		
 		return str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);

@@ -84,6 +84,8 @@ class bTemplate extends bBlib{
 			$template
 		);
 		
+		$levelTemplate = array();
+		
 		foreach($list as $key => $value){
 			if((int)$key === 0){
 				continue;

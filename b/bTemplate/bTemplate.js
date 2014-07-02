@@ -3,7 +3,6 @@ blib.build.define(
 	(function(){
 		
 		var template = {
-			'position':{},
 			'chunk':{},
 			
 			'setChunk':function(obj){
@@ -21,23 +20,94 @@ blib.build.define(
 				}
 				
 			},
-			
-			'setPosition':function(obj){
-				var childs = obj.children.bTemplate__position,
-					temp;
-				for(key in childs){
-					temp = childs[key]['template']['template'];
-					this.position[temp] = childs[key];
-				}
-			},
-			
-			'compare':function(old, now, deep){
+
+			'compare':function(old, now, oldObj, deep){
 				
-			}
-			
+				if(!deep)deep = now[0];
+				
+				for(key in now){
+					if(key === '0'){
+						
+						if(old[key] !== now[key]){
+							//чистим шаблон главного блока
+							for (var prop in old) delete old[prop];
+							for (var prop in now) old[prop] = now[prop];
+							
+							//чистим чаилдов главного блока
+							var childs =  oldObj.children.bTemplate__position,
+								temp, parent, onDelete;
+							for(var j in childs){
+								temp = childs[j].template.template;
+								if(temp === deep){
+									parent = childs[j].parent;
+									onDelete = childs[j].dom;
+									delete childs[j];
+								}else if(temp.indexOf(deep) === 0){
+									childs[j].dom.parentNode.removeChild(childs[j].dom);
+									delete childs[j];
+								}
+							}
+							
+							//эмулируем процесс построения дом дерева с новыми данными
+							var blocks = [],
+								curentParent = parent;
+							
+							while(curentParent){
+								if(curentParent.template.block && !curentParent.template.elem){
+									blocks.push(curentParent);
+								}
+								curentParent = curentParent.parent;
+							}
+							
+							//строим
+							blib(parent.dom).html(blib.build(this.chunk[deep], undefined, parent, blocks));
+							return;
+						}
+						
+						continue;
+					}
+					
+					
+					if(blib.is(now[key],["object","array"])){
+						this.compare(old[key], now[key], oldObj, deep+'.'+key);
+					}else{
+						old[key] = now[key];
+						
+						//чистим чаилда главного блока
+						var childs =  oldObj.children.bTemplate__position,
+							temp, parent, onDelete;
+						for(var j in childs){
+							temp = childs[j].template.template;
+							
+							if(temp === deep+'.'+key){
+								parent = childs[j].parent;
+								onDelete = childs[j].dom;
+								delete childs[j];
+							}
+						}
+						
+						//эмулируем процесс построения дом дерева с новыми данными
+						var blocks = [],
+							curentParent = parent;
+						
+						while(curentParent){
+							if(curentParent.template.block && !curentParent.template.elem){
+								blocks.push(curentParent);
+							}
+							curentParent = curentParent.parent;
+						}
+						
+						//строим
+						parent.dom.insertBefore(blib.build(this.chunk[deep+'.'+key], undefined, parent, blocks), onDelete);
+						parent.dom.removeChild(onDelete);
+						
+					}
+					
+				}
+				
+			}			
 		};
 			
-		
 		return function(data){
 			var oldDom = blib('.bTemplate')[0],
 				oldObj = (oldDom)?oldDom.blib:false,
@@ -47,21 +117,10 @@ blib.build.define(
 			if(!newTemp[0]){
 				this.template = false;
 			}else if(oldTemp[0] === newTemp[0]){
+				template.chunk = {};
 				template.setChunk(data);
-				template.setPosition(oldObj);
-				
-				/*
-				for(i in template.chunk){
-					
-					for(j in oldObj.children.bTemplate__position){
-						if(oldObj.children.bTemplate__position[j].template.template === i){
-							console.log(i, oldObj.children.bTemplate__position[j].template.template);
-						}
-					}
-					
-				}
-				*/
-				console.log(template, oldObj.children);
+				template.compare(oldTemp, newTemp, oldObj);
+				this.template = false;
 			}else{
 				this.template = data;
 			}

@@ -39,7 +39,9 @@ class bIndex extends bBlib{
 		$template = json_decode($row['template'], true);
 		
 		if($this->template[0] === $template[0]){
+			//$xxx = $template;
 			$template = $this->templateDiff($this->template, $template);
+			//var_dump($this->template, $xxx, $template);
 		}
 		
 		$data["'{template}'"] = $this->_getTemplate($template);
@@ -75,7 +77,7 @@ class bIndex extends bBlib{
 			unset($old[$key]);
 		}
 		
-		foreach($old as $key) {
+		foreach($old as $key => $value) {
 			$difference[$key] = null;
 		}
 		

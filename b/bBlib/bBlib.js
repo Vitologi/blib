@@ -912,16 +912,16 @@
 			}else if(blocks.length){
 				block = blocks[0];
 			}
-						
+			
 			if(factory = navigate(config.block, (data['elem'])?(blockName+"."+data['elem']):data['block'])){
-				if(!block || factory !== block.constructor){
 					obj = new factory(data);
-					data = obj.template;
+					data = clone(obj.template);
 					if(!data)return;
-				}
 			}else{
 				obj=new defaultBlock();
-				obj.template = {'block':blockName};
+				var tmp = (data['elem']?{'block':blockName, 'elem':data['elem']}:{'block':blockName});
+				obj.template = tmp;
+				
 			}
 			
 			
@@ -933,6 +933,7 @@
 
 			
 			result.blib = obj;
+			
 			obj.setDom(result);
 			obj.setParent(parent);
 			if(parent){

@@ -58,6 +58,7 @@ class bIndex extends bBlib{
 	}
 	
 	protected function templateDiff($old, $new) {
+		if($old[0] !== $new[0]){return $new;}
 		$difference=array($new[0]);
 		foreach($new as $key => $value) {
 			if( is_array($value) ) {

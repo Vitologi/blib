@@ -808,8 +808,12 @@
 			},
 			'template':{},
 			'setTemplate':function(tmpl, reset){
+				if(reset){ this.template = tmpl;}
+				extend(true, this.template, tmpl);
+				/*
 				if(reset){ this.constructor.prototype.template = tmpl; }
 				extend(true, this.constructor.prototype.template, tmpl);
+				*/
 			},
 			'setAction':function(act, reset){
 				if(reset){ return this.constructor.prototype.action = act; }
@@ -911,7 +915,11 @@
 				}
 			}else if(blocks.length){
 				block = blocks[0];
+			}else{
+				block = false;
 			}
+			
+			
 			
 			if(factory = navigate(config.block, (data['elem'])?(blockName+"."+data['elem']):data['block'])){
 					obj = new factory(data);
@@ -919,9 +927,8 @@
 					if(!data)return;
 			}else{
 				obj=new defaultBlock();
-				var tmp = (data['elem']?{'block':blockName, 'elem':data['elem']}:{'block':blockName});
-				obj.template = tmp;
-				
+				var tmp = (data['elem']?{'block':blockName, 'elem':data['elem']}:(data['block']?{'block':blockName}:{}));
+				obj.template = tmp;			
 			}
 			
 			
@@ -933,14 +940,18 @@
 
 			
 			result.blib = obj;
-			
 			obj.setDom(result);
-			obj.setParent(parent);
 			if(parent){
-				if(parent!==block && parent.setChildren){parent.setChildren(currentClass||"noname", obj);}
-				if(block){block.setChildren(currentClass||"noname", obj);}
-				if(!data['block'] || data['elem']){
+				obj.setParent(parent);
+				parent.setChildren(currentClass||"noname", obj);
+				/* 0_0
+				if(block){
+					block.setChildren(currentClass||"noname", obj);
+				}
+				*/
+				if(!data['block'] || data['elem'] || (data['block'] == blockName && data['elem'])){
 					obj.setBlock(block, data['elem']?true:false);
+					if(block){block.setChildren(currentClass||"noname", obj);}
 				}
 			};
 			

@@ -830,12 +830,7 @@
 			'setParent':function(elem){
 				this.parent = elem;
 			},
-			'setBlock':function(block, deep){
-				if(deep){
-					while(block && is(block.block,'object')){
-						block = block.block;
-					}
-				}
+			'setBlock':function(block){
 				this.block = block;
 			},
 			'setMode':function(mode, value){
@@ -906,7 +901,7 @@
 				blockName = data['block'];
 			}
 			
-			if(blocks.length && data['block'] && data['elem'] && data['block'] !== blocks[0]){
+			if(blocks.length && data['block'] && data['elem']){
 				for(key in blocks){
 					if(blocks[key].template.block === data['block']){
 						block = blocks[key];
@@ -931,8 +926,6 @@
 				obj.template = tmp;			
 			}
 			
-			
-			
 			//[первый в ответе, текущий блок, имя обьекта, ДОМ-результат, есть ли контейнер]
 			currentClass = (data['elem'])?(blockName+"__"+data['elem']):data['block'];
 			result = document.createElement(data['tag']||"div");
@@ -944,14 +937,10 @@
 			if(parent){
 				obj.setParent(parent);
 				parent.setChildren(currentClass||"noname", obj);
-				/* 0_0
-				if(block){
-					block.setChildren(currentClass||"noname", obj);
-				}
-				*/
-				if(!data['block'] || data['elem'] || (data['block'] == blockName && data['elem'])){
-					obj.setBlock(block, data['elem']?true:false);
-					if(block){block.setChildren(currentClass||"noname", obj);}
+
+				if(data['elem']){
+					obj.setBlock(block);
+					if(block !== parent){block.setChildren(currentClass||"noname", obj);}
 				}
 			};
 			
@@ -1108,6 +1097,3 @@
 	Blib.build = build;	
 	
 })(blib);
-
-
-/** захреначить find на основе getElement.call(obj, handle) */

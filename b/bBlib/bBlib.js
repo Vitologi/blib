@@ -1028,7 +1028,7 @@
 					}
 				break;
 				case "string":
-					result.innerHTML+=data['content'];
+					result.innerHTML=data['content'];
 				break;
 			}
 

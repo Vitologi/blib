@@ -2,3 +2,23 @@
 	display: block;
 	padding: 0;
 	margin:0;}
+	
+	.bTarifScale__header{}
+	.bTarifScale__item{}
+	.bTarifScale__groupName{}
+	.bTarifScale__checker{}
+	.bTarifScale__groupDescription{}
+	.bTarifScale__regdata{}
+	.bTarifScale__regHeader{}
+	.bTarifScale__regField{}
+	.bTarifScale__submit{}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

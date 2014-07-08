@@ -237,7 +237,15 @@
 					tarifs[key].reset();
 				}
 				
-				console.log(request);				
+				request.blib = 'bTarifScale';
+				
+				blib.ajax({
+					'data':request,
+					'dataType':'json',
+					'success':function(data){
+						console.log(data);
+					}
+				});			
 			}		
 		}
 	);

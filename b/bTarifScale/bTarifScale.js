@@ -24,7 +24,7 @@
 				
 				for(i in groups[key]){
 					var item = {'elem':'item', 'content':groups[key][i]};
-					if(i == '0'){item.first = groups[key].length;}
+					if(i == '0'){item.first = groups[key].length+1;}
 					temp.push(item);
 				}
 				
@@ -42,7 +42,7 @@
 				'content':[
 					{'tag':'td', 'attrs':{'colspan':header.length}, 'content':[
 						{'elem':'regdata', 'content':'regdata'},
-						{'elem':'submit', 'content':'отправить'}
+						{'elem':'submit', 'content':[{'tag':'span','content':'Подать заявку на подключение услуг'}, {'elem':'price', 'content':'0 руб.'}]}						
 					]}
 				]
 			});
@@ -92,9 +92,9 @@
 			var temp = [];
 			
 			if(data.first){temp.push({'elem':'groupName', 'tag':'td', 'attrs':{'rowspan':data.first}, 'content':data.content.group});}
-			temp.push({'tag':'td', 'content':[{'tag':'span', 'content':data.content.name},{'elem':'checker', 'content':data.content}]});
+			temp.push({'elem': 'tarName', 'tag':'td', 'content':[{'elem':'checker', 'content':data.content},{'elem':'tarText','tag':'span', 'content':data.content.name}]});
 			temp.push({'tag':'td', 'content':data.content.cost});
-			temp.push({'tag':'td', 'content':data.content.description});
+			temp.push({'elem': 'description', 'tag':'td', 'content':data.content.description});
 			
 			this.template = blib.clone(this.template);
 			this.template.content = temp;
@@ -112,8 +112,10 @@
 	blib.build.define(
 		{'block':'bTarifScale', 'elem':'checker'},
 		function(data){
+			this.id = data.content.id;
 			this.chousen = false;
 			this.template = blib.clone(this.template);
+			this.price = data.content.cost;
 		},
 		//template
 		{
@@ -123,8 +125,17 @@
 		//actions
 		{
 			'onclick':function(e){
-				var self = e.blib;
+				var self = e.blib,
+					block = self.block;
 				self.chousen = !self.chousen;
+				
+				if(self.chousen){
+					block.children.bTarifScale__regdata[0].setMode('closed', false);
+					block.children.bTarifScale__price[0].action.setPrice(self.price);
+				}else{
+					block.children.bTarifScale__price[0].action.setPrice(-self.price);
+				}
+				
 			}		
 		}
 	);
@@ -133,6 +144,7 @@
 		{'block':'bTarifScale', 'elem':'regdata'},
 		function(data){
 			this.template = blib.clone(this.template);
+			this.template.mods = {'closed':true};
 			this.template.content = [
 				{'elem':'regHeader', 'content':"Для оформления заявки укажите персональные данные, чтобы мы могли связаться с Вами."},
 				{'elem':'regField', 'tag':'input', 'attrs':{'type':'text', 'name':'name', 'placeholder':"Имя", 'value':"Имя"}},
@@ -144,18 +156,46 @@
 			];
 		},
 		false,
+		false
+	);
+	
+	blib.build.define(
+		{'block':'bTarifScale', 'elem':'regField'},
+		function(data){
+			this.template = blib.clone(this.template);
+			this.template.mods = data.mods;
+			this.template.tag = data.tag;
+			this.template.content = data.content;
+			this.template.attrs = data.attrs;
+			
+			this.virgin = true;
+		},
+		false,
 		//actions
 		{
-			'onSetMode':{
-				'position':{
-					'horizontal':function(){
-						console.log('position -> horizontal');
-					},
-					'vertical':function(){
-						console.log('position -> vertical');
-					}
+			'onfocus':function(e){
+				var self = e.blib;
+				if(self.virgin){
+					this.value = '';
+					self.virgin = false;
 				}
-			}		
+			}
+		}
+	);
+	
+	blib.build.define(
+		{'block':'bTarifScale', 'elem':'price'},
+		function(data){
+			this.template = blib.clone(this.template);
+			this.template.content = data.content;
+			this.price = 0;
+		},
+		false,
+		{
+			'setPrice':function(price){
+				this.price += +price;
+				this.dom.innerHTML = this.price+' руб.'
+			}
 		}
 	);
 	
@@ -168,7 +208,13 @@
 		//actions
 		{
 			'onclick':function(e){
-				console.log('отправляем нахрен', e.blib.block.children.bTarifScale__checker);
+				var tarifs = e.blib.block.children.bTarifScale__checker,
+					options = [];
+				for(key in tarifs){
+					if(tarifs[key].chousen)options.push(tarifs[key].id);
+				}
+				
+				console.log(options);				
 			}		
 		}
 	);

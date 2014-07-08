@@ -1,4 +1,93 @@
 .bTarifScale{
 	display: block;
 	padding: 0;
-	margin:0;}
+	margin:0;
+	text-align:center;}
+	
+
+	.bTarifScale__header{
+		/*text-align:center;*/
+		font-weight:bold;}
+	.bTarifScale__item{
+		border: 1px solid rgb(221, 221, 221);}
+	.bTarifScale__groupName{
+		vertical-align: middle;
+		/*text-align:center;*/
+		font-weight: bold;
+		border-right: 1px dotted rgb(238, 238, 238);}
+	.bTarifScale__tarName{
+		text-align:left;
+		white-space: nowrap;
+		border-right: 1px dotted rgb(238, 238, 238);}
+	.bTarifScale__tarText{
+		margin-right: 30px;}
+	.bTarifScale__checker{
+		position: relative;
+		float: right;}
+	.bTarifScale__description{
+		text-align:left;
+		border-left: 1px dotted rgb(238, 238, 238);}
+	.bTarifScale__groupDescription{
+		border: 1px solid rgb(221, 221, 221);
+		font-size: 12px;
+		font-style: italic;
+		color: rgb(231, 231, 231);
+		-webkit-transition: color 1s ease-out 0.1s;
+		-moz-transition: color 1s ease-out 0.1s;
+		-o-transition: color 1s ease-out 0.1s;
+		transition: color 1s ease-out 0.1s;}
+		.bTarifScale__groupDescription:hover{
+			color: black;
+			cursor: default;}
+	.bTarifScale__regdata{
+		}
+		.bTarifScale__regdata_closed{
+			display: none;}
+	.bTarifScale__regHeader{}
+	.bTarifScale__regField{
+		width: 47%;
+		margin: 5px;
+		text-align: center;}
+	.bTarifScale__submit{
+		display:inline-block;
+		word-wrap:break-word;
+		max-width: 100%;
+		-webkit-box-sizing: border-box;
+		-moz-box-sizing: border-box;
+		-o-box-sizing: border-box;
+		box-sizing: border-box;
+		border:0;
+		outline:0 !important;
+		text-decoration: none;
+		cursor:pointer;
+		text-align: center;}
+		
+		.bTarifScale__submit {
+			padding: 4px 12px;
+			border-radius: 3px;
+			border:1px solid #ddd;
+			border-color: rgba(255,255,255,0.8) rgba(0, 0, 0, 0.07) rgba(0, 0, 0, 0.2)  rgba(0, 0, 0, 0.07);
+			background: #e5e5e5;
+			box-shadow:#ddd 0 1px 1px;}
+
+		.bTarifScale__submit:active {
+			padding: 5px 12px 3px;
+			box-shadow: 0 1px 1px rgba(0,0,0,.1) inset;
+		}
+
+		.bTarifScale__submit:focus {
+			box-shadow: 0 -2px 2px rgba(0,0,0,.05) inset;
+			border: 1px solid #ddd;
+			border: 1px solid rgba(0,0,0,.4);}
+	
+	.bTarifScale td{
+		vertical-align: middle;
+		padding:5px;}
+	
+	
+	
+	
+	
+	
+	
+	

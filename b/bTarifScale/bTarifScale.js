@@ -123,9 +123,21 @@
 			'attrs':{'type':'checkbox'}
 		},
 		//actions
-		{
+		{	
+		
+			'reset':function(){
+			console.log('+', this, !this.chousen);
+				if(!this.chousen)return;
+				
+				this.dom.checked = false;
+				this.chousen = false;
+				this.block.children.bTarifScale__price[0].action.setPrice(-this.price);
+				
+			},
+			
 			'onclick':function(e){
-				var self = e.blib,
+				console.log(this, e);
+				var self = this,
 					block = self.block;
 				self.chousen = !self.chousen;
 				
@@ -135,8 +147,9 @@
 				}else{
 					block.children.bTarifScale__price[0].action.setPrice(-self.price);
 				}
-				
-			}		
+			}
+			
+			
 		}
 	);
 	
@@ -174,7 +187,7 @@
 		//actions
 		{
 			'onfocus':function(e){
-				var self = e.blib;
+				var self = this;
 				if(self.virgin){
 					this.value = '';
 					self.virgin = false;
@@ -208,13 +221,40 @@
 		//actions
 		{
 			'onclick':function(e){
-				var tarifs = e.blib.block.children.bTarifScale__checker,
-					options = [];
+				var self = this,
+					tarifs = self.block.children.bTarifScale__checker,
+					regFields = self.block.children.bTarifScale__regField,
+					request = {
+						'options':[]
+					},
+					temp;
+					
 				for(key in tarifs){
-					if(tarifs[key].chousen)options.push(tarifs[key].id);
+					if(tarifs[key].chousen)request.options.push(tarifs[key].id);
 				}
 				
-				console.log(options);				
+				if(!request.options.length)return;
+				
+				for(key in regFields){
+					temp = regFields[key].dom;
+					switch(temp.name){
+						case "passport_issued":
+						case "address":
+							request[temp.name] = temp.innerHTML;
+							break;
+						
+						default:
+							request[temp.name] = temp.value;
+							break;
+					}
+				}
+				
+				for(key in tarifs){
+					console.log(tarifs[key]);
+					tarifs[key].action.reset();
+				}
+				
+				console.log(request);				
 			}		
 		}
 	);

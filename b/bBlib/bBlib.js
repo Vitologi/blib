@@ -944,14 +944,17 @@
 			for(evt in obj.action){
 				if(!is(obj.action[evt], 'function') || evt === 'onSetMode')continue;
 				
+				var wrappedAction = (function(obj, evt){
+					var wrap = obj.action[evt];
+					
+					return function(){
+						return wrap.apply(obj, arguments);
+					};
+				
+				})(obj, evt);
+				
 				//dom event
 				if(evt.substr(0,2) === "on"){
-					var wrap = obj.action[evt],
-						wrappedAction = function(event){
-							if(is(event, "undefined")){event = {};}
-							event.blib = obj;
-							return wrap.call(this, event);
-						}
 					
 					if (result.addEventListener){   
 						result.addEventListener(evt.substr(2,evt.length-1), wrappedAction, false); 		
@@ -971,12 +974,10 @@
 						
 						result[evt] = wrappedAction;
 					}
+					
 				//obj event
 				}else{
-					var wrap = obj.action[evt];
-					obj.action[evt] = function(){
-						return wrap.apply(obj, arguments);
-					};
+					obj.action[evt] = wrappedAction;
 				}
 			}
 			

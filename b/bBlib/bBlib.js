@@ -804,16 +804,12 @@
 					'js':{
 						'init':function(){alert('block inited')}
 					}
-				}
+				},
 			},
 			'template':{},
 			'setTemplate':function(tmpl, reset){
 				if(reset){ this.template = tmpl;}
 				extend(true, this.template, tmpl);
-				/*
-				if(reset){ this.constructor.prototype.template = tmpl; }
-				extend(true, this.constructor.prototype.template, tmpl);
-				*/
 			},
 			'setAction':function(act, reset){
 				if(reset){ return this.constructor.prototype.action = act; }
@@ -838,18 +834,18 @@
 					elem = (this.template.elem?'__'+this.template.elem:''),
 					_mode = '_'+mode,
 					_value = (is(value,'string')?'_'+value:''),
-					regexp = new RegExp('('+block+elem+_mode+'\\S*)'),
+					regexp = new RegExp('(\\s*'+block+elem+_mode+'\\S*)'),
 					changed = false,
-					fullName = block+elem+_mode+_value
+					fullName = block+elem+_mode+_value,
 					newClass = this.dom.className.replace(regexp, function(handle){
 						changed = true;
-						return (value)?fullName:'';
+						return (value)?' '+fullName:'';
 					}),
 					handler = navigate(this.action.onSetMode, mode+(is(value,'string')?'.'+value:''));
 					
 				if(changed){
 					this.dom.className = newClass;
-				}else{
+				}else if(value){
 					this.dom.className += ' '+fullName;
 				}
 				
@@ -946,32 +942,41 @@
 			
 			
 			for(evt in obj.action){
-				if(!is(obj.action[evt], 'function') || evt.substr(0,2) !== "on" || evt === 'onSetMode')continue;
-
-				var wrap = obj.action[evt],
-					wrappedAction = function(event){
-					if(is(event, "undefined")){event = {};}
-					event.blib = obj;
-					return wrap.call(this, event);
-				}
+				if(!is(obj.action[evt], 'function') || evt === 'onSetMode')continue;
 				
-				if (result.addEventListener){   
-					result.addEventListener(evt.substr(2,evt.length-1), wrappedAction, false); 		
-				} else if (result.attachEvent){ 
-					result.attachEvent(evt, wrappedAction); 
-				} else{ 
-					if(result[evt]){
-						wrappedAction = (function (){
-							var old = result[evt],
-								now = wrappedAction;
-							return function(){
-								old();
-								now();
-							};								
-						})();
-					}
+				//dom event
+				if(evt.substr(0,2) === "on"){
+					var wrap = obj.action[evt],
+						wrappedAction = function(event){
+							if(is(event, "undefined")){event = {};}
+							event.blib = obj;
+							return wrap.call(this, event);
+						}
 					
-					result[evt] = wrappedAction;
+					if (result.addEventListener){   
+						result.addEventListener(evt.substr(2,evt.length-1), wrappedAction, false); 		
+					} else if (result.attachEvent){ 
+						result.attachEvent(evt, wrappedAction); 
+					} else{ 
+						if(result[evt]){
+							wrappedAction = (function (){
+								var old = result[evt],
+									now = wrappedAction;
+								return function(){
+									old();
+									now();
+								};								
+							})();
+						}
+						
+						result[evt] = wrappedAction;
+					}
+				//obj event
+				}else{
+					var wrap = obj.action[evt];
+					obj.action[evt] = function(){
+						return wrap.apply(obj, arguments);
+					};
 				}
 			}
 			

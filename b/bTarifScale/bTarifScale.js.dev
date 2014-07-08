@@ -42,8 +42,7 @@
 				'content':[
 					{'tag':'td', 'attrs':{'colspan':header.length}, 'content':[
 						{'elem':'regdata', 'content':'regdata'},
-						{'elem':'submit', 'content':'Подать заявку на подключение услуг'},
-						{'elem':'price', 'content':'0 руб.'}
+						{'elem':'submit', 'content':[{'tag':'span','content':'Подать заявку на подключение услуг'}, {'elem':'price', 'content':'0 руб.'}]}						
 					]}
 				]
 			});
@@ -57,7 +56,7 @@
 			'tag':'table'
 		},
 		{
-			'onSetMode':{
+			'_onSetMode':{
 				'position':{
 					'horizontal':function(){
 						console.log('position -> horizontal');
@@ -103,17 +102,13 @@
 		//template
 		{
 			'tag':'tr'
-		},
-		//actions
-		{
-				
 		}
 	);
 	
 	blib.build.define(
 		{'block':'bTarifScale', 'elem':'checker'},
 		function(data){
-		console.log(data);
+			this.id = data.content.id;
 			this.chousen = false;
 			this.template = blib.clone(this.template);
 			this.price = data.content.cost;
@@ -124,21 +119,31 @@
 			'attrs':{'type':'checkbox'}
 		},
 		//actions
-		{
+		{	
+		
+			'reset':function(){
+				if(!this.chousen)return;
+				
+				this.dom.checked = false;
+				this.chousen = false;
+				this.block.children.bTarifScale__price[0].setPrice(-this.price);
+				
+			},
+			
 			'onclick':function(e){
-				var self = e.blib,
+				var self = this,
 					block = self.block;
 				self.chousen = !self.chousen;
-
-				console.log(block.children.bTarifScale__price);
-				if(self.chousen){
-					block.children.bTarifScale__regdata[0].setMode('closed', false);
-					block.children.bTarifScale__price[0].action.setPrice(self.price);
-				}else{
-					block.children.bTarifScale__price[0].action.setPrice(-self.price);
-				}
 				
-			}		
+				if(self.chousen){
+					block.children.bTarifScale__regdata[0]._setMode('closed', false);
+					block.children.bTarifScale__price[0].setPrice(self.price);
+				}else{
+					block.children.bTarifScale__price[0].setPrice(-self.price);
+				}
+			}
+			
+			
 		}
 	);
 	
@@ -156,9 +161,7 @@
 				{'elem':'regField', 'tag':'textarea', 'attrs':{'name':'passport_issued', 'placeholder':"Дата выдачи паспорта"}, 'content':"Дата выдачи паспорта"},
 				{'elem':'regField', 'tag':'textarea', 'attrs':{'name':'address', 'placeholder':"Адрес"}, 'content':"Адрес"}
 			];
-		},
-		false,
-		false
+		}
 	);
 	
 	blib.build.define(
@@ -176,9 +179,10 @@
 		//actions
 		{
 			'onfocus':function(e){
-				var self = e.blib;
+				console.log(e, this);
+				var self = this;
 				if(self.virgin){
-					this.value = '';
+					self.dom.value = '';
 					self.virgin = false;
 				}
 			}
@@ -195,7 +199,6 @@
 		false,
 		{
 			'setPrice':function(price){
-				console.log(price, this);
 				this.price += +price;
 				this.dom.innerHTML = this.price+' руб.'
 			}
@@ -211,7 +214,30 @@
 		//actions
 		{
 			'onclick':function(e){
-				console.log('отправляем нахрен', e.blib.block.children.bTarifScale__checker);
+				var self = this,
+					tarifs = self.block.children.bTarifScale__checker,
+					regFields = self.block.children.bTarifScale__regField,
+					request = {
+						'options':[]
+					},
+					temp;
+					
+				for(key in tarifs){
+					if(tarifs[key].chousen)request.options.push(tarifs[key].id);
+				}
+				
+				if(!request.options.length)return;
+				
+				for(key in regFields){
+					temp = regFields[key].dom;
+					request[temp.name] = temp.value;
+				}
+				
+				for(key in tarifs){
+					tarifs[key].reset();
+				}
+				
+				console.log(request);				
 			}		
 		}
 	);

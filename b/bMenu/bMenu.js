@@ -1,8 +1,7 @@
 blib.build.define(
 	{'block':'bMenu'},
 	function(data){
-		var self = this,
-			content = {},
+		var content = {},
 			item,
 			glueMenuItem = function(elem){
 				var itemContent = content[elem.id],
@@ -38,7 +37,7 @@ blib.build.define(
 	},
 	//actions
 	{
-		'onSetMode':{
+		'_onSetMode':{
 			'position':{
 				'horizontal':function(){
 					console.log('position -> horizontal');
@@ -73,18 +72,19 @@ blib.build.define(
 	//actions
 	{
 		'onclick':function(e){
-			var concurents = e.blib.parent.children['bMenu__item'];
+			var self = this,
+				concurents = self.parent.children['bMenu__item'];
 			
 			for(key in concurents){
-				if(!concurents[key].opened || concurents[key]===e.blib)continue;
+				if(!concurents[key].opened || concurents[key]===self)continue;
 				concurents[key].opened=false;
-				concurents[key].setMode('active',e.blib.opened);
-				concurents[key].setMode('opened',e.blib.opened);
+				concurents[key]._setMode('active',self.opened);
+				concurents[key]._setMode('opened',self.opened);
 			}
 			
-			e.blib.opened = !e.blib.opened;
-			e.blib.setMode('active',e.blib.opened);
-			e.blib.setMode('opened',e.blib.opened);
+			self.opened = !self.opened;
+			self._setMode('active',self.opened);
+			self._setMode('opened',self.opened);
 			e.stopPropagation?e.stopPropagation():e.cancelBubble = true;
 		}		
 	}
@@ -98,7 +98,8 @@ blib.build.define(
 	false,
 	{
 		'onclick':function(e){
-			var link = e.blib.template.attrs.href,
+			var self = this,
+				link = self.template.attrs.href,
 				template;
 			if(!link || blib.is(link,"null")){
 				e.preventDefault ? e.preventDefault() : e.returnValue = false;
@@ -140,7 +141,5 @@ blib.build.define(
 	//template
 	{
 		'tag':'ul'
-	},
-	//actions
-	false
+	}
 );

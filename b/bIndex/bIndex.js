@@ -2,9 +2,9 @@ blib.build.define(
 	{'block':'bIndex'},
 	function(data){
 		if(data.ajax){
-			this.setTemplate(data, true);
+			this._setTemplate(data, true);
 		}else{
-			this.setTemplate(data);
+			this._setTemplate(data);
 		}
 	}
 );

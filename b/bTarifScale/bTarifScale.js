@@ -56,7 +56,7 @@
 			'tag':'table'
 		},
 		{
-			'onSetMode':{
+			'_onSetMode':{
 				'position':{
 					'horizontal':function(){
 						console.log('position -> horizontal');
@@ -102,10 +102,6 @@
 		//template
 		{
 			'tag':'tr'
-		},
-		//actions
-		{
-				
 		}
 	);
 	
@@ -123,20 +119,31 @@
 			'attrs':{'type':'checkbox'}
 		},
 		//actions
-		{
+		{	
+		
+			'reset':function(){
+				if(!this.chousen)return;
+				
+				this.dom.checked = false;
+				this.chousen = false;
+				this.block.children.bTarifScale__price[0].setPrice(-this.price);
+				
+			},
+			
 			'onclick':function(e){
-				var self = e.blib,
+				var self = this,
 					block = self.block;
 				self.chousen = !self.chousen;
 				
 				if(self.chousen){
-					block.children.bTarifScale__regdata[0].setMode('closed', false);
-					block.children.bTarifScale__price[0].action.setPrice(self.price);
+					block.children.bTarifScale__regdata[0]._setMode('closed', false);
+					block.children.bTarifScale__price[0].setPrice(self.price);
 				}else{
-					block.children.bTarifScale__price[0].action.setPrice(-self.price);
+					block.children.bTarifScale__price[0].setPrice(-self.price);
 				}
-				
-			}		
+			}
+			
+			
 		}
 	);
 	
@@ -154,9 +161,7 @@
 				{'elem':'regField', 'tag':'textarea', 'attrs':{'name':'passport_issued', 'placeholder':"Дата выдачи паспорта"}, 'content':"Дата выдачи паспорта"},
 				{'elem':'regField', 'tag':'textarea', 'attrs':{'name':'address', 'placeholder':"Адрес"}, 'content':"Адрес"}
 			];
-		},
-		false,
-		false
+		}
 	);
 	
 	blib.build.define(
@@ -174,9 +179,10 @@
 		//actions
 		{
 			'onfocus':function(e){
-				var self = e.blib;
+				console.log(e, this);
+				var self = this;
 				if(self.virgin){
-					this.value = '';
+					self.dom.value = '';
 					self.virgin = false;
 				}
 			}
@@ -208,13 +214,30 @@
 		//actions
 		{
 			'onclick':function(e){
-				var tarifs = e.blib.block.children.bTarifScale__checker,
-					options = [];
+				var self = this,
+					tarifs = self.block.children.bTarifScale__checker,
+					regFields = self.block.children.bTarifScale__regField,
+					request = {
+						'options':[]
+					},
+					temp;
+					
 				for(key in tarifs){
-					if(tarifs[key].chousen)options.push(tarifs[key].id);
+					if(tarifs[key].chousen)request.options.push(tarifs[key].id);
 				}
 				
-				console.log(options);				
+				if(!request.options.length)return;
+				
+				for(key in regFields){
+					temp = regFields[key].dom;
+					request[temp.name] = temp.value;
+				}
+				
+				for(key in tarifs){
+					tarifs[key].reset();
+				}
+				
+				console.log(request);				
 			}		
 		}
 	);

@@ -799,37 +799,30 @@
 			'tree':[]
 		},
 		baseProto = {
-			'action':{
-				'onSetMode':{
-					'js':{
-						'init':function(){alert('block inited')}
-					}
-				},
-			},
 			'template':{},
-			'setTemplate':function(tmpl, reset){
+			'_onSetMode':{/* 'js':{'init':function(){alert('block inited');}} */ },
+			'_setTemplate':function(tmpl, reset){
 				if(reset){ this.template = tmpl;}
 				extend(true, this.template, tmpl);
 			},
-			'setAction':function(act, reset){
-				if(reset){ return this.constructor.prototype.action = act; }
-				extend(true, this.constructor.prototype.action, act);
+			'_setAction':function(act){
+				extend(true, this.constructor.prototype, act);
 			},
-			'setDom':function(dom){
+			'_setDom':function(dom){
 				this.dom = dom;
 			},
-			'setChildren':function(name, elem){
+			'_setChildren':function(name, elem){
 				if(!this.children){this.children = [];};
 				if(!this.children[name]){this.children[name] = [];};
 				this.children[name].push(elem);
 			},
-			'setParent':function(elem){
+			'_setParent':function(elem){
 				this.parent = elem;
 			},
-			'setBlock':function(block){
+			'_setBlock':function(block){
 				this.block = block;
 			},
-			'setMode':function(mode, value){
+			'_setMode':function(mode, value){
 				var block = this.template.block,
 					elem = (this.template.elem?'__'+this.template.elem:''),
 					_mode = '_'+mode,
@@ -841,7 +834,7 @@
 						changed = true;
 						return (value)?' '+fullName:'';
 					}),
-					handler = navigate(this.action.onSetMode, mode+(is(value,'string')?'.'+value:''));
+					handler = navigate(this._onSetMode, mode+(is(value,'string')?'.'+value:''));
 					
 				if(changed){
 					this.dom.className = newClass;
@@ -929,55 +922,49 @@
 
 			
 			result.blib = obj;
-			obj.setDom(result);
+			obj._setDom(result);
 			if(parent){
-				obj.setParent(parent);
-				parent.setChildren(currentClass||"noname", obj);
+				obj._setParent(parent);
+				parent._setChildren(currentClass||"noname", obj);
 
 				if(data['elem']){
-					obj.setBlock(block);
-					if(block !== parent){block.setChildren(currentClass||"noname", obj);}
+					obj._setBlock(block);
+					if(block !== parent){block._setChildren(currentClass||"noname", obj);}
 				}
 			};
 			
 			
-			for(evt in obj.action){
-				if(!is(obj.action[evt], 'function') || evt === 'onSetMode')continue;
+			for(evt in obj){
+				if(!is(obj[evt], 'function') || evt.substr(0,2) !== "on")continue;
 				
-				//dom event
-				if(evt.substr(0,2) === "on"){
-					var wrap = obj.action[evt],
-						wrappedAction = function(event){
-							if(is(event, "undefined")){event = {};}
-							event.blib = obj;
-							return wrap.call(this, event);
-						}
+				var wrappedAction = (function(obj, evt){
+					var wrap = obj[evt];
 					
-					if (result.addEventListener){   
-						result.addEventListener(evt.substr(2,evt.length-1), wrappedAction, false); 		
-					} else if (result.attachEvent){ 
-						result.attachEvent(evt, wrappedAction); 
-					} else{ 
-						if(result[evt]){
-							wrappedAction = (function (){
-								var old = result[evt],
-									now = wrappedAction;
-								return function(){
-									old();
-									now();
-								};								
-							})();
-						}
-						
-						result[evt] = wrappedAction;
-					}
-				//obj event
-				}else{
-					var wrap = obj.action[evt];
-					obj.action[evt] = function(){
+					return function(){
 						return wrap.apply(obj, arguments);
 					};
+				
+				})(obj, evt);
+				
+				if (result.addEventListener){   
+					result.addEventListener(evt.substr(2,evt.length-1), wrappedAction, false); 		
+				} else if (result.attachEvent){ 
+					result.attachEvent(evt, wrappedAction); 
+				} else{ 
+					if(result[evt]){
+						wrappedAction = (function (){
+							var old = result[evt],
+								now = wrappedAction;
+							return function(){
+								old();
+								now();
+							};								
+						})();
+					}
+					
+					result[evt] = wrappedAction;
 				}
+				
 			}
 			
 			//оформляем классом
@@ -1069,8 +1056,8 @@
 			if(!is(factory, 'function') && !is(name.block, 'string'))return;
 			
 			extend(true, factory.prototype, {'template':name}, baseProto);
-			if(is(template, 'object')){factory.prototype.setTemplate(template)};
-			if(is(action, 'object')){factory.prototype.setAction(action)};
+			if(is(template, 'object')){factory.prototype._setTemplate(template)};
+			if(is(action, 'object')){factory.prototype._setAction(action)};
 			
 			if(name.elem){ name.block = name.block+'.'+name.elem; }
 

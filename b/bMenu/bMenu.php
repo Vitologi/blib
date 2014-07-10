@@ -33,7 +33,7 @@ class bMenu extends bBlib{
 			$menu[] = array('id'=>$row['id'], 'name'=>$row['name'], 'config'=>$config, 'link'=>$row['link'], 'parent'=>$row['bMenu_id']);
 		}
 
-		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'content'=>$menu);
+		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'content'=>$menu, 'id'=>$this->data['menu']);
 	}
 	
 	protected function getData($data){

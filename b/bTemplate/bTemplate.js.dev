@@ -60,7 +60,7 @@ blib.build.define(
 							}
 							
 							//строим
-							blib(parent.dom).html(blib.build(this.chunk[deep], undefined, parent, blocks));
+							blib(parent.dom).html(blib.build(this.chunk[deep], {'parent':parent, 'blocks':blocks}));
 							return;
 						}
 						
@@ -98,7 +98,7 @@ blib.build.define(
 						}
 						
 						//строим
-						parent.dom.insertBefore(blib.build(this.chunk[deep+'.'+key], undefined, parent, blocks), onDelete);
+						parent.dom.insertBefore(blib.build(this.chunk[deep+'.'+key], {'parent':parent, 'blocks':blocks}), onDelete);
 						parent.dom.removeChild(onDelete);
 						
 					}

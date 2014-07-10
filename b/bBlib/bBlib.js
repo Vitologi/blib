@@ -796,7 +796,7 @@
 		//local config
 		config = {
 			'block': {},
-			'tree':[]
+			'tree':{}
 		},
 		baseProto = {
 			'template':{},
@@ -875,16 +875,20 @@
 			deferredTask={};
 		},
 		
-		/** сборка серверного ответа */
-		build = function(data, blockName, parent, blocks, deep){
+		/** сборка серверного ответа  */
+		build = function(data, params){
 			if(!data){return;}
-			if(is(deep,['NaN','undefined'])){deep=0;}
-			if(!blocks){blocks=[];}
+			
+			params = extend({'blockName':false, 'parent':false, 'blocks':[], 'deep':0}, params);
 			
 			var currentClass, result, container,
 				obj, factory,
 				attr, temp,
-				block = false;
+				block = false,
+				deep = params.deep,
+				blocks = params.blocks,
+				parent = params.parent,
+				blockName = params.blockName;
 			
 			if(data['block']){
 				blockName = data['block'];
@@ -1013,7 +1017,7 @@
 				case "array":
 					var objStack = (obj.template.block && !obj.template.elem?merge([obj],blocks):blocks);
 					for(key in data['content']){						
-						temp = build(data['content'][key], blockName, obj, objStack, deep+1);
+						temp = build(data['content'][key], {'blockName':blockName, 'parent':obj, 'blocks':objStack, 'deep':deep+1});
 						temp = temp || {};
 						if(!temp.dom)continue;
 						if(typeof(temp.dom)=="object"){result.appendChild(temp.dom);}else{result.innerHTML+=temp.dom;}

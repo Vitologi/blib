@@ -5,7 +5,7 @@ class bTarifScale extends bBlib{
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
-		$this->parents = array(/*'bSystem', 'bConfig'*/);
+		$this->parents = array('bSystem', 'bConfig');
 	}
 	
 	protected function input($data, $caller){

@@ -27,7 +27,7 @@ blib.build.define(
 				
 				for(key in now){
 					if(key === '0'){
-						
+						//console.log(old[key], now[key], old[key] !== now[key]);
 						if(old[key] !== now[key]){
 							//чистим шаблон главного блока
 							for (var prop in old) delete old[prop];
@@ -60,7 +60,7 @@ blib.build.define(
 							}
 							
 							//строим
-							blib(parent.dom).html(blib.build(this.chunk[deep], {'parent':parent, 'blocks':blocks}));
+							blib(parent.dom).html(blib.build(this.chunk[deep],{'parent':parent, 'blocks':blocks}));
 							return;
 						}
 						
@@ -68,11 +68,11 @@ blib.build.define(
 					}
 					
 					
-					if(blib.is(now[key],["object","array"])){
+					if(blib.is(now[key],["object","array"]) && blib.is(old[key],["object","array"])){
 						this.compare(old[key], now[key], oldObj, deep+'.'+key);
 					}else{
 						old[key] = now[key];
-						
+
 						//чистим чаилда главного блока
 						var childs =  oldObj.children.bTemplate__position,
 							temp, parent, onDelete;
@@ -98,7 +98,7 @@ blib.build.define(
 						}
 						
 						//строим
-						parent.dom.insertBefore(blib.build(this.chunk[deep+'.'+key], {'parent':parent, 'blocks':blocks}), onDelete);
+						parent.dom.insertBefore(blib.build(this.chunk[deep+'.'+key],{'parent':parent, 'blocks':blocks}), onDelete);
 						parent.dom.removeChild(onDelete);
 						
 					}

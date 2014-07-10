@@ -5,13 +5,11 @@ class bTemplate extends bBlib{
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
-		$this->parents = array('bSystem', 'bDatabase', 'bConfig');
+		$this->parents = array('bSystem', 'bDatabase');
 	}
 	
 	protected function input($data, $caller){
-		$this->caller = $caller;
-		$this->type = 'array';
-		$this->stack = array();
+		$this->local['stack'] = array();
 	}
 	
 	public function output(){

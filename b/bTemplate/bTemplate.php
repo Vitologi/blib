@@ -85,7 +85,7 @@ class bTemplate extends bBlib{
 		$levelTemplate = array();
 		
 		foreach($list as $key => $value){
-			if((int)$key === 0){
+			if((int)$key === 0 || (int)$value === 0){
 				continue;
 			}elseif(is_array($value)){
 				$levelTemplate['"{'.$key.'}"'] = $this->glueTempStack($value, $deep.'.'.$key);

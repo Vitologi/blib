@@ -106,9 +106,9 @@ class bDatabase extends bBlib{
 		
 			if(!$fields[$key]){throw new Exception("Foreign key does not found in the table");}
 			
-			$namingRule = explode('_', $key);
-			$table = is_string($value['table'])?$value['table']:$namingRule[0];
-			$column = is_string($value['column'])?$value['column']:$namingRule[1];
+			preg_match('/^(\w+)_(\w+)$/', $key, $namingRule);
+			$table = is_string($value['table'])?$value['table']:$namingRule[1];
+			$column = is_string($value['column'])?$value['column']:$namingRule[2];
 			$ondelete = is_string($value['ondelete'])?$value['ondelete']:'RESTRICT';
 			$onupdate = is_string($value['onupdate'])?$value['onupdate']:'CASCADE';
 			
@@ -138,7 +138,9 @@ class bDatabase extends bBlib{
 			
 			foreach($foreings as $selfColumn => $column){
 				if($column === null){
-					list($foreignTable, $foreignColumn) = explode('_', $selfColumn);
+					preg_match('/^(\w+)_(\w+)$/', $selfColumn, $namingRule);
+					$foreignTable = $namingRule[1];
+					$foreignColumn = $namingRule[2];
 				}
 				if($column['table']){$foreignTable = $column['table'];}
 				if($column['column']){$foreignColumn = $column['column'];}
@@ -227,10 +229,10 @@ class bDatabase extends bBlib{
 					$len = count($columns);
 					
 					for($i=1; $i<$len; $i++){
-						$full = array_pad($columns[$i], $intoLen, 'NULL');
+						$full = array_pad($columns[$i], $intoLen, null);
 						
 						for($j=0; $j<$intoLen; $j++){
-							$full[$j] = $this->pdo->quote($full[$j]);
+							$full[$j] = ($full[$j] !== null)?$this->pdo->quote($full[$j]):'null';
 						}
 						
 						$values .= sprintf(' (%1$s) ,', implode(',',$full));
@@ -276,7 +278,7 @@ class bDatabase extends bBlib{
 					}
 				}
 			}
-			$where = substr($where, 0, -3);
+			$where = ' ( '.substr($where, 0, -3).' ) ';
 		}
 		
 		/** DELETE */
@@ -349,8 +351,8 @@ class bDatabase extends bBlib{
 			$select = ' SELECT ';
 			$from = ' FROM ';
 			foreach($query as $table => $columns){
-				foreach($columns as $column){
-					$select .= sprintf(' `%1$s`.`%2$s`,', $table, $column);
+				foreach($columns as $alias => $column){
+					$select .= (is_numeric($alias)?sprintf(' `%1$s`.`%2$s`,', $table, $column):sprintf(' `%1$s`.`%2$s` AS `%3$s`,', $table, $column, $alias));
 				}
 				$from .= sprintf(' `%1$s`,', $table);
 			}

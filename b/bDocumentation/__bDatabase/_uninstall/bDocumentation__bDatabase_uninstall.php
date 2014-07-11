@@ -2,6 +2,7 @@
 defined('_BLIB') or die();
 return array(
 	'drop' => array(
-		'bMenu'
+		'bDocumentation',
+		'bDocumentation__group'
 	)
 );

@@ -13,27 +13,49 @@ class bDocumentation extends bBlib{
 	}
 	
 	public function output(){
-	
-		if(!$this->data['menu']){return array();}
+
+		$answer = array();
+		
+		if(!$this->data['id']){return array();}
 		
 		$Q = array(
 			'select'	=> array(
-				'bMenu' => array('id', 'name', 'link' ,'bConfig_id' ,'bMenu_id')
+				'bDocumentation' => array('id', 'name', 'note' ,'description' ,'group', 'parent'=>'bDocumentation_id'),
+				'bDocumentation__group' => array('groupName'=>'name'),
 			),
 			'where' => array(
-				'bMenu' => array('menu'=>$this->data['menu'])
+				'bDocumentation' => array('id'=>$this->data['id'])
 			)
 		);
 		$result = $this->_query($Q);
+		$answer = $result->fetch(PDO::FETCH_ASSOC);
+		$answer['description'] = json_decode($answer['description']);
+		$group = $answer['group'] = json_decode($answer['group']);
 		
-		$menu = array();
-		
-		while($row = $result->fetch()){
-			if($row['bConfig_id']){$config = $this->_getConfig($row['bConfig_id']);}
-			$menu[] = array('id'=>$row['id'], 'name'=>$row['name'], 'config'=>$config, 'link'=>$row['link'], 'parent'=>$row['bMenu_id']);
+		if($group){
+			foreach($group as $id){
+				$where[] = array('id',$id,false,true);
+			}
+			$Q = array(
+				'select'	=> array(
+					'bDocumentation' => array('id', 'name', 'note'),
+					'bDocumentation__group' => array('groupName'=>'name'),
+				),
+				'where' => array(
+					'bDocumentation' => $where
+				)
+			);
+			$result = $this->_query($Q);
+			$content = $result->fetchALL(PDO::FETCH_ASSOC);
 		}
-
-		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'content'=>$menu, 'id'=>$this->data['menu']);
+		
+		$answer['block'] = __class__;
+		$answer['mods'] = $this->data['mods'];
+		$answer['content'] = $content;
+		$answer['id'] = $this->data['id'];
+		
+		return $answer;
+		
 	}
 	
 	protected function getData($data){

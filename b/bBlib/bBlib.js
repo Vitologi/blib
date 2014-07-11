@@ -931,7 +931,7 @@
 				obj._setParent(parent);
 				parent._setChildren(currentClass||"noname", obj);
 
-				if(data['elem']){
+				if(data['elem'] && block){
 					obj._setBlock(block);
 					if(block !== parent){block._setChildren(currentClass||"noname", obj);}
 				}

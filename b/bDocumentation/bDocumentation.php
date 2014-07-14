@@ -16,43 +16,69 @@ class bDocumentation extends bBlib{
 
 		$answer = array();
 		
-		if(!$this->data['id']){return array();}
+		if($this->data['id']){
 		
-		$Q = array(
-			'select'	=> array(
-				'bDocumentation' => array('id', 'name', 'note' ,'description' ,'group', 'parent'=>'bDocumentation_id'),
-				'bDocumentation__group' => array('groupName'=>'name'),
-			),
-			'where' => array(
-				'bDocumentation' => array('id'=>$this->data['id'])
-			)
-		);
-		$result = $this->_query($Q);
-		$answer = $result->fetch(PDO::FETCH_ASSOC);
-		$answer['description'] = json_decode($answer['description']);
-		$group = $answer['group'] = json_decode($answer['group']);
-		
-		if($group){
-			foreach($group as $id){
-				$where[] = array('id',$id,false,true);
-			}
 			$Q = array(
 				'select'	=> array(
-					'bDocumentation' => array('id', 'name', 'note'),
+					'bDocumentation' => array('id', 'name', 'description' ,'group', 'parent'=>'bDocumentation_id'),
 					'bDocumentation__group' => array('groupName'=>'name'),
 				),
 				'where' => array(
-					'bDocumentation' => $where
+					'bDocumentation' => array('id'=>$this->data['id'])
+				)
+			);
+			$result = $this->_query($Q);
+			$answer = $result->fetch(PDO::FETCH_ASSOC);
+			$answer['description'] = json_decode($answer['description']);
+			$group = json_decode($answer['group']);
+			unset($answer['group']);
+			
+			if($group){
+				foreach($group as $id){
+					$where[] = array('id',$id,false,true);
+				}
+				$Q = array(
+					'select'	=> array(
+						'bDocumentation' => array('id', 'name', 'note'),
+						'bDocumentation__group' => array('groupName'=>'name'),
+					),
+					'where' => array(
+						'bDocumentation' => $where
+					)
+				);
+				$result = $this->_query($Q);
+				$content = $result->fetchALL(PDO::FETCH_ASSOC);
+			}
+			
+			$answer['block'] = __class__;
+			$answer['mods'] = $this->data['mods'];
+			$answer['content'] = $content;
+			$answer['id'] = $this->data['id'];
+		}
+		
+		if($this->data['group']){
+			$Q = array(
+				'select'	=> array(
+					'bDocumentation__group' => array('id', 'name', 'group'=>'bDocumentation__group_id')
+				)
+			);
+			$result = $this->_query($Q);
+			$navigation = $result->fetchALL(PDO::FETCH_ASSOC);
+			
+			$Q = array(
+				'select'	=> array(
+					'bDocumentation' => array('id', 'name', 'group'=>'bDocumentation__group_id')
 				)
 			);
 			$result = $this->_query($Q);
 			$content = $result->fetchALL(PDO::FETCH_ASSOC);
+			
+			$answer['group'] = array(
+				'navigation'=>$navigation,
+				'content'=>$content,
+				'start'=>$this->data['group']
+			);
 		}
-		
-		$answer['block'] = __class__;
-		$answer['mods'] = $this->data['mods'];
-		$answer['content'] = $content;
-		$answer['id'] = $this->data['id'];
 		
 		return $answer;
 		

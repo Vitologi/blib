@@ -14,7 +14,10 @@ class bDocumentation extends bBlib{
 	
 	public function output(){
 
-		$answer = array();
+		$answer = array(
+			'block' => __class__,
+			'mods' => $this->data['mods']
+		);
 		
 		if($this->data['id']){
 		
@@ -28,10 +31,10 @@ class bDocumentation extends bBlib{
 				)
 			);
 			$result = $this->_query($Q);
-			$answer = $result->fetch(PDO::FETCH_ASSOC);
-			$answer['description'] = json_decode($answer['description']);
-			$group = json_decode($answer['group']);
-			unset($answer['group']);
+			$temp = $result->fetch(PDO::FETCH_ASSOC);
+			$temp['description'] = json_decode($temp['description']);
+			$group = json_decode($temp['group']);
+			unset($temp['group']);
 			
 			if($group){
 				foreach($group as $id){
@@ -50,10 +53,12 @@ class bDocumentation extends bBlib{
 				$content = $result->fetchALL(PDO::FETCH_ASSOC);
 			}
 			
-			$answer['block'] = __class__;
-			$answer['mods'] = $this->data['mods'];
-			$answer['content'] = $content;
-			$answer['id'] = $this->data['id'];
+			$answer['item'] = array(
+				'data'=> $temp,
+				'content'=> $content,
+				'id'=> $this->data['id']
+			);
+
 		}
 		
 		if($this->data['group']){
@@ -80,7 +85,11 @@ class bDocumentation extends bBlib{
 			);
 		}
 		
-		return $answer;
+		if($this->data['ajax']){
+			echo json_encode($answer);
+		}else{
+			return $answer;
+		}
 		
 	}
 	

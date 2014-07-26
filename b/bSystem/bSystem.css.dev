@@ -1,0 +1,9 @@
+
+.bClear{
+	clear:both;}
+	
+.bWrapper{
+	position:relative;
+	margin:0 auto;}
+	.bWrapper_80{
+		width:80%}

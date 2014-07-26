@@ -1,19 +1,4 @@
-.bIndex{
-	height:100%;
-	width: 100%;
-	margin: 0 auto;}
-	.bIndex__header{
-		}
-	.bIndex__tools{
-		}
-	.bIndex__body{
-		}
-	.bIndex__side{
-		}
-	.bIndex__content{
-		}
-	.bIndex__clear{
-		clear:both;}
+
 
 .bIndex_blib{
 	height:100%;

@@ -1,25 +1,16 @@
 .bIndex{
 	height:100%;
-	width: 80%;
+	width: 100%;
 	margin: 0 auto;}
 	.bIndex__header{
-		height: 50px;
-		border: 1px solid rgb(219, 219, 219);
-		border-top: 0;}
+		}
 	.bIndex__tools{
-		border: 1px solid rgb(219, 219, 219);
-		border-top: 0;
-		border-bottom: 0;}
+		}
 	.bIndex__body{
-		border: 1px solid rgb(190, 190, 190);}
-	.bIndex__helper{
-		width: 250px;
-		float: left;
-		border-right: 1px solid rgb(190, 190, 190);
-		margin-right:-1px;}
+		}
+	.bIndex__side{
+		}
 	.bIndex__content{
-		background: white;
-		margin-left: 250px;
-		border-left: 1px solid rgb(190, 190, 190);}
+		}
 	.bIndex__clear{
 		clear:both;}

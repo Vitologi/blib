@@ -12,5 +12,7 @@
 		}
 	.bIndex__content{
 		}
+	.bIndex__footer{
+		}
 	.bIndex__clear{
 		clear:both;}

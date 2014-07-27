@@ -1,109 +1,100 @@
+(function(){
+	
+	blib.build.define(
+		{'block':'bTudaSuda'},
+		function(){
+			var doc = window.document,
+				innerHeight = doc.documentElement.clientHeight
+				self = this;
 
-(function(window){
+			this.delay = 100;
+			this.pageY = 0;
+			this.wave = 1;
+			this.step = 1;
+			this.pageYLabel = 0;
+			this.status = '';
+			this.interval = false;
+			this.allows = true;
+			this.template = blib.clone(this.template);
+			this.template.content = "Наверх";
 
-	var handler = (function(){
-		var allows = true,
-			step, wave, interval,
-			scrollMove = function(start, finish, delay, step, wave){
+			window.onscroll = function() {
+				if(!self.allows)return;
+				self.pageY = window.pageYOffset || document.documentElement.scrollTop;
+
+				switch(self.status){
+					case '':
+						if (self.pageY > innerHeight) {
+							self.status = 'up';
+							self._setMode("status", "up");
+						}
+						break;
+
+					case 'up':
+						if (self.pageY < innerHeight) {
+							self._setMode("status", false);
+							self.status = '';
+						}
+						break;
+
+					case 'down':
+						if (self.pageY > innerHeight) {
+							self.status = 'up';
+							self._setMode("status", "up");
+							self.template.content = 'Наверх';
+							self.dom.innerHTML = 'Наверх';
+						}
+						break;
+				}
+			}
+		},
+		false,
+		{
+			'onclick':function() {
+				if(!this.allows)return;
+				this.pageY = window.pageYOffset || document.documentElement.scrollTop;
+
+				switch(this.status) {
+					case 'up':
+						this.pageYLabel = this.pageY;
+						this.scrollMove(this.pageY, 0, 10, 1, 1.1);
+						this._setMode("status", "down");
+						this.dom.innerHTML = 'Вниз';
+						this.template.content = 'Вниз';
+						this.status = 'down';
+						break;
+
+					case 'down':
+						this.scrollMove(0, this.pageYLabel, 10, 1, 1.1);
+						this._setMode("status", "up");
+						this.dom.innerHTML = 'Наверх';
+						this.template.content = 'Наверх';
+						this.status = 'up';
+						break;
+				}
+			},
+			'scrollMove':function(start, finish, delay, step, wave){
+				var self = this;
 				
-				allows = false;
-				delay = (delay?delay:100);
-				step = (step?step:1);
-				wave = (wave?wave:1);
-				step = (!finish && step<0 || finish && step>0)?step:-step;
+				this.allows = false;
+				this.delay = (delay?delay:100),
+				this.step = (step?step:1),
+				this.wave = (wave?wave:1),
+				this.step = (!finish && this.step<0 || finish && this.step>0)?this.step:-this.step;
 				
-				window.clearTimeout(interval);
-				interval = window.setTimeout(function(){
-					if(finish && start+step*wave < finish || !finish && start+step*wave > finish){
-						step = step*wave;
-						window.scrollBy(0, step);
-						scrollMove(start+step, finish, delay, step, wave);
+				window.clearTimeout(this.interval);
+				this.interval = window.setTimeout(function(){
+					if(finish && start+self.step*self.wave < finish || !finish && start+self.step*self.wave > finish){
+						self.step = self.step*self.wave;
+						window.scrollBy(0, self.step);
+						self.scrollMove(start+self.step, finish, self.delay, self.step, self.wave);
 					}else{
 						window.scrollTo(0, finish);
-						allows = true;
+						self.allows = true;
 					}
-				}, delay);
-
-			};
-			
-		return function(){
-			var doc = window.document,
-				body = doc.getElementsByTagName('body')[0],
-				button = doc.createElement('div'),
-				innerHeight = doc.documentElement.clientHeight,
-				status = '',
-				pageYLabel = 0,
-				pageY;
-			
-			button.className = "bTudaSuda";
-			button.innerHTML = "Наверх";
-			body.appendChild(button);
-			
-			window.onscroll = function() {
-				if(!allows)return;
-				pageY = window.pageYOffset || document.documentElement.scrollTop;
-				console.log(pageY, innerHeight, status);
-				switch(status){
-					case '':
-						if (pageY > innerHeight) {
-							status = 'up';
-							button.className += ' bTudaSuda_status_up';
-						}
-						break;
-
-					case 'up':
-						if (pageY < innerHeight) {
-							button.className = button.className.replace(/(\sbTudaSuda_status_up)/, '');
-							status = '';
-						}
-						break;
-
-					case 'down':
-						if (pageY > innerHeight) {
-							status = 'up';
-							button.className = button.className.replace(/(bTudaSuda_status_down)/, 'bTudaSuda_status_up');
-							button.innerHTML = 'Наверх';
-						}
-						break;
-				}
-			}
-
-			button.onclick = function() {
-				if(!allows)return;
-				pageY = window.pageYOffset || document.documentElement.scrollTop;
-
-				switch(status) {
-					case 'up':
-						pageYLabel = pageY;
-						scrollMove(pageY, 0, 10, 1, 1.1);
-						button.className = button.className.replace(/(bTudaSuda_status_up)/, 'bTudaSuda_status_down');
-						button.innerHTML = 'Вниз';
-						status = 'down';
-						break;
-
-					case 'down':
-						scrollMove(0, pageYLabel, 10, 1, 1.1);
-						button.className = button.className.replace(/(bTudaSuda_status_down)/, 'bTudaSuda_status_up');
-						button.innerHTML = 'Наверх';
-						status = 'up';
-						break;
-				}
+				}, this.delay);
 			}
 		}
-	})();
+	);
 	
-	
-	if(window.blib){
-		blib.build.define(
-			{'block':'bTudaSuda'},
-			handler
-		);
-	}else{
-		var oldOnload = (window.onload?window.onload:function(){});
-		window.onload = function(e){
-			oldOnload(e);
-			handler();
-		}
-	}
-	
-})(window);
+})();

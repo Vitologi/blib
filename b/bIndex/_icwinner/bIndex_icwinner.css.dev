@@ -1,5 +1,3 @@
-
-
 /* стили страницы*/
 .bIndex_icwinner{
 	}
@@ -10,14 +8,13 @@
 	.bIndex_icwinner .bIndex__tools{
 		}
 	.bIndex_icwinner .bIndex__body{
-		min-height: 1600%;}
+		min-height: 60%;}
 	.bIndex_icwinner .bIndex__side{
 		}
 	.bIndex_icwinner .bIndex__content{
 		}
 	.bIndex_icwinner .bIndex__footer{
-		background-color: #f2f2f2;
-		text-align:center;}
+		background-color: #f2f2f2;}
 	.bIndex_icwinner .bIndex__clear{
 		}
 		
@@ -79,7 +76,21 @@
 	.bIndex_icwinner .bMenu__child .bMenu__item:hover{
 		background-color: #9999cc;}
 		
+
+/* стили подвальных ссылок */
 		
+	.bIndex_icwinner .bLinksContainer{
+		margin: 20px;}
 		
+		.bIndex_icwinner .bLinksContainer > .bLinksContainer__li{
+			margin: 3px 0;}
+			
+		.bIndex_icwinner .bLinksContainer > .bLinksContainer__li > a{
+			color: rgb(126, 126, 126);}
 		
-		
+		.bIndex_icwinner .bLinksContainer > .bLinksContainer__li:nth-child(1){
+			margin-bottom:10px;}
+		.bIndex_icwinner .bLinksContainer > .bLinksContainer__li:nth-child(1) > a{
+			font-weight:bold;
+			color: rgb(77, 77, 77);}
+	

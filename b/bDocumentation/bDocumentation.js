@@ -30,7 +30,7 @@
 			},
 			'setItem':function(elem){
 				this.children.bDocumentation__item[0]._replace(elem);
-			},
+			}
 		}
 		
 	);

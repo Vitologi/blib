@@ -4,7 +4,7 @@
 		{'block':'bTudaSuda'},
 		function(){
 			var doc = window.document,
-				innerHeight = doc.documentElement.clientHeight
+				innerHeight = doc.documentElement.clientHeight,
 				self = this;
 
 			this.delay = 100;

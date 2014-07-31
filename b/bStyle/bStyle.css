@@ -1,0 +1,30 @@
+.bStyle{}
+	.bStyle_type_simple{}
+	.bStyle_type_simple *{
+		font-family: Arial;}
+	.bStyle_type_simple p{
+		text-align: justify;
+		line-height: normal;
+		text-indent: 10px;
+		margin: 5px 0;}	
+	.bStyle_type_simple ul{
+		background-color: rgb(247, 247, 247);
+		padding: 5px;
+		border: 1px solid rgb(228, 228, 228);
+		list-style: none;}
+	.bStyle_type_simple li{
+		margin: 2px;}
+	.bStyle_type_simple li:before{
+		content: '';
+		display: block;
+		float: left;
+		width: 5px;
+		height: 5px;
+		background-color: white;
+		margin: 4px;
+		-webkit-border-radius: 20px;
+		-moz-border-radius: 20px;
+		border-radius: 20px;}
+	.bStyle_type_simple h1{
+		font-weight: bold;
+		padding: 5px;}	

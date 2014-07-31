@@ -1,0 +1,9 @@
+.bLink{
+	text-decoration:none;
+	cursor:pointer;
+	color:black;}
+	
+	.bLink_style_default{
+		}
+		.bLink_style_default:hover{
+			text-decoration:underline;}

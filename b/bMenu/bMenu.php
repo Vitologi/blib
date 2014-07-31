@@ -22,7 +22,8 @@ class bMenu extends bBlib{
 			),
 			'where' => array(
 				'bMenu' => array('menu'=>$this->data['menu'])
-			)
+			),
+			'sql'=>' ORDER BY `id` ASC'
 		);
 		$result = $this->_query($Q);
 		

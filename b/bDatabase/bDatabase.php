@@ -371,8 +371,12 @@ class bDatabase extends bBlib{
 			
 			$select = substr($select, 0, -1);
 			$from = substr($from, 0, -1);
-			$temp .= $select.$from.$concatWhere.'; ';
+			$sql = (array_key_exists('sql', $Q)?$Q['sql']:'');  // random sql statement
+			
+			$temp .= $select.$from.$concatWhere.$sql.'; ';
 		}
+		
+		
 		
 		return ($debug)?$temp:$this->pdo->query($temp);			
 

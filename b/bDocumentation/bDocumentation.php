@@ -41,7 +41,7 @@ class bDocumentation extends bBlib{
 				}
 				$Q = array(
 					'select'	=> array(
-						'bDocumentation' => array('id', 'name', 'note')
+						'bDocumentation' => array('id', 'name', 'note', 'parent'=>'bDocumentation_id')
 					),
 					'where' => array(
 						'bDocumentation' => $where
@@ -59,7 +59,7 @@ class bDocumentation extends bBlib{
 
 		}
 		
-		if($this->data['group']){
+		if($this->data['navigation']){
 			$Q = array(
 				'select'	=> array(
 					'bDocumentation' => array('id', 'name', 'parent'=>'bDocumentation_id')
@@ -68,9 +68,9 @@ class bDocumentation extends bBlib{
 			$result = $this->_query($Q);
 			$content = $result->fetchALL(PDO::FETCH_ASSOC);
 						
-			$answer['group'] = array(
+			$answer['navigation'] = array(
 				'content'=>$content,
-				'start'=>$this->data['group']
+				'start'=>$this->data['navigation']
 			);
 		}
 		

@@ -3,9 +3,13 @@
 	padding: 0;
 	margin:0;}
 	.bDocumentation__ul{
-		}
+		display:none;}
+		.bDocumentation__ul_opened{
+			display:block;}
+		.bDocumentation__ul:nth-child(1){
+			margin-left: -22px;}
 	.bDocumentation__li{
-		}
+		padding-left:22px;}
 	.bDocumentation__opener{
 		font-size: 10px;
 		color: rgb(0, 194, 255);

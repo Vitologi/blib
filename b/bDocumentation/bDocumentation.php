@@ -23,8 +23,7 @@ class bDocumentation extends bBlib{
 		
 			$Q = array(
 				'select'	=> array(
-					'bDocumentation' => array('id', 'name', 'description' ,'group', 'parent'=>'bDocumentation_id'),
-					'bDocumentation__group' => array('groupName'=>'name'),
+					'bDocumentation' => array('id', 'name', 'description' ,'group', 'parent'=>'bDocumentation_id')
 				),
 				'where' => array(
 					'bDocumentation' => array('id'=>$this->data['id'])
@@ -42,8 +41,7 @@ class bDocumentation extends bBlib{
 				}
 				$Q = array(
 					'select'	=> array(
-						'bDocumentation' => array('id', 'name', 'note'),
-						'bDocumentation__group' => array('groupName'=>'name'),
+						'bDocumentation' => array('id', 'name', 'note')
 					),
 					'where' => array(
 						'bDocumentation' => $where
@@ -64,22 +62,13 @@ class bDocumentation extends bBlib{
 		if($this->data['group']){
 			$Q = array(
 				'select'	=> array(
-					'bDocumentation__group' => array('id', 'name', 'group'=>'bDocumentation__group_id')
-				)
-			);
-			$result = $this->_query($Q);
-			$navigation = $result->fetchALL(PDO::FETCH_ASSOC);
-			
-			$Q = array(
-				'select'	=> array(
-					'bDocumentation' => array('id', 'name', 'group'=>'bDocumentation__group_id')
+					'bDocumentation' => array('id', 'name', 'parent'=>'bDocumentation_id')
 				)
 			);
 			$result = $this->_query($Q);
 			$content = $result->fetchALL(PDO::FETCH_ASSOC);
-			
+						
 			$answer['group'] = array(
-				'navigation'=>$navigation,
 				'content'=>$content,
 				'start'=>$this->data['group']
 			);

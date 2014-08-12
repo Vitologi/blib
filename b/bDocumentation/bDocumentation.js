@@ -108,15 +108,20 @@
 		},
 		{
 			'onclick':function(){
-				var self = this;
+				var self = this,
+					links = self.block.children['bDocumentation__link'];
+				
+				for(key in links)links[key]._setMode("active",false);
+				
 				blib.ajax({
 					'data':{'blib':'bDocumentation', 'id':this.item, 'ajax':true},
 					'success':function(data){
 						var item = {
 							'elem':'item',
 							'content':data.item
-						};						
-						self.block.setItem(item);
+						};
+						//self.block.setItem(item);
+						self._setMode("active",true);
 					}
 				});				
 			}
@@ -126,24 +131,12 @@
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'ul'},
 		function(data){
-			this.opened = false;
 			this.template = blib.clone(this.template);	
 			this.template.content = data.content;
-			this.template.mods = data.mods;
+			this.template.mods = data.mods || {};
 		},
 		{
 			"tag":"ul"
-		},
-		{
-			'toggle':function(){
-				if(this.opened){
-					this._setMode("opened",false);
-					this.opened = false;
-				}else{
-					this._setMode("opened",true);
-					this.opened = true;
-				}
-			}
 		}
 	);
 	
@@ -156,7 +149,20 @@
 		false,
 		{
 			'onclick':function(){
-				this.parent.children.bDocumentation__ul[0].toggle();	
+				var ul = this.parent.children.bDocumentation__ul[0],
+					status = ul._getMode("opened");
+								
+				if(status){
+					ul._setMode("opened",false);
+					this._setMode("opened",false);
+					this.template.content = "+";
+					this.dom.innerHTML = "+";
+				}else{
+					ul._setMode("opened",true);
+					this._setMode("opened",true);
+					this.template.content = "-";
+					this.dom.innerHTML = "-";
+				}
 			}
 		}
 	);

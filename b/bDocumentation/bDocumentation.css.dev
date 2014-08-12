@@ -9,14 +9,29 @@
 		.bDocumentation__ul:nth-child(1){
 			margin-left: -22px;}
 	.bDocumentation__li{
-		padding-left:22px;}
+		padding: 2px 2px 2px 22px;}
 	.bDocumentation__opener{
 		font-size: 10px;
+		font-weight: bold;
 		color: rgb(0, 194, 255);
 		border: 1px solid rgb(209, 209, 209);
 		float: left;
 		padding: 0 2px;
 		cursor: pointer;
-		margin: 2px;}
+		margin: 2px;
+		width: 6px;
+		height: 10px;
+		text-align: center;}
+		.bDocumentation__opener_opened{
+			font-size: 17px;
+			line-height: 7px;}
+		.bDocumentation__opener:hover {
+			background: rgb(245, 245, 245);
+			}
 	.bDocumentation__link{
-		}
+		text-decoration: none;
+		color: rgb(82, 82, 82);}
+		.bDocumentation__link:hover{
+			text-decoration: underline;}
+		.bDocumentation__link_active{
+			font-weight:bold;}

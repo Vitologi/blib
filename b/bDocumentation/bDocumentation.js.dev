@@ -12,6 +12,8 @@
 				
 				if(navigation)navigation.elem = "navigation";
 				if(item)item.elem = "item";
+				item.content = "dsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asddsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asddsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asddsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfas";
+				
 				
 				if(singleton){
 					if(navigation)singleton.setNavigation(navigation);
@@ -20,8 +22,18 @@
 					singleton = this;
 					this.template = blib.clone(this.template);
 					this.template.content = [
-						navigation,
-						item
+						{
+							"elem":"outer",
+							"content":[
+								{
+									"elem":"inner",
+									"content":[
+										navigation,
+										item
+									]
+								}
+							]
+						}
 					];
 				}
 			};			
@@ -89,7 +101,8 @@
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'item'},
 		function(data){
-			//console.log(data);
+			this.template = blib.clone(this.template);	
+			this.template.content = data.content;
 		}
 	);
 	

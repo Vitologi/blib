@@ -12,6 +12,8 @@
 				
 				if(navigation)navigation.elem = "navigation";
 				if(item)item.elem = "item";
+				item.content = "dsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asddsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asddsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asddsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfas";
+				
 				
 				if(singleton){
 					if(navigation)singleton.setNavigation(navigation);
@@ -20,8 +22,18 @@
 					singleton = this;
 					this.template = blib.clone(this.template);
 					this.template.content = [
-						navigation,
-						item
+						{
+							"elem":"outer",
+							"content":[
+								{
+									"elem":"inner",
+									"content":[
+										navigation,
+										item
+									]
+								}
+							]
+						}
 					];
 				}
 			};			
@@ -45,13 +57,23 @@
 			this.id = data.start;
 			this.navigation = {};
 			
-			var navigation = data.content;
+			var navigation = data.content,
+				header = "Content";
+				
 			for(key in navigation){
 				if(!this.navigation[navigation[key].parent])this.navigation[navigation[key].parent]=[];
 				this.navigation[navigation[key].parent].push(navigation[key]);
+				if(navigation[key].id == this.id)header=navigation[key].name;
 			}
 			
-			this.template.content = [this.getChild(this.id)];
+			console.log(navigation);
+			
+			this.template.content = [
+				{"elem":"header", "mods":{"center":true}, "content":header},
+				{"tag":"hr", "attrs":{"style":"width:95%,margin:2px auto;"}},
+				this.getChild(this.id)
+			];
+			
 		},
 		false,
 		{
@@ -89,7 +111,8 @@
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'item'},
 		function(data){
-			//console.log(data);
+			this.template = blib.clone(this.template);	
+			this.template.content = data.content;
 		}
 	);
 	

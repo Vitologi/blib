@@ -822,6 +822,26 @@
 			'_setBlock':function(block){
 				this.block = block;
 			},
+			'_getMode':function(mode){
+				var mods = this.template.mods || {},
+					block, elem, _mode, regexp, handle;
+
+				if(mode in mods)return mods[mode];
+				
+				block = this.template.block;
+				elem = (this.template.elem?'__'+this.template.elem:'');
+				_mode = '_'+mode;
+				regexp = new RegExp('\\s*('+block+elem+_mode+')_?(\\S*)');
+				handle = this.dom.className.match(regexp);
+				
+				
+				if(handle){
+					return(handle[2]!=='')?handle[2]:true;
+				}
+				
+				return false;
+							
+			},
 			'_setMode':function(mode, value){
 				var block = this.template.block,
 					elem = (this.template.elem?'__'+this.template.elem:''),
@@ -842,10 +862,12 @@
 					this.dom.className += ' '+fullName;
 				}
 				
+				if(!this.template.mods)this.template.mods = {};
+				this.template.mods[mode] = value;
+				
 				if(is(handler, 'function')){
 					handler.call(this);
 				};
-				
 			}
 		},
 		defaultBlock = function(){};

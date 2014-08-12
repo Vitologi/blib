@@ -11,9 +11,12 @@
 	.bIndex_blib .bIndex__tools{
 		border: 1px solid rgb(219, 219, 219);
 		border-top: 0;
-		border-bottom: 0;}
+		border-bottom: 0;
+		position: relative;
+		z-index: 1;}
 	.bIndex_blib .bIndex__body{
-		border: 1px solid rgb(190, 190, 190);}
+		border: 1px solid rgb(190, 190, 190);
+		border-width: 1px 0;}
 	.bIndex_blib .bIndex__side{
 		width: 250px;
 		float: left;

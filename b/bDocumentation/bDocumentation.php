@@ -18,7 +18,7 @@ class bDocumentation extends bBlib{
 			'block' => __class__,
 			'mods' => $this->data['mods']
 		);
-		
+
 		if($this->data['id']){
 		
 			$Q = array(
@@ -51,27 +51,21 @@ class bDocumentation extends bBlib{
 				$content = $result->fetchALL(PDO::FETCH_ASSOC);
 			}
 			
-			$answer['item'] = array(
-				'data'=> $temp,
-				'content'=> $content,
-				'id'=> $this->data['id']
-			);
-
+			$temp['content'] = $content;
+			$answer['item'] = $temp;
 		}
 		
-		if($this->data['navigation']){
+		if($this->data['chapter']){
 			$Q = array(
 				'select'	=> array(
 					'bDocumentation' => array('id', 'name', 'parent'=>'bDocumentation_id')
 				)
 			);
 			$result = $this->_query($Q);
-			$content = $result->fetchALL(PDO::FETCH_ASSOC);
+			$navigation = $result->fetchALL(PDO::FETCH_ASSOC);
 						
-			$answer['navigation'] = array(
-				'content'=>$content,
-				'start'=>$this->data['navigation']
-			);
+			$answer['navigation'] = $navigation;
+			$answer['chapter'] = $this->data['chapter'];
 		}
 		
 		if($this->data['ajax']){

@@ -2,71 +2,79 @@
 	
 	blib.build.define(
 		{'block':'bDocumentation'},
-		(function(){
-			var singleton = false;
+		function(data){
+			var chapter = (data.chapter)?{"block":"bDocumentation", "elem":"chapter", "chapter":data.chapter}:false,
+				item = (data.item)?{"block":"bDocumentation", "elem":"item", "item":data.item}:false;
 			
+			if(data.navigation)this.navigation = data.navigation;
 			
-			return function(data){
-				var navigation = data.navigation || false,
-					item = data.item || false;
+			if(!(chapter && item) && this.singleton){
+				return (chapter)?this.singleton.setChapter(chapter):this.singleton.setItem(item);
 				
-				if(navigation)navigation.elem = "navigation";
-				if(item)item.elem = "item";
-				item.content = "dsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asddsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asddsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asddsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfasdsfasdf asdf asdf asdf asdfas";
-				
-				
-				if(singleton){
-					if(navigation)singleton.setNavigation(navigation);
-					if(item)singleton.setItem(item);
-				}else{
-					singleton = this;
-					this.template = blib.clone(this.template);
-					this.template.content = [
+			}
+			
+			this.template = blib.clone(this.template);
+			this.template.content = [
+				{
+					"elem":"outer",
+					"content":[
 						{
-							"elem":"outer",
+							"elem":"inner",
 							"content":[
-								{
-									"elem":"inner",
-									"content":[
-										navigation,
-										item
-									]
-								}
+								chapter,
+								item
 							]
 						}
-					];
+					]
 				}
-			};			
-		})(),
+			];
+			
+			this.constructor.prototype.singleton = this;
+			
+		},
 		false,
 		{
-			'setNavigation':function(elem){
-				this.children.bDocumentation__navigation[0]._replace(elem);
+			'getNavigation':function(id){
+				for(key in this.navigation){
+					if(this.navigation[key].id == id)return this.navigation[key];
+				}
 			},
-			'setItem':function(elem){
-				this.children.bDocumentation__item[0]._replace(elem);
+			'setChapter':function(data){
+				this.children.bDocumentation__chapter[0]._replace(data);
+			},
+			'setItem':function(data){
+			console.log(data);
+				this.children.bDocumentation__item[0]._replace(data);
 			}
 		}
 		
 	);
 	
 	blib.build.define(
-		{'block':'bDocumentation', 'elem':'navigation'},
+		{'block':'bDocumentation', 'elem':'chapter'},
 		function(data){
-			this.template = blib.clone(this.template);	
-			this.id = data.start;
-			this.navigation = {};
+			var navigation = this.block.navigation,
+				header = "Content";
 			
-			var navigation = data.content;
+			this.template = blib.clone(this.template);	
+			this.id = data.chapter;
+			this.navigation = {};			
+				
 			for(key in navigation){
 				if(!this.navigation[navigation[key].parent])this.navigation[navigation[key].parent]=[];
 				this.navigation[navigation[key].parent].push(navigation[key]);
+				if(navigation[key].id == this.id)header=navigation[key].name;
 			}
+
+			this.template.content = [
+				{"elem":"header", "mods":{"center":true}, "content":header},
+				{"tag":"hr", "attrs":{"id":"hr", "style":"width:95%,margin:2px auto;"}},
+				this.getChild(this.id)
+			];
 			
-			this.template.content = [this.getChild(this.id)];
 		},
 		false,
-		{
+		{	
 			'getChild':function(id,deep){
 				if(!id)return {};
 				deep = deep || 0;
@@ -101,17 +109,35 @@
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'item'},
 		function(data){
+			this.item = data.item;
+			
 			this.template = blib.clone(this.template);	
-			this.template.content = data.content;
+			this.template.content = [
+				this.getBreadcrumbs()
+			];
+		},
+		false,
+		{
+			'getBreadcrumbs':function(){
+				
+				return {
+					"content":[
+						{"elem":"link", "mods":{"breadcrumbs":true}, "item":this.item.parent, "content":this.block.getNavigation(this.item.parent).name},
+						{"tag":"span", "content":this.block.getNavigation(this.item.id).name} 
+					]
+				};
+			}
 		}
 	);
 	
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'link'},
 		function(data){
+			
 			this.item = data.item;
 			this.template = blib.clone(this.template);	
 			this.template.content = data.content;
+			this.template.mods = data.mods;
 		},
 		{
 			'tag':'a',
@@ -124,16 +150,17 @@
 				var self = this,
 					links = self.block.children['bDocumentation__link'];
 				
-				for(key in links)links[key]._setMode("active",false);
+				if(!this._getMode("breadcrumbs")){for(key in links)links[key]._setMode("active",false)};
 				
 				blib.ajax({
 					'data':{'blib':'bDocumentation', 'id':this.item, 'ajax':true},
+					'dataType':'json',
 					'success':function(data){
 						var item = {
 							'elem':'item',
 							'content':data.item
 						};
-						//self.block.setItem(item);
+						blib.build(data);
 						self._setMode("active",true);
 					}
 				});				

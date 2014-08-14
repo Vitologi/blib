@@ -20,7 +20,7 @@
 		background: -o-linear-gradient(right,rgba(0, 0, 0, .05),rgba(0, 0, 0, .05) 1px,rgba(0, 0, 0, .07) 1px,transparent 30px,transparent 100%);
 		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#efefef',GradientType=1 );}
 	
-	.bDocumentation__navigation{
+	.bDocumentation__chapter{
 		float: left;
 		width: 23%;
 		position: relative;
@@ -66,6 +66,15 @@
 			text-decoration: underline;}
 		.bDocumentation__link_active{
 			font-weight:bold;}
+		.bDocumentation__link_breadcrumbs{
+			margin-right:5px;}
+			.bDocumentation__link_breadcrumbs:hover{
+				text-decoration:none;}
+			.bDocumentation__link_breadcrumbs:after{
+				margin-left:5px;
+				content:'>>';}
+			.bDocumentation__link_breadcrumbs:last-child:after{
+				content:'';}
 			
 	.bDocumentation__header{
 		font-weight:bold;

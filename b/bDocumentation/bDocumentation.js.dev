@@ -43,7 +43,6 @@
 				this.children.bDocumentation__chapter[0]._replace(data);
 			},
 			'setItem':function(data){
-			console.log(data);
 				this.children.bDocumentation__item[0]._replace(data);
 			}
 		}
@@ -113,19 +112,59 @@
 			
 			this.template = blib.clone(this.template);	
 			this.template.content = [
-				this.getBreadcrumbs()
+				this.getBreadcrumbs(),
+				this.getDescription(),
+				this.getContent()
 			];
 		},
 		false,
 		{
 			'getBreadcrumbs':function(){
-				
+				var parent = this.block.getNavigation(this.item.parent),
+					name = (parent)?parent.name:"||";
 				return {
 					"content":[
-						{"elem":"link", "mods":{"breadcrumbs":true}, "item":this.item.parent, "content":this.block.getNavigation(this.item.parent).name},
+						{"elem":"link", "mods":{"breadcrumbs":true}, "item":this.item.parent, "content":name},
 						{"tag":"span", "content":this.block.getNavigation(this.item.id).name} 
 					]
 				};
+			},
+			'getDescription':function(){
+				return {"elem":"itemDescription", "content":(this.item.description)?[this.item.description]:"Описание отсутствует"};
+			},
+			'getContent':function(){
+				var grouping = this.item.content,
+					content = {"elem":"content", "content":[]},
+					group, temp, key, i, j;
+				
+				this.grouping = {};
+				
+				for(key in grouping){
+					if(!this.grouping[grouping[key].parent])this.grouping[grouping[key].parent]=[];
+					this.grouping[grouping[key].parent].push(grouping[key]);
+				}
+				
+				for(i in this.grouping){
+					temp = this.grouping[i];
+					group = {
+						"elem":"group",
+						"content":[
+							{"elem":"link", "mods":{"big":true}, "item":i, "content":this.block.getNavigation(i).name}
+						]
+					};
+					
+					for(j in temp){
+						group.content.push({"elem":"noteGroup", "content":[
+							{"elem":"link", "item":temp[j].id, "content":temp[j].name},
+							{"elem":"note", "content":temp[j].note}
+						]});
+					}
+					
+					content.content.push(group);
+				}
+				
+				
+				return content;
 			}
 		}
 	);

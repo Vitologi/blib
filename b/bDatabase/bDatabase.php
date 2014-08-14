@@ -11,7 +11,7 @@ class bDatabase extends bBlib{
 			'host'=>'localhost',
 			'user'=>'root',
 			'password'=>'',
-			'database'=>'icwinner'
+			'database'=>'test'
 		);
 
 		if(bBlib::$global['_bDatabase__pdo']){

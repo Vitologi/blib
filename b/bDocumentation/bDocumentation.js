@@ -2,72 +2,105 @@
 	
 	blib.build.define(
 		{'block':'bDocumentation'},
-		(function(){
-			var singleton = false;
+		function(data){
+			var chapter = (data.chapter)?{"block":"bDocumentation", "elem":"chapter", "chapter":data.chapter}:false,
+				item = (data.item)?{"block":"bDocumentation", "elem":"item", "item":data.item}:false;
 			
+			if(data.navigation)this.navigation = data.navigation;
 			
-			return function(data){
-				var group = data.group,
-					item = data.item;
+			if(!(chapter && item) && this.singleton){
+				return (chapter)?this.singleton.setChapter(chapter):this.singleton.setItem(item);
 				
-				if(singleton){
-					if(group)singleton.setGroup(group);
-					if(item)singleton.setItem(item);
-				}else{
-					singleton = this;
-					this.template = blib.clone(this.template);
-					this.template.content = [
-						{'elem':'group', 'content':group},
-						{'elem':'item', 'content':item}
-					];
+			}
+			
+			this.template = blib.clone(this.template);
+			this.template.content = [
+				{
+					"elem":"outer",
+					"content":[
+						{
+							"elem":"inner",
+							"content":[
+								chapter,
+								item
+							]
+						}
+					]
 				}
-			};			
-		})(),
+			];
+			
+			this.constructor.prototype.singleton = this;
+			
+		},
 		false,
 		{
-			'setGroup':function(elem){
-				this.children.bDocumentation__group[0]._replace(elem);
+			'getNavigation':function(id){
+				for(key in this.navigation){
+					if(this.navigation[key].id == id)return this.navigation[key];
+				}
 			},
-			'setItem':function(elem){
-				this.children.bDocumentation__item[0]._replace(elem);
+			'setChapter':function(data){
+				this.children.bDocumentation__chapter[0]._replace(data);
+			},
+			'setItem':function(data){
+				this.children.bDocumentation__item[0]._replace(data);
 			}
 		}
 		
 	);
 	
 	blib.build.define(
-		{'block':'bDocumentation', 'elem':'group'},
+		{'block':'bDocumentation', 'elem':'chapter'},
 		function(data){
+			var navigation = this.block.navigation,
+				header = "Content";
+			
 			this.template = blib.clone(this.template);	
-			this.id = data.content.start;
-			this.navigation = {};
-			
-			var navigation = data.content.navigation;
+			this.id = data.chapter;
+			this.navigation = {};			
+				
 			for(key in navigation){
-				if(!this.navigation[navigation[key].group])this.navigation[navigation[key].group]=[];
-				this.navigation[navigation[key].group].push(navigation[key]);
+				if(!this.navigation[navigation[key].parent])this.navigation[navigation[key].parent]=[];
+				this.navigation[navigation[key].parent].push(navigation[key]);
+				if(navigation[key].id == this.id)header=navigation[key].name;
 			}
+
+			this.template.content = [
+				{"elem":"header", "mods":{"center":true}, "content":header},
+				{"tag":"hr", "attrs":{"id":"hr", "style":"width:95%,margin:2px auto;"}},
+				this.getChild(this.id)
+			];
 			
-			this.template.content = [this.getChild(this.id)];
 		},
 		false,
-		{
-			'getChild':function(id){
+		{	
+			'getChild':function(id,deep){
 				if(!id)return {};
+				deep = deep || 0;
+				
 				var nav = this.navigation[id],
 					content = [],
 					temp;
 				
 				for(key in nav){
+					innerList = this.getChild(nav[key].id, deep+1);
+					
 					temp = {'elem':'li', 'tag':'li', 'content':[
-						{'elem':'opener', 'content':"+"},
 						{'elem':'link', 'item':nav[key].id, 'content':nav[key].name}
 					]};
-					temp.content.push(this.getChild(nav[key].id));
+					
+					if(innerList){
+						temp.content.unshift({'elem':'opener', 'content':"+"});
+						temp.content.push(innerList);
+					}
+					
 					content.push(temp);
 				}
 				
-				return {'elem':'ul', 'tag':'ul', 'content':content};
+				temp = {'elem':'ul', 'tag':'ul', 'content':content};
+				if(!deep)temp.mods = {"opened":true};
+				
+				return content.length?temp:false;
 			}
 		}
 	);
@@ -75,16 +108,75 @@
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'item'},
 		function(data){
-			//console.log(data);
+			this.item = data.item;
+			
+			this.template = blib.clone(this.template);	
+			this.template.content = [
+				this.getBreadcrumbs(),
+				this.getDescription(),
+				this.getContent()
+			];
+		},
+		false,
+		{
+			'getBreadcrumbs':function(){
+				var parent = this.block.getNavigation(this.item.parent),
+					name = (parent)?parent.name:"||";
+				return {
+					"content":[
+						{"elem":"link", "mods":{"breadcrumbs":true}, "item":this.item.parent, "content":name},
+						{"tag":"span", "content":this.block.getNavigation(this.item.id).name} 
+					]
+				};
+			},
+			'getDescription':function(){
+				return {"elem":"itemDescription", "content":(this.item.description)?[this.item.description]:"Описание отсутствует"};
+			},
+			'getContent':function(){
+				var grouping = this.item.content,
+					content = {"elem":"content", "content":[]},
+					group, temp, key, i, j;
+				
+				this.grouping = {};
+				
+				for(key in grouping){
+					if(!this.grouping[grouping[key].parent])this.grouping[grouping[key].parent]=[];
+					this.grouping[grouping[key].parent].push(grouping[key]);
+				}
+				
+				for(i in this.grouping){
+					temp = this.grouping[i];
+					group = {
+						"elem":"group",
+						"content":[
+							{"elem":"link", "mods":{"big":true}, "item":i, "content":this.block.getNavigation(i).name}
+						]
+					};
+					
+					for(j in temp){
+						group.content.push({"elem":"noteGroup", "content":[
+							{"elem":"link", "item":temp[j].id, "content":temp[j].name},
+							{"elem":"note", "content":temp[j].note}
+						]});
+					}
+					
+					content.content.push(group);
+				}
+				
+				
+				return content;
+			}
 		}
 	);
 	
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'link'},
 		function(data){
+			
 			this.item = data.item;
 			this.template = blib.clone(this.template);	
 			this.template.content = data.content;
+			this.template.mods = data.mods;
 		},
 		{
 			'tag':'a',
@@ -94,17 +186,62 @@
 		},
 		{
 			'onclick':function(){
-				var self = this;
+				var self = this,
+					links = self.block.children['bDocumentation__link'];
+				
+				if(!this._getMode("breadcrumbs")){for(key in links)links[key]._setMode("active",false)};
+				
 				blib.ajax({
 					'data':{'blib':'bDocumentation', 'id':this.item, 'ajax':true},
+					'dataType':'json',
 					'success':function(data){
 						var item = {
 							'elem':'item',
 							'content':data.item
-						};						
-						self.block.setItem(item);
+						};
+						blib.build(data);
+						self._setMode("active",true);
 					}
 				});				
+			}
+		}
+	);
+	
+	blib.build.define(
+		{'block':'bDocumentation', 'elem':'ul'},
+		function(data){
+			this.template = blib.clone(this.template);	
+			this.template.content = data.content;
+			this.template.mods = data.mods || {};
+		},
+		{
+			"tag":"ul"
+		}
+	);
+	
+	blib.build.define(
+		{'block':'bDocumentation', 'elem':'opener'},
+		function(data){
+			this.template = blib.clone(this.template);	
+			this.template.content = data.content;
+		},
+		false,
+		{
+			'onclick':function(){
+				var ul = this.parent.children.bDocumentation__ul[0],
+					status = ul._getMode("opened");
+								
+				if(status){
+					ul._setMode("opened",false);
+					this._setMode("opened",false);
+					this.template.content = "+";
+					this.dom.innerHTML = "+";
+				}else{
+					ul._setMode("opened",true);
+					this._setMode("opened",true);
+					this.template.content = "-";
+					this.dom.innerHTML = "-";
+				}
 			}
 		}
 	);

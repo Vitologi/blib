@@ -18,13 +18,12 @@ class bDocumentation extends bBlib{
 			'block' => __class__,
 			'mods' => $this->data['mods']
 		);
-		
+
 		if($this->data['id']){
 		
 			$Q = array(
 				'select'	=> array(
-					'bDocumentation' => array('id', 'name', 'description' ,'group', 'parent'=>'bDocumentation_id'),
-					'bDocumentation__group' => array('groupName'=>'name'),
+					'bDocumentation' => array('id', 'name', 'description' ,'group', 'parent'=>'bDocumentation_id')
 				),
 				'where' => array(
 					'bDocumentation' => array('id'=>$this->data['id'])
@@ -42,8 +41,7 @@ class bDocumentation extends bBlib{
 				}
 				$Q = array(
 					'select'	=> array(
-						'bDocumentation' => array('id', 'name', 'note'),
-						'bDocumentation__group' => array('groupName'=>'name'),
+						'bDocumentation' => array('id', 'name', 'note', 'parent'=>'bDocumentation_id')
 					),
 					'where' => array(
 						'bDocumentation' => $where
@@ -53,36 +51,21 @@ class bDocumentation extends bBlib{
 				$content = $result->fetchALL(PDO::FETCH_ASSOC);
 			}
 			
-			$answer['item'] = array(
-				'data'=> $temp,
-				'content'=> $content,
-				'id'=> $this->data['id']
-			);
-
+			$temp['content'] = $content;
+			$answer['item'] = $temp;
 		}
 		
-		if($this->data['group']){
+		if($this->data['chapter']){
 			$Q = array(
 				'select'	=> array(
-					'bDocumentation__group' => array('id', 'name', 'group'=>'bDocumentation__group_id')
+					'bDocumentation' => array('id', 'name', 'parent'=>'bDocumentation_id')
 				)
 			);
 			$result = $this->_query($Q);
 			$navigation = $result->fetchALL(PDO::FETCH_ASSOC);
-			
-			$Q = array(
-				'select'	=> array(
-					'bDocumentation' => array('id', 'name', 'group'=>'bDocumentation__group_id')
-				)
-			);
-			$result = $this->_query($Q);
-			$content = $result->fetchALL(PDO::FETCH_ASSOC);
-			
-			$answer['group'] = array(
-				'navigation'=>$navigation,
-				'content'=>$content,
-				'start'=>$this->data['group']
-			);
+						
+			$answer['navigation'] = $navigation;
+			$answer['chapter'] = $this->data['chapter'];
 		}
 		
 		if($this->data['ajax']){

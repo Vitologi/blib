@@ -868,12 +868,57 @@
 				if(is(handler, 'function')){
 					handler.call(this);
 				};
+			},
+			'_remove':function(deep){
+				
+				var template = this.template,
+					name = (template.block)?(template.block+((template.elem)?'__'+template.elem:'')):"noname",
+					temp, children, i, j;
+					
+				temp = this.children;
+				
+				for(i in temp){
+					children = temp[i];
+					for(j in children){
+						children[j]._remove();
+					}					
+				}				
+				
+				temp = [(this.block)?this.block.children[name]:false, (this.block !== this.parent)?this.parent.children[name]:false];
+				
+				for(i in temp){
+					children = temp[i];
+					for(j in children){
+						if(children[j] === this){
+							children[j] = children[children.length-1];
+							children.length--;
+						}
+					}
+				}
+				
+				if(!deep)this.parent.dom.removeChild(this.dom);
+			},
+			'_replace':function(data){
+				var blocks = [],
+					parent = this.parent,
+					curentParent = parent;
+				
+				while(curentParent){
+					if(curentParent.template.block && !curentParent.template.elem){
+						blocks.push(curentParent);
+					}
+					curentParent = curentParent.parent;
+				}
+				
+				parent.dom.insertBefore(blib.build(data,{'parent':parent, 'blocks':blocks}), this.dom);
+				this._remove();
 			}
 		},
 		defaultBlock = function(){};
-	
+
 	defaultBlock.prototype = baseProto;
-		
+
+	
 	Blib.config("bBuild", config);
 	Blib.config("_private.bBuild", true);	
 	
@@ -932,14 +977,23 @@
 			
 			
 			if(factory = navigate(config.block, (data['elem'])?(blockName+"."+data['elem']):data['block'])){
+					
+					factory.prototype.block = block;
+					factory.prototype.parent = parent;
 					obj = new factory(data);
+					delete factory.prototype.block;
+					delete factory.prototype.parent;
+					
 					data = clone(obj.template);
 					if(!data)return;
 			}else{
-				obj=new defaultBlock();
+				obj = new defaultBlock();
+				obj.constructor = defaultBlock;
 				var tmp = (data['elem']?{'block':blockName, 'elem':data['elem']}:(data['block']?{'block':blockName}:{}));
-				obj.template = tmp;			
+				obj.template = tmp;		
+			
 			}
+			
 			
 			//[первый в ответе, текущий блок, имя обьекта, ДОМ-результат, есть ли контейнер]
 			currentClass = (data['elem'])?(blockName+"__"+data['elem']):data['block'];
@@ -958,7 +1012,6 @@
 					if(block !== parent){block._setChildren(currentClass||"noname", obj);}
 				}
 			};
-			
 			
 			for(evt in obj){
 				if(!is(obj[evt], 'function') || evt.substr(0,2) !== "on")continue;

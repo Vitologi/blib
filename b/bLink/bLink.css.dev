@@ -7,3 +7,11 @@
 		}
 		.bLink_style_default:hover{
 			text-decoration:underline;}
+	
+	.bLink_style_breadcrumbs{
+		margin-right:5px;}
+		.bLink_style_breadcrumbs:after{
+			margin-left:5px;
+			content:'>>';}
+		.bLink_style_breadcrumbs:last-child:after{
+			content:'';}

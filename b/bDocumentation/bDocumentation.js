@@ -3,16 +3,15 @@
 	blib.build.define(
 		{'block':'bDocumentation'},
 		function(data){
-			var chapter = (data.chapter)?{"block":"bDocumentation", "elem":"chapter", "chapter":data.chapter}:false,
-				item = (data.item)?{"block":"bDocumentation", "elem":"item", "item":data.item}:false;
+			var chapter = {"block":"bDocumentation", "elem":"chapter", "chapter":(data.chapter?data.chapter:false)},
+				item = {"block":"bDocumentation", "elem":"item", "item":(data.item?data.item:false)};
 			
 			if(data.navigation)this.navigation = data.navigation;
 			
-			if(!(chapter && item) && this.singleton){
-				return (chapter)?this.singleton.setChapter(chapter):this.singleton.setItem(item);
-				
+			if(!(data.chapter && data.item) && this.singleton){
+				return (data.chapter)?this.singleton.setChapter(chapter):this.singleton.setItem(item);
 			}
-			
+
 			this.template = blib.clone(this.template);
 			this.template.content = [
 				{
@@ -29,8 +28,7 @@
 				}
 			];
 			
-			this.constructor.prototype.singleton = this;
-			
+			this.constructor.prototype.singleton = this;			
 		},
 		false,
 		{
@@ -44,7 +42,10 @@
 			},
 			'setItem':function(data){
 				this.children.bDocumentation__item[0]._replace(data);
-			}
+			},
+			'_onRemove':[function(){
+				this.constructor.prototype.singleton = false;
+			}]
 		}
 		
 	);
@@ -52,6 +53,8 @@
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'chapter'},
 		function(data){
+			if(!data.chapter)return;
+			
 			var navigation = this.block.navigation,
 				header = "Content";
 			
@@ -108,6 +111,7 @@
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'item'},
 		function(data){
+			if(!data.item)return;
 			this.item = data.item;
 			
 			this.template = blib.clone(this.template);	
@@ -186,10 +190,7 @@
 		},
 		{
 			'onclick':function(){
-				var self = this,
-					links = self.block.children['bDocumentation__link'];
-				
-				if(!this._getMode("breadcrumbs")){for(key in links)links[key]._setMode("active",false)};
+				var self = this;
 				
 				blib.ajax({
 					'data':{'blib':'bDocumentation', 'id':this.item, 'ajax':true},
@@ -200,9 +201,17 @@
 							'content':data.item
 						};
 						blib.build(data);
-						self._setMode("active",true);
+						self.activate();
 					}
 				});				
+			},
+			'activate':function(){
+				var links = this.block.children['bDocumentation__link'],
+					key;
+					
+				for(key in links){
+					if(links[key].item === this.item){links[key]._setMode("active",true);}else{links[key]._setMode("active",false);};
+				}
 			}
 		}
 	);

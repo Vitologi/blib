@@ -186,10 +186,7 @@
 		},
 		{
 			'onclick':function(){
-				var self = this,
-					links = self.block.children['bDocumentation__link'];
-				
-				if(!this._getMode("breadcrumbs")){for(key in links)links[key]._setMode("active",false)};
+				var self = this;
 				
 				blib.ajax({
 					'data':{'blib':'bDocumentation', 'id':this.item, 'ajax':true},
@@ -200,9 +197,17 @@
 							'content':data.item
 						};
 						blib.build(data);
-						self._setMode("active",true);
+						self.activate();
 					}
 				});				
+			},
+			'activate':function(){
+				var links = this.block.children['bDocumentation__link'],
+					key;
+					
+				for(key in links){
+					if(links[key].item === this.item){links[key]._setMode("active",true);}else{links[key]._setMode("active",false);};
+				}
 			}
 		}
 	);

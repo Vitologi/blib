@@ -515,6 +515,7 @@
 			if(is(obj,"undefined"))return this[0].innerHTML;
 			for(var len = this.length, i=0; i<len; i++){
 				this[i].innerHTML = '';
+				
 				if(obj.cloneNode){
 					this[i].appendChild(obj);
 				}else{
@@ -800,6 +801,7 @@
 		},
 		baseProto = {
 			'template':{},
+			'_onRemove':[],
 			'_onSetMode':{/* 'js':{'init':function(){alert('block inited');}} */ },
 			'_setTemplate':function(tmpl, reset){
 				if(reset){ this.template = tmpl;}
@@ -870,17 +872,18 @@
 				};
 			},
 			'_remove':function(deep){
-				
+
 				var template = this.template,
 					name = (template.block)?(template.block+((template.elem)?'__'+template.elem:'')):"noname",
-					temp, children, i, j;
+					temp, children, i, j, key;
 					
 				temp = this.children;
 				
 				for(i in temp){
 					children = temp[i];
+					
 					for(j in children){
-						children[j]._remove();
+						children[j]._remove(true);
 					}					
 				}				
 				
@@ -891,17 +894,34 @@
 					for(j in children){
 						if(children[j] === this){
 							children[j] = children[children.length-1];
-							children.length--;
+							delete children[children.length-1];
+							children.length = children.length-1;
+							
 						}
 					}
 				}
 				
+				for(key in this._onRemove){
+					this._onRemove[key].call( this );
+				}
+				
 				if(!deep)this.parent.dom.removeChild(this.dom);
+			},
+			'_removeCildren':function(){
+				var children = this.children,
+					i, j;
+					
+				for(i in children){
+					for(j in children[i]){
+						children[i][j]._remove();
+					}
+				}
 			},
 			'_replace':function(data){
 				var blocks = [],
 					parent = this.parent,
-					curentParent = parent;
+					curentParent = parent,
+					nextSibling = this.dom.nextSibling || null;
 				
 				while(curentParent){
 					if(curentParent.template.block && !curentParent.template.elem){
@@ -910,8 +930,8 @@
 					curentParent = curentParent.parent;
 				}
 				
-				parent.dom.insertBefore(blib.build(data,{'parent':parent, 'blocks':blocks}), this.dom);
 				this._remove();
+				parent.dom.insertBefore(blib.build(data,{'parent':parent, 'blocks':blocks}), nextSibling);				
 			}
 		},
 		defaultBlock = function(){};

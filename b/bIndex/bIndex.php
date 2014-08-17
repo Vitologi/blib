@@ -39,11 +39,7 @@ class bIndex extends bBlib{
 		$data["'{title}'"] = $config["'{title}'"];
 		$template = json_decode($row['template'], true);
 		
-		if($this->template[0] === $template[0]){
-			$template = $this->templateDiff($this->template, $template);
-		}
-		
-		$data["'{template}'"] = $this->_getTemplate($template);
+		$data["'{template}'"] = $this->_getTemplateDiff($this->template, $template);
 		
 		if($this->ajax){
 			header('Content-Type: application/json; charset=UTF-8');
@@ -57,43 +53,10 @@ class bIndex extends bBlib{
 		}
 
 	}
-	
-	protected function templateDiff($old, $new) {
-		if($old[0] !== $new[0]){return $new;}
-		$difference=array($new[0]);
-		foreach($new as $key => $value) {
-			if( is_array($value) ) {
-				if( !isset($old[$key]) || !is_array($old[$key]) ) {
-					$difference[$key] = $value;
-				} else {
-					$new_diff = $this->templateDiff($old[$key], $value);
-					if( !empty($new_diff) )
-						$difference[$key] = $new_diff;						
-				}
-			} else if( !array_key_exists($key,$old) || $old[$key] !== $value ) {
-				$difference[$key] = $value;
-			}
-			unset($old[$key]);
-		}
-		
-		foreach($old as $key => $value) {
-			$difference[$key] = null;
-		}
-		
-		return $difference;
-	}
-	
-	
+
 	protected function getData($data){
 		return $data;
 	}
-	
-	/*
-	private function setbIndex(){
-		$newConfig = $this->_setConfig($this->data['pageId'], $this->_getDefaultConfig('item'));
-		var_dump($newConfig, $this->_getConfig($this->data['pageId']));
-	}
-	*/
 	
 	public function _install($data = array(), $caller = null){
 		if($caller !== null){return $caller->local['bDatabase']->install;}

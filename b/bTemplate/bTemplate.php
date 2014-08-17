@@ -14,7 +14,8 @@ class bTemplate extends bBlib{
 	
 	public function output(){
 		return array(
-			'bTemplate'=>$this
+			'bTemplate'=>$this,
+			'bTemplate__dynamic'=>false
 		);
 	}
 	
@@ -49,25 +50,62 @@ class bTemplate extends bBlib{
 		);
 		
 		if(!$result = $this->_query($Q)){throw new Exception('Can`t get template from database.');}
-
-		while($row = $result->fetch()){
 			
-			if($row['blib']){
-				$block = new $row['blib'](json_decode($row['template'],true));
-				$return = $block->output();
-				$row['template'] = is_array($return)?json_encode($return):$return;
+		while($row = $result->fetch()){
+			if($row['blib']){ 
+				$this->local['block'][$row['id']] = new $row['blib'](json_decode($row['template'],true));
+			}else{
+				$this->local['stack'][$row['id']] = $row['template'];
 			}
-
-			$this->local['stack'][$row['id']] = $row['template'];
 		}
 		
+	}
+	
+	private function templateDiff($old, $new) {
+		
+		$oldKey = $old[0];
+		$newKey = $new[0];
+		$difference = array($newKey);
+		
+		foreach($new as $key => $value) {
+			if( is_array($value)  && $key != 0) {
+				$temp = $this->templateDiff($old[$key], $value);
+				if($temp)$difference[$key] = $temp;
+			}
+			unset($old[$key]);
+		}
+		
+		$block = $this->local['block'][$newKey];
+		$isDynamic = ($block)?$block->local['bTemplate__dynamic']:false;
+		
+		if($oldKey !== $newKey){
+			
+			if($block && !array_key_exists($newKey,$this->local['stack'])){
+				$this->local['stack'][$newKey] = json_encode($block->output());
+			}
+			
+			return $difference;
+		}
+		
+		if($block){
+			if(!$isDynamic)return null;
+			if(!array_key_exists($newKey,$this->local['stack'])){
+				$this->local['stack'][$newKey] = json_encode($block->output());
+			}
+		}
+		
+		foreach($old as $key => $value) {
+			$difference[$key] = null;
+		}
+		
+		return $difference;
 	}
 	
 	private function glueTempStack(Array $list, $deep = false){
 		
 		if(!$deep){
 			$deep = $list[0];
-			$template = '{"block":"bTemplate", "content":['.$this->stack[$list[0]].'] ,"template":'.json_encode($list).' }';
+			$template = '{"block":"bTemplate", "content":['.$this->stack[$list[0]].'] ,"template":'.json_encode($list,JSON_FORCE_OBJECT).' }';
 		}else{
 			$template = $this->stack[$list[0]];
 		}
@@ -89,13 +127,13 @@ class bTemplate extends bBlib{
 				continue;
 			}elseif(is_array($value)){
 				$levelTemplate['"{'.$key.'}"'] = $this->glueTempStack($value, $deep.'.'.$key);
-			}else{
-				$levelTemplate['"{'.$key.'}"'] = $this->stack[$value];
 			}
 		}
 		
 		return str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
 	}
+	
+	
 	
 	public function _install($data = array(), $caller = null){
 		if($caller !== null){return $caller->local['bDatabase']->install;}
@@ -109,4 +147,15 @@ class bTemplate extends bBlib{
 		$this->addTempStack($data);
 		return $this->glueTempStack($data);
 	}
+	
+	public function _getTemplateDiff($data, $caller = null){
+		if($caller !== null){return $caller->local['bTemplate']->_getTemplateDiff($data);};
+		if(!is_array($data[0])){$data[0] = array($data[0]);}
+		if(!is_array($data[1])){$data[1] = array($data[1]);}
+		$this->addTempStack($data[1]);
+		$diff = $this->templateDiff($data[0],$data[1]);
+		return $this->glueTempStack($diff);
+	}
+	
+	
 }

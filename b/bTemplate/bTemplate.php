@@ -61,22 +61,29 @@ class bTemplate extends bBlib{
 		
 	}
 	
-	private function templateDiff($old, $new) {
+	private function templateDiff($old, $new, $deep = false) {
 		
 		$oldKey = $old[0];
 		$newKey = $new[0];
 		$difference = array($newKey);
 		
+		if($oldKey != $newKey)$old = array();
+		
+		
 		foreach($new as $key => $value) {
 			if( is_array($value)  && $key != 0) {
-				$temp = $this->templateDiff($old[$key], $value);
-				if($temp)$difference[$key] = $temp;
+				$temp = $this->templateDiff($old[$key], $value, true);
+				if(count($temp))$difference[$key] = $temp;
 			}
 			unset($old[$key]);
 		}
 		
 		$block = $this->local['block'][$newKey];
 		$isDynamic = ($block)?$block->local['bTemplate__dynamic']:false;
+		
+		foreach($old as $key => $value) {
+			$difference[$key] = array(null);
+		}
 		
 		if($oldKey !== $newKey){
 			
@@ -88,17 +95,16 @@ class bTemplate extends bBlib{
 		}
 		
 		if($block){
-			if(!$isDynamic)return null;
+			if(!$isDynamic)return array();
 			if(!array_key_exists($newKey,$this->local['stack'])){
 				$this->local['stack'][$newKey] = json_encode($block->output());
 			}
+			return $difference;
 		}
 		
-		foreach($old as $key => $value) {
-			$difference[$key] = null;
-		}
 		
-		return $difference;
+		
+		return (count($difference)!=1 || !$deep)?$difference:array();
 	}
 	
 	private function glueTempStack(Array $list, $deep = false){

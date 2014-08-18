@@ -35,38 +35,45 @@ blib.build.define(
 			
 		},
 		'compare':function(old, now, deep){
-			if(!now[0])return;	
-			
-			var key, prop, j, temp, 
-				childs = this.children.bTemplate__position;
-			
 			deep = deep || now[0];
+			
+			var counter = 0,
+				key, prop;
+			
+			if(now[0] != old[0] || !now[0]){
+				for (prop in old) delete old[prop];
+				for (prop in now) old[prop] = now[prop];
+				this.replace(deep);
+				return;
+			}
 
 			for(key in now){
 				
-				if(blib.is(now[key],["object","array"]) && blib.is(old[key],["object","array"])){
+				if(!(key in old))old[key]=[];
+				
+				if(blib.is(now[key],["object","array"])){
 					this.compare(old[key], now[key], deep+'.'+key);
+					counter++;
 					continue;
-				}
-				
-				if(key !== '0'){
-					old[key] = now[key];
-					temp = deep+'.'+key;
-				}else{
-					for (prop in old) delete old[prop];
-					for (prop in now) old[prop] = now[prop];
-					temp = deep;
-				}
-				
-				for(j in childs){
-					if(childs[j].template.template === temp){
-						childs[j]._replace(this.chunk[temp]);
-						break;
-					}
 				}
 
 			}
 			
+			if(!counter){
+				old[key] = now[key];
+				this.replace(deep);
+			}
+			
+		},
+		'replace':function(num){
+			var childs = this.children.bTemplate__position
+				key;
+			for(key in childs){
+				if(childs[key].template.template === num){
+					childs[key]._replace(this.chunk[num]);
+					break;
+				}
+			}
 		}
 	}
 );

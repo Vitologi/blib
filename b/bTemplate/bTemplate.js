@@ -52,8 +52,6 @@ blib.build.define(
 				if(key !== '0'){
 					old[key] = now[key];
 					temp = deep+'.'+key;
-				}else if(old[key] === now[key]){
-					continue;
 				}else{
 					for (prop in old) delete old[prop];
 					for (prop in now) old[prop] = now[prop];

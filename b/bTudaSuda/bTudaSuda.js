@@ -15,8 +15,7 @@
 			this.status = '';
 			this.interval = false;
 			this.allows = true;
-			this.template = blib.clone(this.template);
-			this.template.content = "Наверх";
+			this.template = {"content":"Наверх"};
 
 			window.onscroll = function() {
 				if(!self.allows)return;

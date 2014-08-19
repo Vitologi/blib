@@ -6,11 +6,8 @@
 			this.ajax = data.ajax;
 			this.link = (data.link)?data.link:data.content;
 			
-			this.template = blib.clone(this.template);
-			this.template.mods = data.mods;
-			this.template.attrs = {'href':this.link};
-			this.template.content = data.content;
-
+			this.template = data;
+			this.template.attrs.href = this.link;
 		},
 		{
 			'tag':'a'

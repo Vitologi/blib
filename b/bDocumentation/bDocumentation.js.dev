@@ -12,21 +12,22 @@
 				return (data.chapter)?this.singleton.setChapter(chapter):this.singleton.setItem(item);
 			}
 
-			this.template = blib.clone(this.template);
-			this.template.content = [
-				{
-					"elem":"outer",
-					"content":[
-						{
-							"elem":"inner",
-							"content":[
-								chapter,
-								item
-							]
-						}
-					]
-				}
-			];
+			this.template = {
+				"content":[
+					{
+						"elem":"outer",
+						"content":[
+							{
+								"elem":"inner",
+								"content":[
+									chapter,
+									item
+								]
+							}
+						]
+					}
+				]
+			};
 			
 			this.constructor.prototype.singleton = this;			
 		},
@@ -58,7 +59,6 @@
 			var navigation = this.block.navigation,
 				header = "Content";
 			
-			this.template = blib.clone(this.template);	
 			this.id = data.chapter;
 			this.navigation = {};			
 				
@@ -68,11 +68,13 @@
 				if(navigation[key].id == this.id)header=navigation[key].name;
 			}
 
-			this.template.content = [
-				{"elem":"header", "mods":{"center":true}, "content":header},
-				{"tag":"hr", "attrs":{"id":"hr", "style":"width:95%,margin:2px auto;"}},
-				this.getChild(this.id)
-			];
+			this.template = { 
+				"content":[
+					{"elem":"header", "mods":{"center":true}, "content":header},
+					{"tag":"hr", "attrs":{"id":"hr", "style":"width:95%,margin:2px auto;"}},
+					this.getChild(this.id)
+				]
+			};
 			
 		},
 		false,
@@ -114,12 +116,13 @@
 			if(!data.item)return;
 			this.item = data.item;
 			
-			this.template = blib.clone(this.template);	
-			this.template.content = [
-				this.getBreadcrumbs(),
-				this.getDescription(),
-				this.getContent()
-			];
+			this.template = {
+				"content":[
+					this.getBreadcrumbs(),
+					this.getDescription(),
+					this.getContent()
+				]
+			};
 		},
 		false,
 		{
@@ -178,9 +181,7 @@
 		function(data){
 			
 			this.item = data.item;
-			this.template = blib.clone(this.template);	
-			this.template.content = data.content;
-			this.template.mods = data.mods;
+			this.template = data;
 		},
 		{
 			'tag':'a',
@@ -219,9 +220,7 @@
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'ul'},
 		function(data){
-			this.template = blib.clone(this.template);	
-			this.template.content = data.content;
-			this.template.mods = data.mods || {};
+			this.template = data;
 		},
 		{
 			"tag":"ul"
@@ -231,8 +230,7 @@
 	blib.build.define(
 		{'block':'bDocumentation', 'elem':'opener'},
 		function(data){
-			this.template = blib.clone(this.template);	
-			this.template.content = data.content;
+			this.template = data;
 		},
 		false,
 		{

@@ -47,10 +47,11 @@
 				]
 			});
 			
-			this.template = blib.clone(this.template);
-			this.template.mods = data.mods;
-			this.template.header = header;
-			this.template.content = temp;
+			this.template = {
+				"mods":data.mods,
+				"header":header,
+				"content":temp
+			};
 		},
 		{
 			'tag':'table'
@@ -78,8 +79,7 @@
 				temp.push({'tag':'td', 'content':data.content[key]});
 			}
 			
-			this.template = blib.clone(this.template);
-			this.template.content = temp;
+			this.template = {"content":temp};
 		},
 		{
 			'tag':'tr'
@@ -96,8 +96,7 @@
 			temp.push({'tag':'td', 'content':data.content.cost});
 			temp.push({'elem': 'description', 'tag':'td', 'content':data.content.description});
 			
-			this.template = blib.clone(this.template);
-			this.template.content = temp;
+			this.template = {"content":temp};
 		},
 		//template
 		{
@@ -110,7 +109,6 @@
 		function(data){
 			this.id = data.content.id;
 			this.chousen = false;
-			this.template = blib.clone(this.template);
 			this.price = data.content.cost;
 		},
 		//template
@@ -150,29 +148,25 @@
 	blib.build.define(
 		{'block':'bTarifScale', 'elem':'regdata'},
 		function(data){
-			this.template = blib.clone(this.template);
-			this.template.mods = {'closed':true};
-			this.template.content = [
-				{'elem':'regHeader', 'content':"Для оформления заявки укажите персональные данные, чтобы мы могли связаться с Вами."},
-				{'elem':'regField', 'tag':'input', 'attrs':{'type':'text', 'name':'name', 'placeholder':"Имя", 'value':"Имя"}},
-				{'elem':'regField', 'tag':'input', 'attrs':{'type':'text', 'name':'email', 'placeholder':"Электронная почта", 'value':"Электронная почта"}},
-				{'elem':'regField', 'tag':'input', 'attrs':{'type':'text', 'name':'phone', 'placeholder':"Телефон", 'value':"Телефон"}},
-				{'elem':'regField', 'tag':'input', 'attrs':{'type':'text', 'name':'passport', 'placeholder':"Паспорт", 'value':"Паспорт"}},
-				{'elem':'regField', 'tag':'textarea', 'attrs':{'name':'passport_issued', 'placeholder':"Дата выдачи паспорта"}, 'content':"Дата выдачи паспорта"},
-				{'elem':'regField', 'tag':'textarea', 'attrs':{'name':'address', 'placeholder':"Адрес"}, 'content':"Адрес"}
-			];
+			this.template = {
+				"mods":{'closed':true},
+				"content":[
+					{'elem':'regHeader', 'content':"Для оформления заявки укажите персональные данные, чтобы мы могли связаться с Вами."},
+					{'elem':'regField', 'tag':'input', 'attrs':{'type':'text', 'name':'name', 'placeholder':"Имя", 'value':"Имя"}},
+					{'elem':'regField', 'tag':'input', 'attrs':{'type':'text', 'name':'email', 'placeholder':"Электронная почта", 'value':"Электронная почта"}},
+					{'elem':'regField', 'tag':'input', 'attrs':{'type':'text', 'name':'phone', 'placeholder':"Телефон", 'value':"Телефон"}},
+					{'elem':'regField', 'tag':'input', 'attrs':{'type':'text', 'name':'passport', 'placeholder':"Паспорт", 'value':"Паспорт"}},
+					{'elem':'regField', 'tag':'textarea', 'attrs':{'name':'passport_issued', 'placeholder':"Дата выдачи паспорта"}, 'content':"Дата выдачи паспорта"},
+					{'elem':'regField', 'tag':'textarea', 'attrs':{'name':'address', 'placeholder':"Адрес"}, 'content':"Адрес"}
+				]
+			};
 		}
 	);
 	
 	blib.build.define(
 		{'block':'bTarifScale', 'elem':'regField'},
 		function(data){
-			this.template = blib.clone(this.template);
-			this.template.mods = data.mods;
-			this.template.tag = data.tag;
-			this.template.content = data.content;
-			this.template.attrs = data.attrs;
-			
+			this.template = data;
 			this.virgin = true;
 		},
 		false,
@@ -192,8 +186,7 @@
 	blib.build.define(
 		{'block':'bTarifScale', 'elem':'price'},
 		function(data){
-			this.template = blib.clone(this.template);
-			this.template.content = data.content;
+			this.template = data;
 			this.price = 0;
 		},
 		false,
@@ -208,7 +201,7 @@
 	blib.build.define(
 		{'block':'bTarifScale', 'elem':'submit'},
 		function(data){
-			this.template.content = data.content;
+			this.template = data;
 		},
 		false,
 		//actions

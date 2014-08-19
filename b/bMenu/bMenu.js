@@ -31,8 +31,7 @@
 			}
 			
 			temp = glueMenuItem(combine);
-			this.template = blib.clone(this.template);
-			this.template.mods = data.mods;
+			this.template = data;
 			temp.content.push({'elem':'clear'});
 			this.template.content = temp.content;
 
@@ -66,8 +65,9 @@
 			}		
 			
 			this.opened = false;
-			this.template = blib.clone(this.template);
-			this.template.content = content;
+			this.template = {
+				"content":content
+			};
 			
 		},
 		//template
@@ -185,8 +185,7 @@
 	blib.build.define(
 		{'block':'bMenu', 'elem':'child'},
 		function(data){
-			this.template = blib.clone(this.template);
-			this.template.content = data.content;
+			this.template = data;
 		},
 		//template
 		{

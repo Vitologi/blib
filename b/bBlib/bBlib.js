@@ -871,6 +871,21 @@
 					handler.call(this);
 				};
 			},
+			'_append':function(data,clear){
+				if(clear)this._removeCildren();
+				
+				var blocks = [],
+					curentParent = this.parent;
+				
+				while(curentParent){
+					if(curentParent.template.block && !curentParent.template.elem){
+						blocks.push(curentParent);
+					}
+					curentParent = curentParent.parent;
+				}
+
+				this.dom.appendChild(blib.build(data,{'parent':this, 'blocks':blocks}));	
+			},
 			'_remove':function(deep){
 
 				var template = this.template,

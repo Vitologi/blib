@@ -7,6 +7,7 @@
 			this.link = (data.link)?data.link:data.content;
 			
 			this.template = data;
+			if(!this.template.attrs)this.template.attrs = {};
 			this.template.attrs.href = this.link;
 		},
 		{

@@ -4,29 +4,27 @@
 		{'block':'bForm'},
 		function(data){
 			
-			this.ajax = data.ajax;
-			this.processor = data.processor;
-			this.action = data.attrs.action;
+			this.ajax = data.ajax || data.attrs.ajax;
+			this.processor = data.processor || false;
+			this.action = data.action || data.attrs.action;
+			this.fields = {};
 		
-			this.template = blib.clone(this.template);
-			this.template.mods = data.mods;
-			this.template.content = data.content;
-			this.template.attrs = data.attrs;
-			
-
+			this.template = data;
 		},
 		{
 			'tag':"form"
+		},
+		{
+			'serialize':function(){
+				
+			}
 		}
 	);
 	
 	blib.build.define(
 		{'block':'bForm', 'elem':'message'},
 		function(data){
-			this.template = blib.clone(this.template);
-			this.template.mods = data.mods;
-			this.template.content = data.content;
-			this.template.attrs = data.attrs;
+			this.template = data;
 		},
 		false,
 		{
@@ -40,10 +38,11 @@
 	blib.build.define(
 		{'block':'bForm', 'elem':'text'},
 		function(data){
-			this.template = blib.clone(this.template);
-			this.template.mods = data.mods;
-			this.template.content = data.content;
-			this.template.attrs = data.attrs;
+			var block = this.block;
+			
+			block.fields[data.name || data.attrs.name] =  data.value  || data.attrs.value;
+			this.template = data;
+			
 		},
 		{'tag':"input", 'attrs':{'type':"text"}}
 	);
@@ -51,29 +50,34 @@
 	blib.build.define(
 		{'block':'bForm', 'elem':'submit'},
 		function(data){
-			this.template = blib.clone(this.template);
-			this.template.mods = data.mods;
-			this.template.content = data.content;
-			this.template.attrs = data.attrs;
+			this.template = data;
 		},
 		{'tag':"input", 'attrs':{'type':"submit"}},
 		{
 			'onclick':function(e){
 				var self = this,
-					block = self.block;
+					block = self.block,
+					request = {};
+				
+				if(block.processor)request.blib = block.processor;
 					
 				if(block.ajax){
 					e.preventDefault();
 					
 					blib.ajax({
 						'url':block.action,
-						'data':{'blib':block.processor},
+						'data':request,
 						'success':function(data){
-							block.children.bForm__message[0].setText(data);
+							block.children.bForm__message[0]._append({"content":data},true);
 						}
 					});
+				}else{
+					
 					
 				}
+				
+				
+				
 			}
 		}
 	);

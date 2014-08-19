@@ -1004,13 +1004,15 @@
 					delete factory.prototype.block;
 					delete factory.prototype.parent;
 					
+					if(!obj.template)return;
+					obj.template = extend(true, {}, obj.constructor.prototype.template, obj.template);
 					data = clone(obj.template);
-					if(!data)return;
+					
 			}else{
 				obj = new defaultBlock();
 				obj.constructor = defaultBlock;
-				var tmp = (data['elem']?{'block':blockName, 'elem':data['elem']}:(data['block']?{'block':blockName}:{}));
-				obj.template = tmp;		
+				temp = (data['elem']?{'block':blockName, 'elem':data['elem']}:(data['block']?{'block':blockName}:{}));
+				obj.template = temp;		
 			
 			}
 			

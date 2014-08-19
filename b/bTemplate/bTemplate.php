@@ -111,6 +111,27 @@ class bTemplate extends bBlib{
 		
 		if(!$deep){
 			$deep = $list[0];
+		}
+		
+		$template = $this->stack[$list[0]];
+
+		$levelTemplate = array();
+		
+		foreach($list as $key => $value){
+			if((int)$key === 0 || (int)$value === 0){
+				continue;
+			}elseif(is_array($value)){
+				$levelTemplate['"{'.$key.'}"'] = $this->glueTempStack($value, $deep.'.'.$key);
+			}
+		}
+		
+		return str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
+	}
+	
+	private function glueTempDiff(Array $list, $deep = false){
+		
+		if(!$deep){
+			$deep = $list[0];
 			$template = '{"block":"bTemplate", "content":['.$this->stack[$list[0]].'] ,"template":'.json_encode($list,JSON_FORCE_OBJECT).' }';
 		}else{
 			$template = $this->stack[$list[0]];
@@ -132,7 +153,7 @@ class bTemplate extends bBlib{
 			if((int)$key === 0 || (int)$value === 0){
 				continue;
 			}elseif(is_array($value)){
-				$levelTemplate['"{'.$key.'}"'] = $this->glueTempStack($value, $deep.'.'.$key);
+				$levelTemplate['"{'.$key.'}"'] = $this->glueTempDiff($value, $deep.'.'.$key);
 			}
 		}
 		
@@ -160,7 +181,7 @@ class bTemplate extends bBlib{
 		if(!is_array($data[1])){$data[1] = array($data[1]);}
 		$this->addTempStack($data[1]);
 		$diff = $this->templateDiff($data[0],$data[1]);
-		return $this->glueTempStack($diff);
+		return $this->glueTempDiff($diff);
 	}
 	
 	

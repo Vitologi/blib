@@ -824,6 +824,27 @@
 			'_setBlock':function(block){
 				this.block = block;
 			},
+			'_attr':function(key,value){
+				var elem = this.dom,
+					temp;
+				
+				if(!value)return (elem.getAttribute)?elem.getAttribute(key):elem[key];
+				
+				switch(is(value)){
+					case "function":
+						temp = value.toString().match(/function[^{]+\{([\s\S]*)\}$/)[1];
+						break;
+					case "array":
+					case "object":
+						temp = JSON.stringify(value);
+						break;
+					default:
+						temp = value;
+						break;
+				}
+				elem[key] = value;
+				if(elem.setAttribute)elem.setAttribute(key,temp);
+			},
 			'_getMode':function(mode){
 				var mods = this.template.mods || {},
 					block, elem, _mode, regexp, handle;
@@ -1097,27 +1118,11 @@
 			if(data['attrs']){
 				for(key in data['attrs']){
 					attr = data['attrs'][key];
-					
-					switch(is(attr)){
-						case "array":
-						case "object":
-							temp = JSON.stringify(attr);
-						break;
-						case "function":
-							result[key]=attr;
-							continue;
-						break;
-						default:
-							temp = attr;
-						break;
-					}
 
 					if(key=="className"){
-						result[key] += " "+temp;
-					}else if(result.setAttribute){
-						result.setAttribute(key, temp);
+						result[key] += " "+attr;
 					}else{
-						result[key] = temp;
+						obj._attr(key, attr);
 					}
 				}
 			}

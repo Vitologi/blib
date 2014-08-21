@@ -893,7 +893,7 @@
 				};
 			},
 			'_append':function(data,clear){
-				if(clear)this._removeCildren();
+				if(clear)this._removeChildren();
 				
 				var blocks = [],
 					curentParent = this.parent;
@@ -943,7 +943,7 @@
 				
 				if(!deep)this.parent.dom.removeChild(this.dom);
 			},
-			'_removeCildren':function(){
+			'_removeChildren':function(){
 				var children = this.children,
 					i, j;
 					
@@ -1186,17 +1186,20 @@
 		};
 		
 		//переопределяем блок/елемент в коллекцию
-		redefine = function(name, factory){
+		redefine = function(name, factory, template, action){
 			if(!is(factory, 'function') && !is(name.block, 'string'))return;
 			if(name.elem){ name.block = name.block+'.'+name.elem; }
-			var oldFactory = navigate(config.block, name.block);
+			
+			var oldFactory = navigate(config.block, name.block),
 				newFactory = function(data){
 					extend(true, factory.prototype, new oldFactory(data));
+					if(is(template, 'object')){factory.prototype._setTemplate(template)};
+					if(is(action, 'object')){factory.prototype._setAction(action)};
 					return new factory(data);
 				};
-			
+
 			for(key in oldFactory){
-				newFactory[key]=oldFactory[key];
+				newFactory[key] = oldFactory[key];
 			}
 			
 			return navigate(config.block, name.block, newFactory);

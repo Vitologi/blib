@@ -1,0 +1,17 @@
+.bForm{}
+	.bForm__text{}
+	.bForm__submit{}
+	.bForm__message{}
+	.bForm__reset{}
+	.bForm__button{}
+	.bForm__image{}
+	.bForm__text{}
+	.bForm__password{}
+	.bForm__checkbox{}
+	.bForm__radio{}
+	.bForm__file{}
+	.bForm__hidden{}
+	.bForm__textarea{
+		max-width: 100%;}
+	.bForm__select{}
+	

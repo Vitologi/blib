@@ -5,7 +5,7 @@ blib.build.define(
 		var singleton = this.singleton || false;
 		
 		if(!singleton || (singleton.template.template['0'] !== data.template['0'])){
-			if(singleton)singleton._removeCildren();
+			if(singleton)singleton._removeChildren();
 			this.template = data;
 			this.constructor.prototype.singleton = this;			
 		}else{

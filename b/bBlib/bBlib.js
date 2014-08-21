@@ -893,7 +893,7 @@
 				};
 			},
 			'_append':function(data,clear){
-				if(clear)this._removeCildren();
+				if(clear)this._removeChildren();
 				
 				var blocks = [],
 					curentParent = this.parent;
@@ -943,7 +943,7 @@
 				
 				if(!deep)this.parent.dom.removeChild(this.dom);
 			},
-			'_removeCildren':function(){
+			'_removeChildren':function(){
 				var children = this.children,
 					i, j;
 					

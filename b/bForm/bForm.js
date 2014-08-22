@@ -12,6 +12,7 @@
 				this.template = data;
 			},
 			'prepareValue':function(){
+				if(!this.template.attrs)this.template.attrs={};
 				this.template.attrs.value = this.template.content;
 				this.template.content = false;
 			},
@@ -63,7 +64,12 @@
 						temp = this.fields[i].val();
 					}
 					
-					if(temp !== undefined)result[i] = temp;
+					if(temp instanceof HTMLInputElement && temp.files && temp.files.length){
+						if(!result['_files'])result['_files'] = [];
+						result['_files'].push(temp);
+					}else if(temp !== undefined){
+						result[i] = temp;
+					}
 				}
 				
 				return result;
@@ -74,16 +80,22 @@
 					processor = config.processor,
 					action = config.action,
 					method = config.method,
-					request;
+					request, files;
 				
 				if(ajax){					
 					request = this.serialize();
-					if(processor)request.blib = processor;
+					if(request['_files']){
+						files = request['_files'];
+						delete request['_files'];
+					}
 					
+					if(processor)request.blib = processor;
+					console.log(request);
 					blib.ajax({
 						'url':action+'?blib='+processor,
 						'type':method,
 						'data':request,
+						'files':files,
 						'success':handler
 					});
 
@@ -114,7 +126,7 @@
 		{'block':'bForm', 'elem':'hidden'},
 		function(data){		
 			this.prepare(data);
-			this.prepareValue(data);
+			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"hidden"}},
 		new standartFunction({})
@@ -125,7 +137,7 @@
 		{'block':'bForm', 'elem':'text'},
 		function(data){		
 			this.prepare(data);
-			this.prepareValue(data);
+			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"text"}},
 		new standartFunction({})
@@ -136,11 +148,16 @@
 		{'block':'bForm', 'elem':'submit'},
 		function(data){
 			this.template = data;
+			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"submit"}},
-		{
+		new standartFunction({
 			'onclick':function(e){
-				e.preventDefault();
+				if(e.preventDefault){
+					e.preventDefault();
+				}else{
+					e.returnValue = false;
+				}
 				var self = this,
 					block = self.block,
 					handler = function(data){
@@ -149,37 +166,40 @@
 					
 				block.submit(handler);
 			}
-		}
+		})
 	);
 	
 	//RESET
 	blib.build.define(
 		{'block':'bForm', 'elem':'reset'},
 		function(data){
-			this.template = data;			
+			this.template = data;
+			this.prepareValue();			
 		},
 		{'tag':"input", 'attrs':{'type':"reset"}},
-		{}
+		new standartFunction({})
 	);
 	
 	//BUTTON
 	blib.build.define(
 		{'block':'bForm', 'elem':'button'},
 		function(data){
-			this.template = data;			
+			this.template = data;
+			this.prepareValue();			
 		},
 		{'tag':"input", 'attrs':{'type':"button"}},
-		{}
+		new standartFunction({})
 	);
 	
 	//IMAGE
 	blib.build.define(
 		{'block':'bForm', 'elem':'image'},
 		function(data){
-			this.template = data;			
+			this.template = data;
+			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"image"}},
-		{}
+		new standartFunction({})
 	);
 	
 	//PASSWORD
@@ -187,7 +207,7 @@
 		{'block':'bForm', 'elem':'password'},
 		function(data){		
 			this.prepare(data);
-			this.prepareValue(data);
+			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"password"}},
 		new standartFunction({})
@@ -198,7 +218,7 @@
 		{'block':'bForm', 'elem':'checkbox'},
 		function(data){		
 			this.prepare(data);
-			this.prepareValue(data);
+			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"checkbox"}},
 		new standartFunction({
@@ -222,7 +242,7 @@
 			
 			this.template = data;
 			
-			this.prepareValue(data);
+			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"radio"}},
 		new standartFunction({
@@ -242,7 +262,7 @@
 		{'tag':"input", 'attrs':{'type':"file"}},
 		new standartFunction({
 			'val':function(data){
-				return undefined;
+				return (this.dom.files.length?this.dom:undefined);
 			}
 		})
 	);
@@ -252,7 +272,6 @@
 		{'block':'bForm', 'elem':'textarea'},
 		function(data){		
 			this.prepare(data);
-			
 		},
 		{'tag':"textarea"},
 		new standartFunction({})

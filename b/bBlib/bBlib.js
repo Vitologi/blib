@@ -394,22 +394,14 @@
 			var dataType	= param['dataType'] || "text",
 				success		= param['success'] || function(){},
 				data		= param['data'] || null,
+				files		= param['files'] || null,
 				type		= param['type'] || "POST",
 				url			= param['url'] || "/",
 				headers		= param['headers'] || ["X-Requested-With","XMLHttpRequest"],
 				head 		= getElement(['head'])[0],
-				jsonpElement, temp;
-				
+				jsonpElement, temp, key, i, j, len, fileName;
 			
-			if(is(data, 'object') && type !== "DATA"){
-				temp = "";
-				for(key in data){
-					if(is(data[key],['array', 'object'])){ data[key]=JSON.stringify(data[key]); }
-					temp+=key+"="+data[key]+"&";
-				}
-				data = temp.substr(0, temp.length-1);
-			}
-			
+			//exception for jsonp method
 			if(type==='JSONP'){
 				temp = "jsonp"+salt++;
 				
@@ -430,6 +422,43 @@
 				return;
 			}
 			
+			//exception for ajax files submit
+			if(files){
+				
+				temp = new FormData();
+				if(!temp)return this;
+				
+				
+				for(i in files){
+					len = files[i].files.length;
+					if(!len)continue;
+					fileName = files[i].name;
+					
+					if(len>1)fileName+='[]';
+					
+					for(j=0;j<len;j++){
+						temp.append(fileName, files[i].files[j]);
+					}
+					
+				}
+				for(key in data){
+					if(is(data[key],['array', 'object'])){ data[key]=JSON.stringify(data[key]); }
+					temp.append(key, data[key]);
+				}
+				
+				data = temp;
+				
+			}else if(is(data, 'object') && type !== "DATA"){
+				
+				temp = "";
+				for(key in data){
+					if(is(data[key],['array', 'object'])){ data[key]=JSON.stringify(data[key]); }
+					temp+=key+"="+data[key]+"&";
+				}
+				data = temp.substr(0, temp.length-1);
+			}
+			
+
 			var xhr;
 			if (window.XMLHttpRequest) xhr = new XMLHttpRequest();
 			else if (window.ActiveXObject) {
@@ -457,7 +486,7 @@
 				break;
 				
 				case "POST":
-					headers=["Content-Type", "application/x-www-form-urlencoded"];
+					if(!files)headers=["Content-Type", "application/x-www-form-urlencoded"];
 				break;
 				
 				case "DATA":
@@ -467,7 +496,7 @@
 				break;
 				
 			}
-
+			
 			xhr.open(type, url, true);
 			xhr.setRequestHeader(headers[0],headers[1]);
 			xhr.send(data);
@@ -826,7 +855,7 @@
 			},
 			'_attr':function(key,value){
 				var elem = this.dom,
-					temp;
+					temp, style, i, len;
 				
 				if(!value)return (elem.getAttribute)?elem.getAttribute(key):elem[key];
 				
@@ -842,7 +871,14 @@
 						temp = value;
 						break;
 				}
-				elem[key] = value;
+				if(key == 'style'){
+					style = value.match(/([^:;]+)/g);
+					for(len = style.length,i=0;i<len;i+=2){
+						elem.style[style[i]]=style[i+1];
+					}
+				}else{
+					elem[key] = value;
+				}
 				if(elem.setAttribute)elem.setAttribute(key,temp);
 			},
 			'_getMode':function(mode){

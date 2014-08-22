@@ -71,7 +71,7 @@
 			this.template = { 
 				"content":[
 					{"elem":"header", "mods":{"center":true}, "content":header},
-					{"tag":"hr", "attrs":{"id":"hr", "style":"width:95%,margin:2px auto;"}},
+					{"tag":"hr", "attrs":{"id":"hr", "style":"width:95%;margin:2px auto;"}},
 					this.getChild(this.id)
 				]
 			};

@@ -41,13 +41,12 @@
 			},
 			'setLocation':function(){
 				var self = this;
-				
+
 				if(history.pushState){
 					history.pushState({}, location.host , self.link);
 				}else{
 					window.chHashFlag = true;
-					if(location.pathname){location.href = location.host+"#"+self.link;}else{
-					location.hash = self.link;}
+					location.hash = self.link;
 				}
 			}
 		}

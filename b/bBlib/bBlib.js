@@ -9,17 +9,22 @@
 	e){function c(a,d){var g,f,b=a[d];if(b&&"object"===typeof b)for(g in b)Object.prototype.hasOwnProperty.call(b,g)&&(f=c(b,g),void 0!==f?b[g]=f:delete b[g]);return e.call(a,d,b)}var d;a=String(a);s.lastIndex=0;s.test(a)&&(a=a.replace(s,function(a){return"\\u"+("0000"+a.charCodeAt(0).toString(16)).slice(-4)}));if(/^[\],:{}\s]*$/.test(a.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g,"@").replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g,"]").replace(/(?:^|:|,)(?:\s*\[)+/g,"")))return d=
 	eval("("+a+")"),"function"===typeof e?c({"":d},""):d;throw new SyntaxError("JSON.parse");})})();
 	
+	/** console hack for compatibility */
+	"undefined"==typeof console&&(this.console={log:function(a){alert(a)}});
+	
 	/** PRIVATE VARIABLE */
     var config = {
 			'_private':{
 				'version':true,
-				'store':true
+				'store':true,
+				'exception':true
 			},
             'version':'0.2.0',
 			'store':{
 				'isset':('localStorage' in window && window['localStorage'] !== null)?true:false,
 				'data':{}
 			},
+			'exception':[],
 			'system':{
 				
 			},
@@ -262,6 +267,12 @@
 				localStorage.setItem("blib", JSON.stringify(config.store.data));
 			}
 		},
+		BlibException = function(obj){
+			this.message = obj.message || 'Empty message';
+			this.extra = new Date();
+			this.error = obj.error || undefined;
+			this.caller = obj.caller || undefined;
+		},
 		Blib = function(){
             return new init(arguments);
         },
@@ -272,7 +283,12 @@
 			return merge(this, getElement(args));
 
         };
-	
+		
+	BlibException.prototype = (function(){
+		var Temp = function(){this.name = "BlibException";};
+		Temp.prototype = Error.prototype;
+		return (new Temp);
+	}());
 	
 	/** LIBRARY METHODS */
 	Blib.is		= is;
@@ -289,6 +305,12 @@
 	 * @param	{multiple}	value	- Installed option
 	 * @return	{config}||{Blib}	- Returns the selected option or Blib for chaining
 	 */
+	 
+	Blib.exception = function(message, error){
+		console.log("Throw exception №"+config.exception.length+" (for info run blib.config('exception');)");
+		config.exception.push(new BlibException({'message':message, 'error':error, 'caller':arguments.callee.caller}));
+	};
+			
 	Blib.config = function(option, value){
 		
 		if(typeof(option) != 'string') return clone(config);
@@ -816,7 +838,7 @@
  * Blib.build library. For construct html from blocks.
  * 
  */
-(function( Blib ){
+(function(Blib){
 	
 	var is = Blib.is,
 		clone = Blib.clone,
@@ -871,14 +893,22 @@
 						temp = value;
 						break;
 				}
-				if(key == 'style'){
-					style = value.match(/([^:;]+)/g);
-					for(len = style.length,i=0;i<len;i+=2){
-						elem.style[style[i]]=style[i+1];
+				
+				
+					if(key == 'style'){
+						style = value.match(/([^:;]+)/g);
+						for(len = style.length,i=0;i<len;i+=2){
+							try{
+								elem.style[style[i]]=style[i+1];
+							}catch(e){Blib.exception("Cannot set value "+style[i+1]+" for property "+style[i], e);}
+						}
+					}else{
+						try{
+							elem[key] = value;
+						}catch(e){Blib.exception("Cannot set value "+value+" for property "+key, e);}						
 					}
-				}else{
-					elem[key] = value;
-				}
+					
+					
 				if(elem.setAttribute)elem.setAttribute(key,temp);
 			},
 			'_getMode':function(mode){
@@ -1248,4 +1278,4 @@
 	
 	Blib.build = build;	
 	
-})(blib);
+})(Blib);

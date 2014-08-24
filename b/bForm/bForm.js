@@ -3,6 +3,7 @@
 	//standart function for element
 	var standartProto = {
 			'prepare':function(data){
+				if(!data.attrs)data.attrs={};
 				this.name = data.name || data.attrs.name;
 				if(!data.attrs)data.attrs = {};
 				data.attrs.name = data.name;
@@ -30,6 +31,7 @@
 	blib.build.define(
 		{'block':'bForm'},
 		function(data){
+			if(!data.attrs)data.attrs={};
 			var config = {
 				'ajax':data.ajax || data.attrs.ajax || false,
 				'processor':data.processor || false,

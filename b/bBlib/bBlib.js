@@ -1207,7 +1207,9 @@
 					}
 				break;
 				case "string":
-					result.innerHTML=data['content'];
+					try{
+						result.innerHTML = data['content'];
+					}catch(e){Blib.exception("Can`t set content("+data['content']+") for "+(currentClass||"default")+" element.")}
 				break;
 			}
 

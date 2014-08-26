@@ -73,7 +73,7 @@ class bSession extends bBlib{
 				if ( !isset($_SESSION) && !session_id() ) { 
 					
 					if(!$this->storePath){
-						$this->storePath = $this->_getBlockPath().'/__storage';
+						$this->storePath = $this->_getBlockPath().'/__storage'; //0_0
 						if(!ini_set('session.save_path', $this->storePath)){
 							throw new Exception('Canot set php session save path');
 						};

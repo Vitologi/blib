@@ -3,7 +3,41 @@ defined('_BLIB') or die;
 
 class bDatabase extends bBlib{	
 	
+	private static $structures = array();
 	private $pdo;
+	private $block;
+	
+	private static function setStructure($block){
+		if(bDatabase::$structures[$block])return;
+		
+		$path = bBlib::path($block.'__'.__class__.'_install','php');
+		
+		$install = (file_exists($path))?require_once($path):null;
+
+		if($install !== null){
+			$uninstall = require_once(bBlib::path($block.'__'.__class__.'_uninstall','php'));
+			$update = require_once(bBlib::path($block.'__'.__class__.'_update','php'));
+		}else{
+			$instal = array(				
+				'create' => array(
+					$block => array(
+						'fields' => array(
+							'id' => array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT')
+						),
+						'primary' => array('id')
+					)
+				)
+			);
+			$uninstall = array('drop' => array($block));
+			$update = array('1.0.0' => null);
+		}
+		
+		bDatabase::$structures[$block] = array(
+			'install'=>$install,
+			'uninstall'=>$uninstall,
+			'update'=>$update
+		);		
+	}
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
@@ -27,28 +61,8 @@ class bDatabase extends bBlib{
 
 	protected function input($data, bBlib $caller){
 		
-		$block = get_class($caller);
-		$path = bBlib::path($block.'__'.__class__.'_install','php');
-		$instal = (file_exists($path))?require_once($path):null;
-
-		if($instal !== null){
-			$this->local['install'] = $instal;
-			$this->local['uninstall'] = require_once(bBlib::path($block.'__'.__class__.'_uninstall','php'));
-			$this->local['update'] = require_once(bBlib::path($block.'__'.__class__.'_update','php'));
-		}else{
-			$this->local['install'] = array(				
-				'create' => array(
-					$block => array(
-						'fields' => array(
-							'id' => array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT')
-						),
-						'primary' => array('id')
-					)
-				)
-			);
-			$this->local['uninstall'] = array('drop' => array($block));
-			$this->local['update'] = array('1.0.0' => null);
-		}
+		$this->block = get_class($caller);
+		bDatabase::setStructure($this->block);
 		
 	}
 	
@@ -128,7 +142,7 @@ class bDatabase extends bBlib{
 	
 	private function parseRelation($query){
 	
-		$structure = $this->local['install']['create'];
+		$structure = bDatabase::$structures[$this->block]['install']['create'];
 		$temp = '';
 		if(!is_array($structure) || !($tables = array_intersect_key($structure, $query))){ return $temp; }
 		
@@ -384,11 +398,11 @@ class bDatabase extends bBlib{
 	
 	//methods for child blocks
 	public function _install($data, $caller = null){
-		return ($caller === null)?$this->install:$caller->bDatabase->_install($data);
+		return ($caller === null)?bDatabase::$structures[$this->block]['install']:$caller->bDatabase->_install($data);
 	}
 	
 	public function _uninstall($data, $caller = null){
-		return ($caller === null)?$this->uninstall:$caller->bDatabase->_uninstall($data);
+		return ($caller === null)?bDatabase::$structures[$this->block]['uninstall']:$caller->bDatabase->_uninstall($data);
 	}
 	
 	public function _update($data, $caller = null){
@@ -397,7 +411,7 @@ class bDatabase extends bBlib{
 			return $caller->bDatabase->_update($data);
 		}
 		
-		$temp = $this->update;
+		$temp = bDatabase::$structures[$this->block]['update'];
 		uksort($temp, 'version_compare');
 		return $temp;
 	}

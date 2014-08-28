@@ -42,6 +42,12 @@
 			this.config = config;
 			this.fields = {};
 			this.template = data;
+			
+			if(!config.ajax){
+				this.template.attrs.action = config.action;
+				this.template.attrs.method = config.method;
+			}
+			
 		},
 		{
 			'tag':"form"

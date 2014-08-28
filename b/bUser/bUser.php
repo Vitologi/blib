@@ -74,6 +74,10 @@ class bUser extends bBlib{
 		return $this->login;
 	}
 	
+	public function getId(){
+		return $this->id;
+	}
+	
 	protected function logout(){
 		$this->_setSession('id');
 		unset(bBlib::$global['_request']['logout']);

@@ -192,7 +192,7 @@
 					block = self.block,
 					config = block.config,
 					handler = function(data){
-						if(data.reset)block.reset();
+						if(data.reset)block.dom.reset();
 						if(data.message)block.children.bForm__message[0].setText(data.message);
 					};
 					

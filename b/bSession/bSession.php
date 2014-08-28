@@ -3,9 +3,11 @@ defined('_BLIB') or die;
 
 class bSession extends bBlib{	
 	
+	private static $singleton = null;
+	private static $data = array();
 	private $id = false;
 	private $storePath = false;
-	private $data = array();
+	
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
@@ -14,14 +16,13 @@ class bSession extends bBlib{
 	}
 	
 	protected function input($data, $caller){
-		$this->caller = get_class($caller);
 		$this->sessionType = false;
 	}
 	
 	
 	public function output(){
 
-		if($this->_bSession){return array('bSession'=>$this->_bSession);}
+		if(bSession::$singleton){return array('bSession'=>bSession::$singleton);}
 
 		switch($this->sessionType){
 			case "database":
@@ -47,8 +48,8 @@ class bSession extends bBlib{
 					if($result->rowCount()){
 						$row = $result->fetch();
 						$this->id = $_COOKIE['bSession'];
-						$this->data = (array)json_decode($row['value'], true);
-						bBlib::$global['_bSession'] = $this;
+						bSession::$data = (array)json_decode($row['value'], true);
+						bSession::$singleton = $this;
 					}
 				}
 				
@@ -56,13 +57,13 @@ class bSession extends bBlib{
 					$this->id = md5(microtime(true).$_SERVER['REMOTE_ADDR']);
 					$Q = array(
 						'insert'=>array(
-							'bSession'=>array('id'=>$this->id, 'value'=>json_encode($this->data))
+							'bSession'=>array('id'=>$this->id, 'value'=>json_encode(bSession::$data))
 						)
 					);
 					if(!$this->_query($Q)){
 						throw new Exception('Can`t insert session information.');
 					}
-					bBlib::$global['_bSession'] = $this;
+					bSession::$singleton = $this;
 					$expire = ($this->expire)?(time()+$this->expire):0;
 					setcookie('bSession', $this->id, $expire, $this->path, $this->domen, $this->secure, $this->httponly);
 				}
@@ -84,8 +85,8 @@ class bSession extends bBlib{
 				
 				
 				
-				$this->data = $_SESSION[__class__];
-				bBlib::$global['_bSession'] = $this;
+				bSession::$data = $_SESSION[__class__];
+				bSession::$singleton = $this;
 				break;
 			
 		}
@@ -102,7 +103,7 @@ class bSession extends bBlib{
 			return $caller->bSession->_getSession(array($block, $data[0]));
 		}
 		
-		return $this->data[$data[0]][$data[1]];
+		return bSession::$data[$data[0]][$data[1]];
 
 	}
 	
@@ -113,13 +114,13 @@ class bSession extends bBlib{
 			return $caller->bSession->_setSession(array('block'=>$block, 'data'=>$data));
 		}
 
-		$this->data[$data['block']][$data['data'][0]] = $data['data'][1];
+		bSession::$data[$data['block']][$data['data'][0]] = $data['data'][1];
 		
 		switch($this->sessionType){
 			case "database":
 				$Q = array(
 					'update'=>array(
-						'bSession'=>array('value'=>json_encode($this->data))
+						'bSession'=>array('value'=>json_encode(bSession::$data))
 					),
 					'where' => array(
 						'bSession'=>array('id'=>$this->id)
@@ -136,11 +137,10 @@ class bSession extends bBlib{
 				if ( !isset($_SESSION) && !session_id() ) { 
 					if(!session_start()){throw new Exception('Cannot use php session.');}; 
 				}
-				$_SESSION[__class__] = $this->data;	
+				$_SESSION[__class__] = bSession::$data;	
 				break;
 			
 		}
 
-		bBlib::$global['_bSession'] = $this;
 	}
 }

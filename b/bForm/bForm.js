@@ -100,7 +100,7 @@
 					if(processor)request.blib = processor;
 
 					blib.ajax({
-						'url':action+'?blib='+processor,
+						'url':action,
 						'type':method,
 						'data':request,
 						'dataType':'json',

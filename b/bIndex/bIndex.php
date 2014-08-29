@@ -5,7 +5,7 @@ class bIndex extends bBlib{
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
-		$this->parents = array('bSystem', 'bDatabase', 'bConfig', 'bCssreset', 'bTemplate');
+		$this->parents = array('bSystem', 'bDatabase', 'bConfig', 'bCssreset', 'bTemplate', 'bRbac');
 	}
 	
 	protected function input($data, $caller){
@@ -17,10 +17,13 @@ class bIndex extends bBlib{
 		$this->skeleton = "bIndex__skeleton_default";
 		$this->cache = 0;		
 	}
+
 	
 	public function output(){
 		
-
+		$config = $this->_getConfig($this->data['pageId']);
+		if($config['locked'] && !$this->_checkAccess('unlock',$this->data['pageId']))return;
+		
 		$Q = array(
 			'select'	=> array(
 				'bIndex' => array('template', 'bConfig_id', 'bCategory_id')
@@ -32,7 +35,7 @@ class bIndex extends bBlib{
 		
 		$result = $this->_query($Q);
 		$row = $result->fetch();
-		$config = $this->_getConfig($this->data['pageId']);
+		
 		
 		$data["'{keywords}'"] = $config["'{keywords}'"];
 		$data["'{description}'"] = $config["'{description}'"];

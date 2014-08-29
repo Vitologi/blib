@@ -24,7 +24,7 @@ class bUser extends bBlib{
 		if($this->caller)return array('bUser'=>$bUser);
 
 		//for template
-		return array('block'=>__class__, 'mods'=>$bUser->data['mods'], 'content'=>$bUser->getLogin());
+		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'content'=>$bUser->getLogin());
 
 	}
 	

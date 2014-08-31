@@ -66,7 +66,7 @@ blib.build.define(
 			
 		},
 		'replace':function(num){
-			var childs = this.children.bTemplate__position
+			var childs = this.children.bTemplate__position,
 				key;
 			for(key in childs){
 				if(childs[key].template.template === num){

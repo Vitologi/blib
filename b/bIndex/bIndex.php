@@ -5,7 +5,7 @@ class bIndex extends bBlib{
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
-		$this->parents = array('bSystem', 'bDatabase', 'bConfig', 'bCssreset', 'bTemplate', 'bRbac');
+		$this->parents = array(/* 'bRbac' */ 'bSystem', 'bDatabase', 'bConfig', 'bCssreset', 'bTemplate');
 	}
 	
 	protected function input($data, $caller){
@@ -22,7 +22,11 @@ class bIndex extends bBlib{
 	public function output(){
 		
 		$config = $this->_getConfig($this->data['pageId']);
-		if($config['locked'] && !$this->_checkAccess('unlock',$this->data['pageId']))return;
+		
+		if($config['locked']){
+			$this->setParent('bRbac', $this->data);
+			if(!$this->_checkAccess('unlock',$this->data['pageId']))return;
+		}
 		
 		$Q = array(
 			'select'	=> array(

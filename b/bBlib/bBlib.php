@@ -24,8 +24,7 @@ abstract class bBlib{
 		
 		$parents = is_array($this->local['parents'])?$this->local['parents']:array();
 		foreach($parents as $value){
-			$parent = new $value($data, $this);
-			$this->inputSystem((array)$parent->output());
+			$this->setParent($value, $data);
 		}
 
 		$this->input($data, $caller);
@@ -90,6 +89,12 @@ abstract class bBlib{
 	public function output(){}
 
 	/** INTERFACES */
+	final protected function setParent($name, $data){
+		$this->local['parents'][] = $name;
+		$parent = new $name($data, $this);
+		$this->inputSystem((array)$parent->output());
+	}
+	
 	final public function call($name, $args){
 		return call_user_func_array(array($this, $name), (array)$args);
 	}

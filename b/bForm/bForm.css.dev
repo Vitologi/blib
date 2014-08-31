@@ -25,7 +25,10 @@
 		.bForm_style_default .bForm__file,
 		.bForm_style_default .bForm__textarea,
 		.bForm_style_default .bForm__select,
-		.bForm_style_default .bForm__option{
+		.bForm_style_default .bForm__option,
+		
+		.bForm_style_default .bForm__radio,
+		.bForm_style_default .bForm__checkbox{
 			padding: .5em .6em;
 			display: inline-block;
 			border: 1px solid #ccc;
@@ -42,8 +45,7 @@
 			margin: 0 auto;
 			box-shadow: none;
 			border: 0;
-			vertical-align: middle;
-			margin: 5px 1%;}
+			vertical-align: middle;}
 		
 		.bForm_style_default .bForm__fieldset{}
 		.bForm_style_default .bForm__legend{}

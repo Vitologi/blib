@@ -459,7 +459,7 @@
 		{'block':'bIcomoon'},
 		function(data){
 			if (document.all && !document.querySelector) {
-				for(key in data.mods);
+				for(key in data.mods){};
 				data.content = icons[key];
 			}
 			this.template = data;

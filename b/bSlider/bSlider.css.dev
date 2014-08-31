@@ -1,0 +1,19 @@
+.bSlider{
+	width: 100%;
+	position: relative;
+	overflow: hidden;}
+	.bSlider__wrapper{}
+	.bSlider__slide{}
+	
+	.bSlider_type_horizontal{}
+	.bSlider_type_horizontal .bSlider__wrapper{
+		float: left;
+		min-width: 100%;
+		margin-left: 0;
+		-webkit-transition: margin-left 1s ease-out 0.5s;
+		 -moz-transition: margin-left 1s ease-out 0.5s;
+		 -o-transition: margin-left 1s ease-out 0.5s;
+		 transition: margin-left 1s ease-out 0.5s;}
+	.bSlider_type_horizontal .bSlider__slide{
+		float: left;}
+	

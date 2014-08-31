@@ -1,10 +1,10 @@
 @font-face {
 	font-family: 'bIcomoon__font';
-	src:url('__font/bIcomoon__font.eot?cdyr66');
-	src:url('__font/bIcomoon__font.eot?#iefixcdyr66') format('embedded-opentype'),
-		url('__font/bIcomoon__font.woff?cdyr66') format('woff'),
-		url('__font/bIcomoon__font.ttf?cdyr66') format('truetype'),
-		url('__font/bIcomoon__font.svg?cdyr66#bIcomoon__font') format('svg');
+	src:url('/b/bIcomoon/__font/bIcomoon__font.eot?cdyr66');
+	src:url('/b/bIcomoon/__font/bIcomoon__font.eot?#iefixcdyr66') format('embedded-opentype'),
+		url('/b/bIcomoon/__font/bIcomoon__font.woff?cdyr66') format('woff'),
+		url('/b/bIcomoon/__font/bIcomoon__font.ttf?cdyr66') format('truetype'),
+		url('/b/bIcomoon/__font/bIcomoon__font.svg?cdyr66#bIcomoon__font') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }

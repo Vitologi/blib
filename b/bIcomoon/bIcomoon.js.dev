@@ -458,8 +458,8 @@
 	blib.build.define(
 		{'block':'bIcomoon'},
 		function(data){
-			if ("\v" != "v"){
-				for(key in data.mods);
+			if (document.all && !document.querySelector) {
+				for(key in data.mods){};
 				data.content = icons[key];
 			}
 			this.template = data;

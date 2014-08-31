@@ -5,5 +5,5 @@
 .bWrapper{
 	position:relative;
 	margin:0 auto;}
-	.bWrapper_80{
+	.bWrapper_percent_80{
 		width:80%}

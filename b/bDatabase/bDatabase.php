@@ -97,7 +97,7 @@ class bDatabase extends bBlib{
 			
 			$temp .= sprintf(
 				' `%1$s` %2$s %3$s %4$s %5$s COMMENT "%6$s",',
-				$key,		//1
+				strtolower($key),		//1
 				$type,		//2
 				$null,		//3
 				$extra,		//4
@@ -110,7 +110,7 @@ class bDatabase extends bBlib{
 	}
 	
 	private function parsePrimary(Array $data){
-		return sprintf(' , PRIMARY KEY (`%1$s`) ', implode('`,`', $data));
+		return sprintf(' , PRIMARY KEY (`%1$s`) ', strtolower(implode('`,`', $data)));
 	}
 	
 	private function parseForeign($foreign, &$fields){
@@ -128,9 +128,9 @@ class bDatabase extends bBlib{
 			
 			$temp .= sprintf(
 				', FOREIGN KEY (`%1$s`)	REFERENCES `%2$s` (`%3$s`) ON DELETE %4$s ON UPDATE %5$s',
-				$key,		//1
-				$table,		//2
-				$column,	//3
+				strtolower($key),		//1
+				strtolower($table),		//2
+				strtolower($column),	//3
 				$ondelete,	//4
 				$onupdate	//5
 			);
@@ -160,7 +160,7 @@ class bDatabase extends bBlib{
 				if($column['column']){$foreignColumn = $column['column'];}
 				
 				if(array_key_exists($foreignTable, $query) && $selfTable!=$foreignTable){
-					$temp .= sprintf(' `%1$s`.`%2$s` = `%3$s`.`%4$s` AND', $selfTable, $selfColumn, $foreignTable, $foreignColumn);
+					$temp .= sprintf(' `%1$s`.`%2$s` = `%3$s`.`%4$s` AND', strtolower($selfTable), strtolower($selfColumn), strtolower($foreignTable), strtolower($foreignColumn));
 				}
 			}
 		}
@@ -194,7 +194,7 @@ class bDatabase extends bBlib{
 			$tables = '';
 			
 			foreach($Q['drop'] as $table){
-				$tables .= sprintf(' `%s`,', $table);
+				$tables .= sprintf(' `%s`,', strtolower($table));
 			}
 			
 			$temp .= sprintf(' DROP TABLE IF EXISTS %s; ', substr($tables, 0, -1));
@@ -215,7 +215,7 @@ class bDatabase extends bBlib{
 				
 				$temp .= sprintf(
 					'CREATE TABLE IF NOT EXISTS `%1$s` (%2$s %3$s %4$s) %5$s %6$s %7$s ;',
-					$tableName,	//1
+					strtolower($tableName),	//1
 					$fields,	//2
 					$primary,	//3
 					$foreing,	//4
@@ -252,12 +252,12 @@ class bDatabase extends bBlib{
 						$values .= sprintf(' (%1$s) ,', implode(',',$full));
 					}
 					
-					$into = sprintf('(`%1$s`)', implode('`, `',$into));
+					$into = sprintf('(`%1$s`)', strtolower(implode('`, `',$into)));
 					$values = substr($values, 0, -1);
 				}else{
 
 					foreach($columns as $columnName => $columnValue){
-						$into .= sprintf(' `%1$s` ,', $columnName);
+						$into .= sprintf(' `%1$s` ,', strtolower($columnName));
 						$values .= sprintf(' %1$s ,', $this->pdo->quote($columnValue));
 					}
 					
@@ -267,7 +267,7 @@ class bDatabase extends bBlib{
 				
 				$temp .= sprintf(
 					'INSERT INTO `%1$s` %2$s VALUES %3$s; ',
-					$table,	//1
+					strtolower($table),	//1
 					$into,	//2
 					$values	//3
 				);
@@ -284,11 +284,11 @@ class bDatabase extends bBlib{
 					foreach($columns as $value){
 						$value[2] = ($value[2])?$value[2]:'=';
 						$value[3] = ($value[3])?' OR ':' AND';
-						$where .= sprintf(' `%1$s`.`%2$s` %3$s %4$s %5$s', $table, $value[0], $value[2], $this->pdo->quote($value[1]), $value[3]);
+						$where .= sprintf(' `%1$s`.`%2$s` %3$s %4$s %5$s', strtolower($table), strtolower($value[0]), $value[2], $this->pdo->quote($value[1]), $value[3]);
 					}
 				}else{			
 					foreach($columns as $column => $value){
-						$where .= sprintf(' `%1$s`.`%2$s` = %3$s AND', $table, $column, $this->pdo->quote($value));
+						$where .= sprintf(' `%1$s`.`%2$s` = %3$s AND', strtolower($table), strtolower($column), $this->pdo->quote($value));
 					}
 				}
 			}
@@ -301,7 +301,7 @@ class bDatabase extends bBlib{
 			$query = $Q['delete'];
 			$delete = ' DELETE FROM ';
 			foreach($query as $table => $columns){
-				$delete .= sprintf(' `%1$s`,', $table);
+				$delete .= sprintf(' `%1$s`,', strtolower($table));
 			}
 			
 			$relation = $this->parseRelation($query);
@@ -329,10 +329,10 @@ class bDatabase extends bBlib{
 			foreach($query as $table => $columns){
 				
 				foreach($columns as $columnName => $columnValue){
-					$set .= sprintf(' `%1$s`.`%2$s` = %3$s,', $table, $columnName, $this->pdo->quote($columnValue));
+					$set .= sprintf(' `%1$s`.`%2$s` = %3$s,', strtolower($table), strtolower($columnName), $this->pdo->quote($columnValue));
 				}
 				
-				$update .= sprintf(' `%1$s`,', $table);
+				$update .= sprintf(' `%1$s`,', strtolower($table));
 			}
 			
 			$relation = $this->parseRelation($query);
@@ -362,8 +362,8 @@ class bDatabase extends bBlib{
 			}
 			
 			$query = $Q['select'];
-			$select = ' SELECT ';
-			$from = ' FROM ';
+			$select = '';
+			$from = '';
 			foreach($query as $table => $columns){
 				foreach($columns as $alias => $column){
 					$select .= (is_numeric($alias)?sprintf(' `%1$s`.`%2$s`,', $table, $column):sprintf(' `%1$s`.`%2$s` AS `%3$s`,', $table, $column, $alias));
@@ -383,15 +383,14 @@ class bDatabase extends bBlib{
 				$concatWhere = '';
 			}
 			
-			$select = substr($select, 0, -1);
-			$from = substr($from, 0, -1);
+			$select = ' SELECT '.strtolower(substr($select, 0, -1));
+			$from = ' FROM '.strtolower(substr($from, 0, -1));
 			$sql = (array_key_exists('sql', $Q)?$Q['sql']:'');  // random sql statement
 			
 			$temp .= $select.$from.$concatWhere.$sql.'; ';
 		}
 		
-		
-		
+
 		return ($debug)?$temp:$this->pdo->query($temp);			
 
 	}

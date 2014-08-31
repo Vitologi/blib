@@ -30,8 +30,8 @@ class bMenu extends bBlib{
 		$menu = array();
 		
 		while($row = $result->fetch()){
-			if($row['bConfig_id']){$config = $this->_getConfig($row['bConfig_id']);}
-			$menu[] = array('id'=>$row['id'], 'name'=>$row['name'], 'config'=>$config, 'link'=>$row['link'], 'parent'=>$row['bMenu_id']);
+			if($row['bconfig_id']){$config = $this->_getConfig($row['bconfig_id']);}
+			$menu[] = array('id'=>$row['id'], 'name'=>$row['name'], 'config'=>$config, 'link'=>$row['link'], 'parent'=>$row['bmenu_id']);
 		}
 
 		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'content'=>$menu, 'id'=>$this->data['menu']);

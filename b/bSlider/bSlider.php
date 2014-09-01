@@ -21,11 +21,11 @@ class bSlider extends bBlib{
 		
 		$Q = array(
 			'select'	=> array(
-				'bSlider' => array(),
-				'bTemplate' => array('template')
+				'bslider' => array(),
+				'btemplate' => array('template')
 			),
 			'where' => array(
-				'bSlider' => array('id'=>$this->data['id'])
+				'bslider' => array('id'=>$this->data['id'])
 			),
 			'sql'=>' LIMIT '.$this->data['length'].', 5'
 		);

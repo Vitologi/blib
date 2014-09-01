@@ -7,12 +7,4 @@ class bTudaSuda extends bBlib{
 		$this->version = '1.0.0';
 	}
 	
-	protected function input($data, $caller){
-		
-	}
-	
-	public function output(){
-		
-	}
-		
 }

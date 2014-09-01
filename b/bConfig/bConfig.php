@@ -38,23 +38,23 @@ class bConfig extends bBlib{
 		do{
 			$Q = array(
 				'select' => array(
-					'bConfig'=>array('id', 'value', 'bConfig_id')
+					'bconfig'=>array('id', 'value', 'bconfig_id')
 				),
 				'where' => array(
-					'bConfig'=>array('group'=>$param['group'], 'name'=>$name)
+					'bconfig'=>array('group'=>$param['group'], 'name'=>$name)
 				)
 			);
 			
 			if($default){
-				$Q['where']['bConfig']=array('id'=>$default);
+				$Q['where']['bconfig']=array('id'=>$default);
 				$default = null;
 			}
 			
 			if($result = $this->_query($Q)){
 				$row = $result->fetch();
 				$config = (array)$config + (array)json_decode($row['value'],true);
-				if($param['deep'] && !in_array($row['bConfig_id'], $used)){
-					$used[] = $default = $row['bConfig_id'];
+				if($param['deep'] && !in_array($row['bconfig_id'], $used)){
+					$used[] = $default = $row['bconfig_id'];
 				}
 			}
 	
@@ -79,8 +79,8 @@ class bConfig extends bBlib{
 		$value = is_array($value)?$value:array();
 		
 		$Q = array(
-			'select' => array('bConfig'=>array('id', 'value', 'bConfig_id')),
-			'where' => array('bConfig'=>array('group'=>$param['group'], 'name'=>$name))
+			'select' => array('bconfig'=>array('id', 'value', 'bconfig_id')),
+			'where' => array('bconfig'=>array('group'=>$param['group'], 'name'=>$name))
 		);
 		
 		$result = $this->_query($Q);
@@ -95,11 +95,11 @@ class bConfig extends bBlib{
 			$value = json_encode($value);
 				
 			$Q = array(
-				'update' => array('bConfig'=>array('value'=>$value)),
-				'where' => array('bConfig'=>array('id'=>$row['id']))
+				'update' => array('bconfig'=>array('value'=>$value)),
+				'where' => array('bconfig'=>array('id'=>$row['id']))
 			);
 			
-			if(isset($param['parent'])){$Q['update']['bConfig']['bConfig_id'] = $param['parent'];}
+			if(isset($param['parent'])){$Q['update']['bconfig']['bconfig_id'] = $param['parent'];}
 			if(!$this->_query($Q)){	throw new Exception('Can`t rewrite config');}
 			return $row['id'];
 			
@@ -110,7 +110,7 @@ class bConfig extends bBlib{
 				
 			$Q = array(
 				'insert' => array(
-					'bConfig'=>array(
+					'bconfig'=>array(
 						'group'=>$param['group'],
 						'name'=>$name,
 						'value'=>$value
@@ -118,9 +118,9 @@ class bConfig extends bBlib{
 				)
 			);
 			
-			if(isset($param['parent'])){$Q['insert']['bConfig']['bConfig_id'] = $param['parent'];}
+			if(isset($param['parent'])){$Q['insert']['bconfig']['bconfig_id'] = $param['parent'];}
 			if(!$this->_query($Q)){throw new Exception('Can`t rewrite config');}
-			bBlib::$global['_bDatabase__pdo']->lastInsertId ();			
+			return $this->_lastInsertId();
 		}
 		
 		
@@ -140,7 +140,7 @@ class bConfig extends bBlib{
 		$path = bBlib::path(get_class($caller).'__'.__class__.'_'.$name,'php');
 		if(!file_exists($path)){return array();}
 		
-		$config = (array) require_once($path);
+		$config = (array) require($path);
 		
 		if($reduced){
 			$temp = array();

@@ -3,6 +3,8 @@ defined('_BLIB') or die;
 
 class bTemplate extends bBlib{	
 	
+	private $block;
+	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
 		$this->parents = array('bSystem', 'bDatabase');
@@ -10,6 +12,7 @@ class bTemplate extends bBlib{
 	
 	protected function input($data, $caller){
 		$this->local['stack'] = array();
+		$this->block = get_class($caller);
 	}
 	
 	public function output(){
@@ -42,7 +45,7 @@ class bTemplate extends bBlib{
 		
 		$Q = array(
 			'select'	=> array(
-				'btemplate' => array('id', 'name', 'blib', 'template')
+				'btemplate' => array('id', 'owner', 'name', 'blib', 'template')
 			),
 			'where'		=> array(
 				'btemplate' => $where
@@ -52,6 +55,9 @@ class bTemplate extends bBlib{
 		if(!$result = $this->_query($Q)){throw new Exception('Can`t get template from database.');}
 			
 		while($row = $result->fetch()){
+			
+			if($row['owner'] && $this->block !== $row['owner'])continue;
+			
 			if($row['blib']){ 
 				$this->local['block'][$row['id']] = new $row['blib'](json_decode($row['template'],true));
 			}else{
@@ -184,5 +190,28 @@ class bTemplate extends bBlib{
 		return $this->glueTempDiff($diff);
 	}
 	
+	public function _getTemplateByName($name, $caller = null){ //0_0
+		if($caller == null)return false;
+		
+		$Q = array(
+			'select'	=> array(
+				'btemplate' => array('blib', 'template')
+			),
+			'where'		=> array(
+				'btemplate' => array('owner'=>get_class($caller), 'name'=>$name)
+			)
+		);
+		
+		if(!$result = $this->_query($Q)){throw new Exception('Can`t get template from database.');}
+			
+		$row = $result->fetch();
+
+		if($row['blib']){ 
+			return new $row['blib'](json_decode($row['template'],true));
+		}else{
+			return = $row['template'];
+		}
+		
+	}
 	
 }

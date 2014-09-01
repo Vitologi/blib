@@ -5,6 +5,7 @@ return array(
 		'btemplate'	=> array(
 			'fields' => array(
 				'id'		=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'Table for store json templates'),
+				'owner'		=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL', 'comment'=>'owner block name'),
 				'name'		=> array('type'=> 'VARCHAR(45)', 'null'=>'NOT NULL', 'comment'=>'templates name'),
 				'blib'		=> array('type'=> 'VARCHAR(45)', 'null'=>'NULL', 'comment'=>'dynamic block name'),
 				'template'	=> array('type'=> 'TEXT', 'comment'=>'json serialised template'),

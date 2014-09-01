@@ -23,10 +23,10 @@ class bDocumentation extends bBlib{
 		
 			$Q = array(
 				'select'	=> array(
-					'bDocumentation' => array('id', 'name', 'description' ,'group', 'parent'=>'bDocumentation_id')
+					'bdocumentation' => array('id', 'name', 'description' ,'group', 'parent'=>'bdocumentation_id')
 				),
 				'where' => array(
-					'bDocumentation' => array('id'=>$this->data['id'])
+					'bdocumentation' => array('id'=>$this->data['id'])
 				)
 			);
 			$result = $this->_query($Q);
@@ -41,10 +41,10 @@ class bDocumentation extends bBlib{
 				}
 				$Q = array(
 					'select'	=> array(
-						'bDocumentation' => array('id', 'name', 'note', 'parent'=>'bDocumentation_id')
+						'bdocumentation' => array('id', 'name', 'note', 'parent'=>'bdocumentation_id')
 					),
 					'where' => array(
-						'bDocumentation' => $where
+						'bdocumentation' => $where
 					)
 				);
 				$result = $this->_query($Q);
@@ -58,7 +58,7 @@ class bDocumentation extends bBlib{
 		if($this->data['chapter']){
 			$Q = array(
 				'select'	=> array(
-					'bDocumentation' => array('id', 'name', 'parent'=>'bDocumentation_id')
+					'bdocumentation' => array('id', 'name', 'parent'=>'bdocumentation_id')
 				)
 			);
 			$result = $this->_query($Q);

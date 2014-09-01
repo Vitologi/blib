@@ -18,10 +18,10 @@ class bMenu extends bBlib{
 		
 		$Q = array(
 			'select'	=> array(
-				'bMenu' => array('id', 'name', 'link' ,'bConfig_id' ,'bMenu_id')
+				'bmenu' => array('id', 'name', 'link' ,'bconfig_id' ,'bmenu_id')
 			),
 			'where' => array(
-				'bMenu' => array('menu'=>$this->data['menu'])
+				'bmenu' => array('menu'=>$this->data['menu'])
 			),
 			'sql'=>' ORDER BY `id` ASC'
 		);

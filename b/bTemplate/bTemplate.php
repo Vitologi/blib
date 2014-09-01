@@ -42,10 +42,10 @@ class bTemplate extends bBlib{
 		
 		$Q = array(
 			'select'	=> array(
-				'bTemplate' => array('id', 'name', 'blib', 'template')
+				'btemplate' => array('id', 'name', 'blib', 'template')
 			),
 			'where'		=> array(
-				'bTemplate' => $where
+				'btemplate' => $where
 			)
 		);
 		

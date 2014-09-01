@@ -38,10 +38,10 @@ class bSession extends bBlib{
 				if(isset($_COOKIE) && $_COOKIE['bSession']){
 					$Q = array(
 						'select'=>array(
-							'bSession'=>array('value')
+							'bsession'=>array('value')
 						),
 						'where'=>array(
-							'bSession'=>array('id'=>$_COOKIE['bSession'])
+							'bsession'=>array('id'=>$_COOKIE['bSession'])
 						)
 					);
 					if(!$result = $this->_query($Q)){ throw new Exception('Can`t get session information.'); }
@@ -57,7 +57,7 @@ class bSession extends bBlib{
 					$this->id = md5(microtime(true).$_SERVER['REMOTE_ADDR']);
 					$Q = array(
 						'insert'=>array(
-							'bSession'=>array('id'=>$this->id, 'value'=>json_encode(bSession::$data))
+							'bsession'=>array('id'=>$this->id, 'value'=>json_encode(bSession::$data))
 						)
 					);
 					if(!$this->_query($Q)){
@@ -120,10 +120,10 @@ class bSession extends bBlib{
 			case "database":
 				$Q = array(
 					'update'=>array(
-						'bSession'=>array('value'=>json_encode(bSession::$data))
+						'bsession'=>array('value'=>json_encode(bSession::$data))
 					),
 					'where' => array(
-						'bSession'=>array('id'=>$this->id)
+						'bsession'=>array('id'=>$this->id)
 					)
 				);
 				

@@ -3,6 +3,7 @@ defined('_BLIB') or die;
 
 class bUser extends bBlib{	
 	
+	private static $singleton;
 	private $id;
 	private $login;
 	
@@ -29,7 +30,7 @@ class bUser extends bBlib{
 	}
 	
 	private function getSingleton(){
-		if(!$this->_bUser){
+		if(!bUser::$singleton){
 			
 			$this->id = $this->_getSession('id');
 			
@@ -42,10 +43,10 @@ class bUser extends bBlib{
 			
 				$Q = array(
 					'select' => array(
-						'bUser' => array('id','bConfig_id')
+						'buser' => array('id','bconfig_id')
 					),
 					'where' => array(
-						'bUser' => array('login' => $login, 'password' => md5($password))
+						'buser' => array('login' => $login, 'password' => md5($password))
 					)
 				);
 				
@@ -56,7 +57,7 @@ class bUser extends bBlib{
 					$row = $result->fetch();
 					$this->login = $login;
 					$this->id = $row['id'];
-					$this->config = $this->_getConfig($row['bConfig_id']);
+					$this->config = $this->_getConfig($row['bconfig_id']);
 					
 					$this->_setSession('id', $this->id);
 					$this->_setSession('login', $this->login);
@@ -64,10 +65,10 @@ class bUser extends bBlib{
 				}
 			}
 		
-			$this->_bUser = $this;
+			bUser::$singleton = $this;
 		}
 		
-		return $this->_bUser;
+		return bUser::$singleton;
 	}
 	
 	protected function getLogin(){
@@ -81,6 +82,6 @@ class bUser extends bBlib{
 	protected function logout(){
 		$this->_setSession('id');
 		unset(bBlib::$global['_request']['logout']);
-		unset(bBlib::$global['bUser']);
+		bUser::$singleton = null;
 	}
 }

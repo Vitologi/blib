@@ -46,13 +46,13 @@ class bRbac extends bBlib{
 		if(!$id)return array();
 
 		$Q = "
-			SELECT  `bRbac__roles`.`name` AS  `role` ,  `bRbac__privileges`.`name` AS  `privilage` ,  `bRbac__rules`.`name` AS  `rule` 
-			FROM  `bRbac__privileges` ,  `bRbac__roles` ,  `bRbac__user_roles`, (`bRbac` 
-			LEFT JOIN  `bRbac__rules` ON  `bRbac`.`bRbac__rules_id` =  `bRbac__rules`.`id` )
-			WHERE (`bRbac__user_roles`.`bUser_id` =  '".$id."')
-			AND  `bRbac__user_roles`.`bRbac__roles_id` =  `bRbac__roles`.`id` 
-			AND  `bRbac`.`bRbac__roles_id` =  `bRbac__roles`.`id` 
-			AND  `bRbac`.`bRbac__privileges_id` =  `bRbac__privileges`.`id`
+			SELECT  `brbac__roles`.`name` AS  `role` ,  `brbac__privileges`.`name` AS  `privilage` ,  `brbac__rules`.`name` AS  `rule` 
+			FROM  `brbac__privileges` ,  `brbac__roles` ,  `brbac__user_roles`, (`brbac` 
+			LEFT JOIN  `brbac__rules` ON  `brbac`.`brbac__rules_id` =  `brbac__rules`.`id` )
+			WHERE (`brbac__user_roles`.`buser_id` =  '".$id."')
+			AND  `brbac__user_roles`.`brbac__roles_id` =  `brbac__roles`.`id` 
+			AND  `brbac`.`brbac__roles_id` =  `brbac__roles`.`id` 
+			AND  `brbac`.`brbac__privileges_id` =  `brbac__privileges`.`id`
 		";
 		$result = $this->_query($Q);
 

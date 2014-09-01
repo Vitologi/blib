@@ -2,25 +2,25 @@
 defined('_BLIB') or die();
 return array(
 	'create'	=> array(
-		'bDocumentation'	=> array(
+		'bdocumentation'	=> array(
 			'fields' => array(
 				'id'	=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'Table for store Documentation'),
 				'name'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NOT NULL', 'comment'=>'item name'),
 				'note'	=> array('type'=> 'TEXT', 'null'=>'NULL', 'comment'=>'small description'),
 				'description'	=> array('type'=> 'TEXT', 'null'=>'NULL', 'comment'=>'full description'),
 				'group'	=> array('type'=> 'TEXT', 'null'=>'NULL', 'comment'=>'all included objects'),
-				'bDocumentation_id'	=> array('type'=> 'INT(10) UNSIGNED', 'comment'=>'arrow to parent')
+				'bdocumentation_id'	=> array('type'=> 'INT(10) UNSIGNED', 'comment'=>'arrow to parent')
 			),
 			'primary'	=> array('id'),
 			'foreign'	=> array(
-				'bDocumentation_id'	=> null
+				'bdocumentation_id'	=> null
 			)
 		)
 		
 	),
 	'insert' => array(
-		'bDocumentation' => array(
-			array('id', 'name', 'bDocumentation_id', 'note', 'description', 'group'),
+		'bdocumentation' => array(
+			array('id', 'name', 'bdocumentation_id', 'note', 'description', 'group'),
 			array('1', 'Фронтэнд'),
 			array('2', 'Бэкэнд'),
 			array('3', 'Глобальные объекты',1),

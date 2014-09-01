@@ -14,10 +14,10 @@ class bIndex_rewrite extends bBlib{
 		
 		$Q = array(
 			'select' => array(
-				'bIndex_rewrite' => array('data')
+				'bindex_rewrite' => array('data')
 			),
 			'where' => array(
-				'bIndex_rewrite' => array(
+				'bindex_rewrite' => array(
 					'url' =>  $url['path']
 				)
 			)

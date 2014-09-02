@@ -209,7 +209,7 @@ class bTemplate extends bBlib{
 		if($row['blib']){ 
 			return new $row['blib'](json_decode($row['template'],true));
 		}else{
-			return = $row['template'];
+			return $row['template'];
 		}
 		
 	}

@@ -12,8 +12,12 @@
 	blib.build.define(
 		{'block':'bPanel', 'elem':'blocks'},
 		function(data){
+			var content = [];
 			
-			this.template = data;
+			for(key in data.content){
+				content.push({'block':'bPanel', 'elem':'blockLink', 'content':key});
+			}
+			this.template.content = content;
 
 		}
 	);
@@ -31,7 +35,7 @@
 				var self = this;
 				
 				blib
-				.tunnel({'bPanel':{"action":"show","view":"block","name":self.link}})
+				.tunnel({'bPanel':{"action":"show","view":"block","option":self.link}})
 				.ajax({
 					'url':window.location,
 					'data':{'ajax':true},

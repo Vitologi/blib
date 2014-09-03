@@ -12,61 +12,72 @@ class bPanel extends bBlib{
 	
 	protected function input($data, $caller){
 		$this->data = $this->hook('getData', array($data));
-		bPanel::$blocks = $this->getAdminBlocks();
+		$this->caller = $caller;
 	}
 	
 	public function output(){
-		$a = &$this->getTunnel();
-		var_dump($a);
-		$a['ttt']='aaa';
-		$a = $this->getTunnel();
-		var_dump($a);
+		if($this->caller)return;
+		$this->scanBlocks();
 		
-		$bPanel = $this->data['bPanel'] || array();
-		$action = ($bPanel['action']?$bPanel['action']:"show");
-		$view = ($bPanel['view']?$bPanel['view']:"blocks");
+		
+		$data = &$this->getTunnel();
+		$option = ($data['option']?$data['option']:"bPanel");
+		$view = ($data['view']?$data['view']:"navigation");
+		$action = ($data['action']?$data['action']:"show");
 		$answer = array();
 		
 		switch($action){
-			case "show":
-				if($view == 'blocks')$answer = $this->showBlocks();				
+			case "add":
+				
 				break;
+			
+			case "show":
 			default:
+				if($view == 'navigation')$answer = $this->showBlocks();
+				if($view == 'block'){
+					$block = $this->getOverride($option);					
+					$answer = $block->call('_'.$action, array($data));//bPanel::$blocks[$data['name']]->call($data['action'],array($data));
+				}
 				break;
 		}
 		
-		$answer = array("block"=>__class__, "mods"=>array("view"=>$view, "action"=>$action), "content"=>array($answer));
+		
 		return ($this->data['blib']=='bPanel')?json_encode($answer):$answer;
 	}
 	
 
 	
 	private function showBlocks(){
-		$keys = array_keys(bPanel::$blocks);
-		$temp = array();
-		foreach($keys as $key => $value){
-			$temp[] = array("elem"=>"blockLink", "content"=>$value);
-		}
-
-		return array("block"=>__class__, "elem"=>"blocks", "content"=>$temp);
+		return array("block"=>__class__, "elem"=>"blocks", "content"=>bPanel::$blocks);
 	}
 	
-
+	private function getOverride($option){
+		$temp = new $option();
+		$override = $option.'__'.__class__;
+		if(bPanel::$blocks[$option]){$temp->setParent($override, array());}
+		$temp->setParent(__class__, array());
+		return $temp;
+	}
 	
-	private function getAdminBlocks(){
+	private function scanBlocks(){
 		$arr = opendir('b');
 		$temp = array();
 		while($v = readdir($arr)){
 			if($v == '.' or $v == '..' or $v == 'bBlib') continue;
 			$name = $v.'__'.__class__;
 			$path = $this->path($name,'php');
-			$name = (file_exists($path)?$name:'bPanel__default');
-			$temp[$v] = new $name();
+			$temp[$v] = (file_exists($path)?true:false);
 		}
-		return $temp;
+		bPanel::$blocks = $temp;
 	}
 	
 	protected function getData($data){
 		return $data;
+	}
+	
+	public function _show($data = array(), $caller = null){
+		var_dump($data, $caller);
+		if($caller == null){return;}
+		
 	}
 }

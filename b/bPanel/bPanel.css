@@ -1,1 +1,12 @@
 .bPanel{}
+	.bPanel__blocks{}
+	.bPanel__blockLink{
+		display:block;}
+	
+	.bPanel_style_default{}
+		.bPanel_style_default .bPanel__blockLink{
+			display: block;
+			padding: 3px;
+			background-color: rgb(231, 231, 231);
+			border: 1px solid white;
+			cursor: pointer;}

@@ -17,9 +17,11 @@
 			'_private':{
 				'version':true,
 				'store':true,
-				'exception':true
+				'exception':true,
+				'tunnel':true
 			},
             'version':'0.2.0',
+			'tunnel':{},
 			'store':{
 				'isset':('localStorage' in window && window['localStorage'] !== null)?true:false,
 				'data':{}
@@ -206,6 +208,17 @@
 
 			return first;
 		},
+		object2url = function(obj, prefix, deep){
+			var url = '',
+				i, key;
+			
+			for(i in obj){
+				key = (prefix)?prefix+'['+i+']':i;
+				url += (is(obj[i],['array','object']))?object2url(obj[i],key,true):('&'+key+'='+obj[i]);
+			}
+			
+			return (deep)?url:url.substr(1,url.length);
+		},
 		getElement = function(selector){
 			if(is(selector, "string"))selector = [selector];
 			context = (this.cloneNode)?this:window.document;
@@ -296,6 +309,7 @@
 	Blib.navigate	= navigate;
 	Blib.extend	= extend;
 	Blib.merge = merge;
+	Blib.object2url = object2url;
 	
 	/**
 	 * Method for work with blib configuration
@@ -423,6 +437,9 @@
 				head 		= getElement(['head'])[0],
 				jsonpElement, temp, key, i, j, len, fileName;
 			
+			data['_tunnel'] = Blib.config('tunnel');
+			
+			
 			//exception for jsonp method
 			if(type==='JSONP'){
 				temp = "jsonp"+salt++;
@@ -434,7 +451,7 @@
 				
 				jsonpElement  = document.createElement('script');
 				jsonpElement.type="text/javascript";
-				jsonpElement.src = url += (url.indexOf("?")!=-1?"&":"?")+data+'&callback=Blib.ajax.'+temp;
+				jsonpElement.src = url += (url.indexOf("?")!=-1?"&":"?")+object2url(data)+'&callback=Blib.ajax.'+temp;
 				head.appendChild(jsonpElement);
 				
 				window.setTimeout(function(){
@@ -471,13 +488,7 @@
 				data = temp;
 				
 			}else if(is(data, 'object') && type !== "DATA"){
-				
-				temp = "";
-				for(key in data){
-					if(is(data[key],['array', 'object'])){ data[key]=JSON.stringify(data[key]); }
-					temp+=key+"="+data[key]+"&";
-				}
-				data = temp.substr(0, temp.length-1);
+				data = object2url(data);
 			}
 			
 
@@ -524,6 +535,11 @@
 			xhr.send(data);
 		};
 	})();
+	
+	Blib.tunnel = function(obj){
+		extend(config.tunnel,obj);
+		return this;
+	}
 	
 	/** OBJECT METHODS */
 	Blib.prototype = {

@@ -13,7 +13,7 @@ class bIndex extends bBlib{
 		$this->defaultPage = 1;
 		if(!$this->data['pageId']){$this->local['data']['pageId'] = $this->defaultPage;}
 		$this->ajax = $data['ajax'];
-		$this->template = json_decode($data['template'],true);
+		$this->template = $data['template'];
 		$this->skeleton = "bIndex__skeleton_default";
 		$this->cache = 0;		
 	}

@@ -16,17 +16,27 @@ class bPanel extends bBlib{
 	}
 	
 	public function output(){
-		$action = $this->data['action'];
+		$a = &$this->getTunnel();
+		var_dump($a);
+		$a['ttt']='aaa';
+		$a = $this->getTunnel();
+		var_dump($a);
+		
+		$bPanel = $this->data['bPanel'] || array();
+		$action = ($bPanel['action']?$bPanel['action']:"show");
+		$view = ($bPanel['view']?$bPanel['view']:"blocks");
+		$answer = array();
 		
 		switch($action){
-			case "showBlocks":
-				$answer = $this->showBlocks();
+			case "show":
+				if($view == 'blocks')$answer = $this->showBlocks();				
 				break;
 			default:
 				break;
 		}
 		
-		return $answer;
+		$answer = array("block"=>__class__, "mods"=>array("view"=>$view, "action"=>$action), "content"=>array($answer));
+		return ($this->data['blib']=='bPanel')?json_encode($answer):$answer;
 	}
 	
 

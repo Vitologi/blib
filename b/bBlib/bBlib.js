@@ -437,8 +437,8 @@
 				head 		= getElement(['head'])[0],
 				jsonpElement, temp, key, i, j, len, fileName;
 			
-			data['_tunnel'] = Blib.config('tunnel');
-			
+			data['_tunnel'] = config['tunnel'];
+			config['tunnel'] = {};
 			
 			//exception for jsonp method
 			if(type==='JSONP'){
@@ -506,7 +506,9 @@
 
 			xhr.onreadystatechange = function(){
 				if (xhr.readyState === 4 && xhr.status === 200) {
-					temp = (dataType==="json")?JSON.parse(xhr.responseText):xhr.responseText;
+					try{
+						temp = (dataType==="json")?JSON.parse(xhr.responseText):xhr.responseText;
+					}catch(e){Blib.exception("Cannot parse sending ajax-data.", e);}
 					success(temp);
 				}
 			}

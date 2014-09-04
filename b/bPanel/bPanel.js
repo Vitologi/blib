@@ -32,10 +32,13 @@
 		{"tag":"a"},
 		{
 			'onclick':function(){
-				var self = this;
+				var self = this,
+					tunnel = {'bPanel':{'controller':self.link}};
+					
+				tunnel[self.link] = {'layout':"show"};
 				
 				blib
-				.tunnel({'bPanel':{"action":"show","view":"block","option":self.link}})
+				.tunnel(tunnel)
 				.ajax({
 					'url':window.location,
 					'data':{'ajax':true},

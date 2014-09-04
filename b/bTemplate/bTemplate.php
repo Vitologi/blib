@@ -190,7 +190,7 @@ class bTemplate extends bBlib{
 		return $this->glueTempDiff($diff);
 	}
 	
-	public function _getTemplateByName($name, $caller = null){ //0_0
+	public function _getTemplateByName($data, $caller = null){ //0_0
 		if($caller == null)return false;
 		
 		$Q = array(
@@ -198,14 +198,14 @@ class bTemplate extends bBlib{
 				'btemplate' => array('blib', 'template')
 			),
 			'where'		=> array(
-				'btemplate' => array('owner'=>get_class($caller), 'name'=>$name)
+				'btemplate' => array('owner'=>get_class($caller), 'name'=>$data[0])
 			)
 		);
 		
-		if(!$result = $this->_query($Q)){throw new Exception('Can`t get template from database.');}
+		if(!$result = $caller->local['bTemplate']->_query($Q)){throw new Exception('Can`t get template from database.');}
 			
 		$row = $result->fetch();
-
+		
 		if($row['blib']){ 
 			return new $row['blib'](json_decode($row['template'],true));
 		}else{

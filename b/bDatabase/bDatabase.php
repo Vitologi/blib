@@ -60,14 +60,15 @@ class bDatabase extends bBlib{
 		$this->pdo = bDatabase::$pdo;
 	}
 
-	protected function input($data, bBlib $caller){
+	protected function input($data, $caller){
+		if(!($caller instanceof bBlib))return;
 		$this->block = get_class($caller);
 		bDatabase::setStructure($this->block);
 	}
 	
 	
 	public function output(){
-		return array('bDatabase' => $this);
+		if($this->block)return array('bDatabase' => $this);
 	}
 
 	

@@ -1,12 +1,32 @@
 .bPanel{}
+	.bPanel__side,
+	.bPanel__parent,
+	.bPanel__tools,
+	.bPanel__content{
+		overflow:auto;}
 	.bPanel__blocks{}
 	.bPanel__blockLink{
 		display:block;}
+	.bPanel__error{
+		text-align:center;
+		overflow: auto;}
+		
 	
 	.bPanel_style_default{}
+		.bPanel_style_default .bPanel__side{
+			float: left;
+			border-right: 1px solid rgb(190, 190, 190);}
+		.bPanel_style_default .bPanel__parent{
+			}
+		.bPanel_style_default .bPanel__tools{
+			}
+		.bPanel_style_default .bPanel__content{
+			}
 		.bPanel_style_default .bPanel__blockLink{
 			display: block;
 			padding: 3px;
 			background-color: rgb(231, 231, 231);
 			border: 1px solid white;
 			cursor: pointer;}
+		.bPanel_style_default .bPanel__error{
+			}

@@ -78,8 +78,8 @@ class bPanel extends bBlib{
 		return array("block"=>__class__, "elem"=>"blocks", "content"=>bPanel::$blocks);
 	}
 	
-	public function showError(){
-		return array("block"=>__class__, "elem"=>"error", "content"=>"404");
+	public function showError($text = "Module is not defined"){
+		return array("block"=>__class__, "elem"=>"error", "content"=>$text);
 	}
 	
 	public function setPanelTemplate($value){
@@ -140,6 +140,8 @@ class bPanel extends bBlib{
 					default:
 						$pannel->setPanelModule('"{1}"', $pannel->showBlocks());
 						$pannel->setPanelModule('"{2}"', $pannel->showError());
+						$pannel->setPanelModule('"{3}"', $pannel->showError());
+						$pannel->setPanelModule('"{4}"', $pannel->showError());
 						break;
 				}
 				break;

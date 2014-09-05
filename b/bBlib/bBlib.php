@@ -97,6 +97,7 @@ abstract class bBlib{
 	}
 	
 	final protected function setParent($name, $data){
+		if(!$this->local['parents'])$this->local['parents']=array();
 		if(!in_array($name, $this->local['parents']))$this->local['parents'][] = $name;
 		$parent = new $name($data, $this);
 		$this->inputSystem((array)$parent->output());

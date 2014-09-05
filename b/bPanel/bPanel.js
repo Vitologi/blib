@@ -33,18 +33,20 @@
 		{
 			'onclick':function(){
 				var self = this,
-					tunnel = {'bPanel':{'controller':self.link}};
+					tunnel = {'bPanel':{'controller':self.link}},
+					template;
 					
 				tunnel[self.link] = {'layout':"show"};
+				template = blib('.bTemplate')[0].blib.template.template;
 				
 				blib
 				.tunnel(tunnel)
 				.ajax({
 					'url':window.location,
-					'data':{'ajax':true},
+					'data':{'ajax':true, 'template':template},
 					'dataType':'json',
 					'success':function(data){
-						blib.build(data);
+						blib('body').html(blib.build(data)); //blib.build(data);
 					}
 				});
 				

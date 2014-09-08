@@ -46,6 +46,7 @@ class bDatabase extends bBlib{
 	
 	
 	private $block;
+	public function getBlock(){return $this->block;}
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
@@ -406,5 +407,9 @@ class bDatabase extends bBlib{
 	
 	public function _lastInsertId($data, $caller = null){
 		return bDatabase::$pdo->lastInsertId();
+	}
+	
+	public function _getStructure($data, $caller = null){
+		return bDatabase::$structures[$caller->bDatabase->getBlock()];
 	}
 }

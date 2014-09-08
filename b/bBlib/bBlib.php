@@ -96,7 +96,7 @@ abstract class bBlib{
 		return self::$global['_tunnel'][get_class($this)];
 	}
 	
-	final protected function setParent($name, $data){
+	final protected function setParent($name, $data = array()){
 		if(!$this->local['parents'])$this->local['parents']=array();
 		if(!in_array($name, $this->local['parents']))$this->local['parents'][] = $name;
 		$parent = new $name($data, $this);

@@ -11,11 +11,13 @@ class bPanel extends bBlib{
 	private $view = "error";
 	
 	//getters & setters
+	final public function setTemplate($value){$this->template = $value;}	
+	final public function setModule($name, $value){$this->module[$name] = $value;}
 	public function getController(){return $this->controller;}
-	public function getLayout(){return $this->layout;}
-	public function getView(){return $this->view;}
 	public function setController($value){return $this->controller = $value;}
+	public function getLayout(){return $this->layout;}
 	public function setLayout($value){return $this->layout = $value;}
+	public function getView(){return $this->view;}
 	public function setView($value){return $this->view = $value;}
 	
 	
@@ -28,7 +30,7 @@ class bPanel extends bBlib{
 	protected function input($data, $caller){
 		$this->data = $data;
 		$this->caller = $caller;
-		$tunnel = $this->getTunnel();
+		$tunnel = ($caller)?$caller->getTunnel():$this->getTunnel();
 
 		if($this->data['controller']){
 			$this->controller = $this->data['controller'];
@@ -49,14 +51,13 @@ class bPanel extends bBlib{
 		}
 		
 		if(bPanel::$blocks == null)$this->scanBlocks(); //filling blocks stack
-		$this->setPanelTemplate($this->_getTemplateByName('template')); //default template
+		$this->setTemplate($this->_getTemplateByName('template')); //default template
 		
 	}
 	
 	public function output(){
 		if($this->caller)return array('bPanel'=>$this);
 
-		
 		$block = ($this->controller == "bPanel")?$this:$this->getOverride($this->controller);
 		$block->_controller();
 		$temp = $block->_assembly();
@@ -74,22 +75,12 @@ class bPanel extends bBlib{
 	
 
 	
-	public function showBlocks(){
+	final public function showBlocks(){
 		return array("block"=>__class__, "elem"=>"blocks", "content"=>bPanel::$blocks);
 	}
 	
-	public function showError($text = "Module is not defined"){
+	final public function showError($text = "Module is not defined"){
 		return array("block"=>__class__, "elem"=>"error", "content"=>$text);
-	}
-	
-	public function setPanelTemplate($value){
-		if(is_array($value))$value = json_encode($value);
-		$this->template = $value;
-	}
-	
-	public function setPanelModule($name, $value){
-		if(is_array($value))$value = json_encode($value);
-		$this->module[$name] = $value;	
 	}
 	
 	//extend block to admin function
@@ -116,6 +107,12 @@ class bPanel extends bBlib{
 
 	
 	private function assembly(){
+		
+		if(is_array($this->template))$this->template = json_encode($this->template);
+		
+		foreach($this->module as $key =>$value){
+			if(is_array($value))$this->module[$key] = json_encode($value);
+		}		
 		return json_decode(str_replace(array_keys($this->module), array_values($this->module), $this->template),true);
 	}
 	
@@ -138,10 +135,10 @@ class bPanel extends bBlib{
 				switch($pannel->getView()){
 					case "error":
 					default:
-						$pannel->setPanelModule('"{1}"', $pannel->showBlocks());
-						$pannel->setPanelModule('"{2}"', $pannel->showError());
-						$pannel->setPanelModule('"{3}"', $pannel->showError());
-						$pannel->setPanelModule('"{4}"', $pannel->showError());
+						$pannel->setModule('"{1}"', $pannel->showBlocks());
+						$pannel->setModule('"{2}"', $pannel->showError());
+						$pannel->setModule('"{3}"', $pannel->showError());
+						$pannel->setModule('"{4}"', $pannel->showError());
 						break;
 				}
 				break;

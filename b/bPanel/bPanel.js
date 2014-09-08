@@ -46,7 +46,7 @@
 					'data':{'ajax':true, 'template':template},
 					'dataType':'json',
 					'success':function(data){
-						blib('body').html(blib.build(data)); //blib.build(data);
+						blib('body').html(blib.build(data));
 					}
 				});
 				

@@ -13,19 +13,23 @@ class bMenu__bPanel extends bBlib{
 		
 		$block->setParent('bTemplate',array());
 		$template = $block->_getTemplateByName('template');
-		$pannel->setPanelTemplate($template);
+		$pannel->setTemplate($template);
 		
 		switch($pannel->getLayout()){
 			case "show":
 			default:
 				
 				switch($pannel->getView()){
+					
+					case "list":
+						$pannel->setModule('"{4}"', $block->_showList());
+						break;
 					case "error":
 					default:
-						$pannel->setPanelModule('"{1}"', $pannel->showBlocks());
-						$pannel->setPanelModule('"{2}"', $pannel->showError());
-						$pannel->setPanelModule('"{3}"', $pannel->showError());
-						$pannel->setPanelModule('"{4}"', $block->_showList());
+						$pannel->setModule('"{1}"', $pannel->showBlocks());
+						$pannel->setModule('"{2}"', $pannel->showError());
+						$pannel->setModule('"{3}"', $pannel->showError());
+						$pannel->setModule('"{4}"', $block->_showList());
 						break;
 				}
 				break;
@@ -36,8 +40,15 @@ class bMenu__bPanel extends bBlib{
 	public function _showList($data = array(), $caller = null){
 		if($caller == null){return;}
 		
-		$result = $caller->_query(array('select'=>array('bMenu'=>array('id'))));
-		return array("block"=>get_class($caller), "elem"=>"all", "content"=>$result->fetchAll(PDO::FETCH_ASSOC));
+		
+		$caller->setParent('bTable', array(
+			'query'	=> array('select'=>array('bMenu'=>array('id'))),
+			'meta'	=> array('processor'=>false)
+		));
+		
+		$table = $caller->_getTable();
+		
+		return array("block"=>get_class($caller), "elem"=>"all", "content"=>array($table));
 	}
 	
 	

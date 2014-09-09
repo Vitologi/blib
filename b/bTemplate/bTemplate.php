@@ -69,8 +69,8 @@ class bTemplate extends bBlib{
 	
 	private function templateDiff($old, $new, $deep = false) {
 		
-		$oldKey = $old[0];
-		$newKey = $new[0];
+		$oldKey = (string)$old[0];
+		$newKey = (string)$new[0];
 		$difference = array($newKey);
 		
 		if($oldKey != $newKey)$old = array();

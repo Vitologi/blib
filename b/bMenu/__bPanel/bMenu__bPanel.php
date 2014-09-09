@@ -42,13 +42,25 @@ class bMenu__bPanel extends bBlib{
 		
 		
 		$caller->setParent('bTable', array(
-			'query'	=> array('select'=>array('bMenu'=>array('id'))),
-			'meta'	=> array('processor'=>false)
+			'query'	=> array('select'=>array('bMenu'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id'))),
+			'meta'	=> array(
+				'processor'	=> false,
+				'position'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id'),
+				'fields'	=> array(
+					'id'	=> array('title'=>'Ключевое поле', 'note'=>'Подле для хранения ключа таблицы', 'type'=>'hidden'),
+					'menu'	=> array('title'=>'Номер меню', 'note'=>'К какому меню принадлежит', 'type'=>'text', 'mods'=>array('align'=>'center')),
+					'name'	=> array('title'=>'Название', 'note'=>'Название пункта меню', 'type'=>'text'),
+					'link'	=> array('title'=>'Ссылка', 'note'=>'На что ссылается пункт (если пусто, значит меню-контейнер)', 'type'=>'text'),
+					'bconfig_id'	=> array('title'=>'Настройки', 'note'=>'Номер конфигурационных настроек', 'type'=>'text'),
+					'bmenu_id'	=> array('title'=>'Родитель', 'note'=>'Корневой пункт меню (куда будет вложен)', 'type'=>'text', 'mods'=>array('align'=>'center'))
+				)
+			)
 		));
 		
 		$table = $caller->_getTable();
+		$table['mods']=array('style'=>'default');
 		
-		return array("block"=>get_class($caller), "elem"=>"all", "content"=>array($table));
+		return $table;
 	}
 	
 	

@@ -126,8 +126,8 @@
 						data:{'ajax':true, 'template':template},
 						dataType:'json',
 						'success':function(data){
-							blib('body').html(blib.build(data));
 							self.setLocation();
+							blib('body').html(blib.build(data));
 							self.animate();
 							self.rollUp();
 							self.rollUpOther();
@@ -141,6 +141,8 @@
 			},
 			'setLocation':function(){
 				var self = this;
+				
+				blib.config('bLink.curloc', self.link);
 				
 				if(history.pushState){
 					history.pushState({}, location.host , self.link);

@@ -22,14 +22,17 @@ class bTable extends bBlib{
 		if($this->caller)return array('bTable'=>$this);
 	}
 	
-	private function getRequest($query){
+	private function getQuery(){
 		//var_dump($this->getTunnel());
-		
-		return $query;
+		return $this->query;
 	}
 	
 	public function setMeta($data){
 		$this->meta = $data;
+	}
+	
+	public function getMeta(){
+		return $this->meta;
 	}
 	
 	public function setQuery($data){
@@ -37,26 +40,14 @@ class bTable extends bBlib{
 	}
 	
 	public function getTable(){
-		$request = $this->getRequest($this->query);
-		$result = $this->caller->_query($request);
-		return array('block'=>__class__, 'tunnel'=>$this->blockTunnel, 'content'=>$result->fetchAll(PDO::FETCH_ASSOC));
+		$Q = $this->getQuery();
+		$result = $this->caller->_query($Q);
+		return array('block'=>__class__, 'tunnel'=>$this->blockTunnel, 'meta'=>$this->getMeta(), 'content'=>$result->fetchAll(PDO::FETCH_ASSOC));
 	}
-	
-	
-	
-	
+
 	public function _getTable($data = array(), $caller = null){
 		if($caller)return $caller->bTable->getTable($data);
 		return $this->getTable();
 	}
 	
 }
-/*
-
-'meta'=>array(
-	'fields'=>array(
-		'id' => array('title'=>'Ключевое поле', 'note'=>'Подле для хранения ключа таблицы', 'type'=>'hidden')
-	)
-)
-
-*/

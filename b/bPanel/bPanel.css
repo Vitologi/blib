@@ -17,11 +17,11 @@
 			float: left;
 			border-right: 1px solid rgb(190, 190, 190);}
 		.bPanel_style_default .bPanel__parent{
-			}
+			padding: 5px;}
 		.bPanel_style_default .bPanel__tools{
-			}
+			padding: 5px;}
 		.bPanel_style_default .bPanel__content{
-			}
+			padding: 5px;}
 		.bPanel_style_default .bPanel__blockLink{
 			display: block;
 			padding: 3px;

@@ -1,11 +1,21 @@
 .bTable{}
 	.bTable__head{}
 	.bTable__body{}
+	.bTable__footer{}
 	.bTable__th{}
 	.bTable__tr{}
+		.bTable__tr_checked{}
 	.bTable__td{}
 		.bTable__td_align_center{
 			text-align:center;}
+	.bTable__paginator{
+		position: relative;
+		overflow: auto;
+		height: 45px;}
+	.bTable__paginatorwrap{
+		position: absolute;}
+	.bTable__page{}
+		.bTable__page_active{}
 	
 	.bTable_style_default{
 		width: 100%;
@@ -18,6 +28,8 @@
 				border-right: 1px dashed rgb(255, 255, 255);}
 		.bTable_style_default .bTable__body{
 			}		
+		.bTable_style_default .bTable__footer{
+			border-top: 1px solid rgb(243, 243, 243);}
 		.bTable_style_default .bTable__th{
 			padding: 5px;
 			font-weight: bold;
@@ -30,3 +42,38 @@
 			padding: 5px;}
 			.bTable_style_default .bTable__tr .bTable__td:nth-last-child(n+2){
 				border-right: 1px dashed rgb(197, 197, 197);}
+		
+		.bTable_style_default .bTable__tr_checked{
+			background-color: rgb(250, 250, 250);}
+			.bTable_style_default .bTable__tr_checked .bTable__td:nth-child(1):before{
+				content: '✔';
+				font-size: 10px;
+				line-height: 14px;
+				color: white;
+				background-color: rgb(79, 216, 79);
+				display: block;
+				position: absolute;
+				border: 1px solid rgb(213, 213, 213);
+				width: 12px;
+				height: 12px;
+				-webkit-border-radius: 12px;
+				-moz-border-radius: 12px;
+				border-radius: 12px;}
+
+		.bTable_style_default  .bTable__pagewrap{
+			float: left;
+			text-align: center;}
+		
+		.bTable_style_default  .bTable__page{
+			color: #06c;
+			width: 25px;
+			height: 25px;
+			line-height: 25px;
+			position: relative;
+			display: block;
+			margin: 0 auto;
+			cursor: pointer;}
+		.bTable_style_default  .bTable__page:hover,
+		.bTable_style_default  .bTable__page_active{
+			color:red;}
+		

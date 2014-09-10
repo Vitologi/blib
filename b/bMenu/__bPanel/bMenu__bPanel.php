@@ -42,10 +42,13 @@ class bMenu__bPanel extends bBlib{
 		
 		
 		$caller->setParent('bTable', array(
+			'table'	=> 'test',
 			'query'	=> array('select'=>array('bMenu'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id'))),
 			'meta'	=> array(
 				'processor'	=> false,
 				'position'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id'),
+				'keys'	=> array('id','bmenu_id'),
+				'page'	=> array('rows'=>5),
 				'fields'	=> array(
 					'id'	=> array('title'=>'Ключевое поле', 'note'=>'Подле для хранения ключа таблицы', 'type'=>'hidden'),
 					'menu'	=> array('title'=>'Номер меню', 'note'=>'К какому меню принадлежит', 'type'=>'text', 'mods'=>array('align'=>'center')),

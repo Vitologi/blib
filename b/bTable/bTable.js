@@ -162,7 +162,7 @@
 				}
 				
 				tunnel[block.tunnel] = {'items':items};
-				blib.tunnel(tunnel);
+				blib.tunnel(tunnel,true);
 			}
 		}
 	);
@@ -200,9 +200,9 @@
 			var block = this.block,
 				page = block.page,
 				all = Math.ceil(page.count/page.rows),
-				paginator = page.paginator,//(all>page.paginator?page.paginator:all),
+				paginator = page.paginator,
 				temp = [],
-				i;
+				i, mods = {};
 			
 			page.paginator = paginator;
 			page.all = all;
@@ -211,19 +211,14 @@
 				temp.push({
 					'block':'bTable',
 					'elem':'pagewrap',
-					//'attrs':{'style':'width:'+(100/paginator)+'%;'},
 					'content':[
-						{'block':'bTable', 'elem':'page', 'id':i}
+						{'block':'bTable', 'elem':'page', 'id':i, 'mods':{'active':(page.number === i)}}
 					]
 				});
 			}
 			
 			this.template.content = [{'block':'bTable', 'elem':'paginatorwrap', 'attrs':{'style':'width:'+(all*25)+'px;'}, 'content':temp}];
 
-		},
-		false,
-		{
-			
 		}
 	);
 	
@@ -231,7 +226,7 @@
 		{'block':'bTable', 'elem':'page'},
 		function(data){
 			this.id = data.id;
-			//if(this.block.page.number == )
+			this.template.mods = data.mods;
 			this.template.attrs = data.attrs;
 			this.template.content = this.id+'';
 		},

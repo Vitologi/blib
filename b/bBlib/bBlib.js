@@ -912,22 +912,25 @@
 						break;
 				}
 				
-				
-					if(key == 'style'){
-						style = value.match(/([^:;]+)/g);
-						for(len = style.length,i=0;i<len;i+=2){
-							try{
-								elem.style[style[i]]=style[i+1];
-							}catch(e){Blib.exception("Cannot set value "+style[i+1]+" for property "+style[i], e);}
-						}
-					}else{
+				if(elem.setAttribute && document.querySelector){
+					if(key == "className")key="class";
+					if(key == "class")temp = temp+" "+elem.getAttribute(key);
+					elem.setAttribute(key,temp);
+				}else if(key == 'style'){
+					style = temp.match(/([^:;]+)/g);
+					for(len = style.length,i=0;i<len;i+=2){
 						try{
-							elem[key] = value;
-						}catch(e){Blib.exception("Cannot set value "+value+" for property "+key, e);}						
+							elem.style[style[i]]=style[i+1];
+						}catch(e){Blib.exception("Cannot set value "+style[i+1]+" for property "+style[i], e);}
+						
 					}
-					
-					
-				if(elem.setAttribute)elem.setAttribute(key,temp);
+				}else{
+					try{
+						if(key == "class")key="className";
+						if(key == "className")temp = elem[key]+" "+temp;
+						elem[key] = temp;
+					}catch(e){Blib.exception("Cannot set value "+temp+" for property "+key, e);}						
+				}
 			},
 			'_getMode':function(mode){
 				var mods = this.template.mods || {},
@@ -1199,18 +1202,11 @@
 			}
 			
 			//задаем атрибуты
-			if(data['attrs']){
-				for(key in data['attrs']){
-					attr = data['attrs'][key];
-
-					if(key=="className"){
-						result[key] += " "+attr;
-					}else{
-						obj._attr(key, attr);
-					}
+			for (key in data.attrs) {
+				if (data.attrs.hasOwnProperty(key)) {
+					obj._attr(key, data.attrs[key]);
 				}
 			}
-			
 			
 			//проверяем есть ли вложенность и рекурсивно обрабатываем если есть
 			switch(is(data['content'])){

@@ -1192,9 +1192,9 @@
 			if(currentClass){result.className = currentClass};
 			
 			//устанавливаем модификаторы
-			if(currentClass && data['mods']){
-				for(key in data['mods']){
-					result.className +=' '+currentClass+"_"+key+(is(data['mods'][key], "string")?"_"+data['mods'][key]:"");
+			for (key in data.mods) {
+				if (data.mods.hasOwnProperty(key)) {
+					obj._setMode(key, data.mods[key]);
 				}
 			}
 			

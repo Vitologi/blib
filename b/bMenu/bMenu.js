@@ -38,19 +38,6 @@
 		},
 		{
 			'tag':'ul'
-		},
-		//actions
-		{
-			'_onSetMode':{
-				'position':{
-					'horizontal':function(){
-						console.log('position -> horizontal');
-					},
-					'vertical':function(){
-						console.log('position -> vertical');
-					}
-				}
-			}
 		}
 	);
 

@@ -142,7 +142,7 @@
 			}
 
 			// Handle case when target is a string or something (possible in deep copy)
-			if ( !is(target, 'object') && !is(target, 'function') ) {
+			if ( !is(target, ['object','array']) && !is(target, 'function') ) {
 				target = {};
 			}
 
@@ -170,7 +170,6 @@
 							if ( copyIsArray ) {
 								copyIsArray = false;
 								clone = src && is(src, 'array') ? src : [];
-
 							} else {
 								clone = src && is(src, 'object') ? src : {};
 							}
@@ -538,8 +537,8 @@
 		};
 	})();
 	
-	Blib.tunnel = function(obj){
-		extend(config.tunnel,obj);
+	Blib.tunnel = function(obj,reset){
+		config.tunnel = (reset)?obj:extend(true,config.tunnel,obj);
 		return this;
 	}
 	

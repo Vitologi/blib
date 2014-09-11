@@ -35,6 +35,31 @@
 
 		}
 	);
+	
+	blib.build.define(
+		{'block':'bPanel', 'elem':'button'},
+		function(data){
+			var tunnel = {'bPanel':{'controller':data.controller}},
+				mods = blib.extend({'style':'button'}, data.mods),
+				ajax = (data.ajax !== undefined)?data.ajax:true;
+				
+			tunnel[data.controller] = {
+				'layout':data.layout,
+				'view':data.view
+			};
+			
+			this.template.content = [{
+				'block':'bLink',
+				'mods':mods,
+				'ajax':ajax,
+				'tunnel':tunnel,
+				'content':data.content,
+				'before':[function(){
+					this.data = {'template':blib('.bTemplate')[0].blib.template.template};
+				}]
+			}];
+		}
+	);
 
 	
 })(window);

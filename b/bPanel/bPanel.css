@@ -5,6 +5,8 @@
 	.bPanel__content{
 		overflow:auto;}
 	.bPanel__blocks{}
+	.bPanel__button{
+		display:inline-block;}
 	.bPanel__blockLink{
 		display:block;}
 	.bPanel__error{

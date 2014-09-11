@@ -10,12 +10,27 @@ class bMenu__bPanel extends bBlib{
 	public function _controller($data = array(), $caller = null){
 		$block = $caller;
 		$pannel = $caller->bPanel;
-		
-		$block->setParent('bTemplate',array());
-		$template = $block->_getTemplateByName('template');
-		$pannel->setTemplate($template);
+		$tunnel = $block->getTunnel();
+		$items = $tunnel['items'];
 		
 		switch($pannel->getLayout()){
+			
+			case "delete":
+				$message = ($block->_delItem($items)?"Строки удалены":"Ошибка удаления записей");
+				
+				$tools = array('content'=>array(
+					array('block'=>'bPanel','elem'=>'button', 'layout'=>'add', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Добавить'),
+					array('block'=>'bPanel','elem'=>'button', 'layout'=>'edit', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Редактировать'),
+					array('block'=>'bPanel','elem'=>'button', 'layout'=>'delete', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Удалить')
+				));
+				
+				$pannel->setModule('"{1}"', $pannel->showBlocks());
+				$pannel->setModule('"{2}"', $pannel->showError($message));
+				$pannel->setModule('"{3}"', $tools);
+				$pannel->setModule('"{4}"', $block->_showList());
+						
+				break;
+			
 			case "show":
 			default:
 				
@@ -24,11 +39,19 @@ class bMenu__bPanel extends bBlib{
 					case "list":
 						$pannel->setModule('"{4}"', $block->_showList());
 						break;
+					
 					case "error":
 					default:
+					
+						$tools = array('content'=>array(
+							array('block'=>'bPanel','elem'=>'button', 'layout'=>'add', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Добавить'),
+							array('block'=>'bPanel','elem'=>'button', 'layout'=>'edit', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Редактировать'),
+							array('block'=>'bPanel','elem'=>'button', 'layout'=>'delete', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Удалить')
+						));
+						
 						$pannel->setModule('"{1}"', $pannel->showBlocks());
-						$pannel->setModule('"{2}"', $pannel->showError());
-						$pannel->setModule('"{3}"', $pannel->showError());
+						$pannel->setModule('"{2}"', $pannel->showError('Панель редактирования пунктов меню'));
+						$pannel->setModule('"{3}"', $tools);
 						$pannel->setModule('"{4}"', $block->_showList());
 						break;
 				}
@@ -36,7 +59,8 @@ class bMenu__bPanel extends bBlib{
 		}
 	}
 	
-
+	
+	
 	public function _showList($data = array(), $caller = null){
 		if($caller == null){return;}
 		
@@ -66,5 +90,17 @@ class bMenu__bPanel extends bBlib{
 		return $table;
 	}
 	
-	
+	public function _delItem($data = array(), $caller = null){
+		if($caller == null){return;}
+		
+		$where = array();
+		foreach($data[0] as $key => $value){
+			$where[] = array('id',$value['id'],false,true);
+		}
+		
+		return $caller->_query(array(
+			'delete'=>array('bMenu'),
+			'where'=>array('bMenu'=>$where)
+		));
+	}
 }

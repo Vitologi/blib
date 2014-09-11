@@ -136,9 +136,9 @@ class bPanel extends bBlib{
 					case "error":
 					default:
 						$pannel->setModule('"{1}"', $pannel->showBlocks());
-						$pannel->setModule('"{2}"', $pannel->showError());
-						$pannel->setModule('"{3}"', $pannel->showError());
-						$pannel->setModule('"{4}"', $pannel->showError());
+						$pannel->setModule('"{2}"', $pannel->showError('tools'));
+						$pannel->setModule('"{3}"', $pannel->showError('operation'));
+						$pannel->setModule('"{4}"', $pannel->showError('content'));
 						break;
 				}
 				break;

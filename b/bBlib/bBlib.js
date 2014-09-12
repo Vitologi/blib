@@ -868,7 +868,10 @@
 			'tree':{}
 		},
 		baseProto = {
-			'template':{},
+			'template':{
+				'attrs':{},
+				'mods':{}
+			},
 			'_onRemove':[],
 			'_onSetMode':{/* 'js':{'init':function(){alert('block inited');}} */ },
 			'_setTemplate':function(tmpl, reset){

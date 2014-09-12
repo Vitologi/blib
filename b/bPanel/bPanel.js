@@ -3,9 +3,7 @@
 	blib.build.define(
 		{'block':'bPanel'},
 		function(data){
-			
 			this.template = data;
-
 		}
 	);
 	
@@ -37,6 +35,22 @@
 	);
 	
 	blib.build.define(
+		{'block':'bPanel', 'elem':'location'},
+		function(data){
+			var tunnel = blib.config('tunnel')||{};
+			tunnel['bPanel'] = {'controller':data.controller};
+			tunnel[data.controller] = {
+				'layout':data.layout,
+				'view':data.view
+			};
+
+			blib.tunnel(tunnel);
+			blib.build({'block':'bLink'}).blib.setLocation();
+			this.template = false;
+		}
+	);
+	
+	blib.build.define(
 		{'block':'bPanel', 'elem':'button'},
 		function(data){
 			var tunnel = {'bPanel':{'controller':data.controller}},
@@ -47,6 +61,8 @@
 				'layout':data.layout,
 				'view':data.view
 			};
+			
+			
 			
 			this.template.content = [{
 				'block':'bLink',

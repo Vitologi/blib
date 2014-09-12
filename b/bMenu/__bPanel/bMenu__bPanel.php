@@ -13,48 +13,71 @@ class bMenu__bPanel extends bBlib{
 		$tunnel = $block->getTunnel();
 		$items = $tunnel['items'];
 		
+		$pannel->setModule('"{1}"', $pannel->showBlocks());
+		
 		switch($pannel->getLayout()){
 			
+			case "add":
+				$message = ($block->_addItem($items)?"Запись добавлена":"Ошибка добавления записи");
+				$pannel->setModule('"{2}"', array('content'=>array($pannel->showError($message),array('block'=>'bPanel', 'elem'=>'location', 'controller'=>'bMenu', 'layout'=>'show', 'view'=>'list'))));
+				break;
+			
+			case "edit":
+				$message = ($block->_editItem($items)?"Запись отредактирована":"Ошибка редактирования записи");
+				$pannel->setModule('"{2}"', array('content'=>array($pannel->showError($message),array('block'=>'bPanel', 'elem'=>'location', 'controller'=>'bMenu', 'layout'=>'show', 'view'=>'list'))));
+				break;
+				
 			case "delete":
 				$message = ($block->_delItem($items)?"Строки удалены":"Ошибка удаления записей");
-				
-				$tools = array('content'=>array(
-					array('block'=>'bPanel','elem'=>'button', 'layout'=>'add', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Добавить'),
-					array('block'=>'bPanel','elem'=>'button', 'layout'=>'edit', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Редактировать'),
-					array('block'=>'bPanel','elem'=>'button', 'layout'=>'delete', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Удалить')
-				));
-				
-				$pannel->setModule('"{1}"', $pannel->showBlocks());
-				$pannel->setModule('"{2}"', $pannel->showError($message));
-				$pannel->setModule('"{3}"', $tools);
-				$pannel->setModule('"{4}"', $block->_showList());
-						
+				$pannel->setModule('"{2}"', array('content'=>array($pannel->showError($message),array('block'=>'bPanel', 'elem'=>'location', 'controller'=>'bMenu', 'layout'=>'show', 'view'=>'list'))));
 				break;
 			
 			case "show":
 			default:
+				$pannel->setModule('"{2}"', $pannel->showError('Панель редактирования пунктов меню'));
+				break;
+		}
+		
+		
+		
+		
+		switch($pannel->getView()){
+			case "add":
+				$tools = array('content'=>array(
+					array('block'=>'bPanel','elem'=>'button', 'layout'=>'add', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Сохранить'),
+					array('block'=>'bPanel','elem'=>'button', 'layout'=>'show', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Отмена')
+				));
 				
-				switch($pannel->getView()){
-					
-					case "list":
-						$pannel->setModule('"{4}"', $block->_showList());
-						break;
-					
-					case "error":
-					default:
-					
-						$tools = array('content'=>array(
-							array('block'=>'bPanel','elem'=>'button', 'layout'=>'add', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Добавить'),
-							array('block'=>'bPanel','elem'=>'button', 'layout'=>'edit', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Редактировать'),
-							array('block'=>'bPanel','elem'=>'button', 'layout'=>'delete', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Удалить')
-						));
-						
-						$pannel->setModule('"{1}"', $pannel->showBlocks());
-						$pannel->setModule('"{2}"', $pannel->showError('Панель редактирования пунктов меню'));
-						$pannel->setModule('"{3}"', $tools);
-						$pannel->setModule('"{4}"', $block->_showList());
-						break;
-				}
+				
+				$pannel->setModule('"{2}"', $pannel->showError('Добавление записи'));
+				$pannel->setModule('"{3}"', $tools);
+				$pannel->setModule('"{4}"', $pannel->showError('Тут форма добавления'));
+				
+				break;
+			
+			case "edit":
+				$tools = array('content'=>array(
+					array('block'=>'bPanel','elem'=>'button', 'layout'=>'edit', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Сохранить'),
+					array('block'=>'bPanel','elem'=>'button', 'layout'=>'show', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Отмена')
+				));
+				
+				$pannel->setModule('"{2}"', $pannel->showError('Редактирование записи'));
+				$pannel->setModule('"{3}"', $tools);
+				$pannel->setModule('"{4}"',$pannel->showError('Тут форма редактирования'));
+				
+				break;
+			
+			case "list":
+			default:
+			
+				$tools = array('content'=>array(
+					array('block'=>'bPanel','elem'=>'button', 'layout'=>'show', 'view'=>'add', 'controller'=>'bMenu', 'content'=>'Добавить'),
+					array('block'=>'bPanel','elem'=>'button', 'layout'=>'show', 'view'=>'edit', 'controller'=>'bMenu', 'content'=>'Редактировать'),
+					array('block'=>'bPanel','elem'=>'button', 'layout'=>'delete', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Удалить')
+				));
+
+				$pannel->setModule('"{3}"', $tools);
+				$pannel->setModule('"{4}"', $block->_showList());
 				break;
 		}
 	}
@@ -88,6 +111,47 @@ class bMenu__bPanel extends bBlib{
 		$table['mods']=array('style'=>'default');
 		
 		return $table;
+	}
+	
+	public function _addItem($data = array(), $caller = null){
+		if($caller == null){return;}
+		$data = $data[0];
+		
+		$Q = array(
+			'insert'=>array(
+				'bMenu'=>array(
+					'menu'=>$data['menu'],
+					'name'=>$data['name'],
+					'link'=>$data['link'],
+					'bconfig_id'=>$data['bconfig_id'],
+					'bmenu_id'=>$data['bmenu_id']
+				)
+			)
+		);
+		
+		return $caller->_query($Q);
+	}
+	
+	public function _editItem($data = array(), $caller = null){
+		if($caller == null){return;}
+		$data = $data[0];
+		
+		$Q = array(
+			'update'=>array(
+				'bMenu'=>array(
+					'menu'=>$data['menu'],
+					'name'=>$data['name'],
+					'link'=>$data['link'],
+					'bconfig_id'=>$data['bconfig_id'],
+					'bmenu_id'=>$data['bmenu_id']
+				)
+			),
+			'where'=>array(
+				'bMenu'=>array('id'=>$data['id'])
+			)
+		);
+		
+		return $caller->_query($Q);
 	}
 	
 	public function _delItem($data = array(), $caller = null){

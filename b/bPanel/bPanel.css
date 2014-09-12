@@ -6,7 +6,7 @@
 		overflow:auto;}
 	.bPanel__blocks{}
 	.bPanel__button{
-		display:inline-block;}
+		}
 	.bPanel__blockLink{
 		display:block;}
 	.bPanel__error{
@@ -24,6 +24,9 @@
 			padding: 5px;}
 		.bPanel_style_default .bPanel__content{
 			padding: 5px;}
+		.bPanel_style_default .bPanel__button{
+			display:inline-block;
+			margin:2px;}
 		.bPanel_style_default .bPanel__blockLink{
 			display: block;
 			padding: 3px;

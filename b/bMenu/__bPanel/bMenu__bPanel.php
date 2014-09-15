@@ -73,7 +73,7 @@ class bMenu__bPanel extends bBlib{
 				$tools = array('content'=>array(
 					array('block'=>'bPanel','elem'=>'button', 'layout'=>'show', 'view'=>'add', 'controller'=>'bMenu', 'content'=>'Добавить'),
 					array('block'=>'bPanel','elem'=>'button', 'layout'=>'show', 'view'=>'edit', 'controller'=>'bMenu', 'content'=>'Редактировать'),
-					array('block'=>'bPanel','elem'=>'button', 'layout'=>'delete', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Удалить')
+					array('block'=>'bPanel','elem'=>'button', 'uphold'=>array('test'), 'layout'=>'delete', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Удалить')
 				));
 
 				$pannel->setModule('"{3}"', $tools);
@@ -89,7 +89,7 @@ class bMenu__bPanel extends bBlib{
 		
 		
 		$caller->setParent('bTable', array(
-			'table'	=> 'test',
+			'name'	=> 'test',
 			'query'	=> array('select'=>array('bMenu'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id'))),
 			'meta'	=> array(
 				'processor'	=> false,

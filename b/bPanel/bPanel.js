@@ -55,7 +55,8 @@
 		function(data){
 			var tunnel = {'bPanel':{'controller':data.controller}},
 				mods = blib.extend({'style':'button'}, data.mods),
-				ajax = (data.ajax !== undefined)?data.ajax:true;
+				ajax = (data.ajax !== undefined)?data.ajax:true,
+				uphold = data.uphold || [];
 				
 			tunnel[data.controller] = {
 				'layout':data.layout,
@@ -68,6 +69,7 @@
 				'block':'bLink',
 				'mods':mods,
 				'ajax':ajax,
+				'uphold':uphold,
 				'tunnel':tunnel,
 				'content':data.content,
 				'before':[function(){

@@ -7,13 +7,14 @@
 				meta = blib.extend({'position':{},'fields':{}}, data.meta);
 
 			this.tunnel = data.tunnel || false;
-			this.table = data.table;
+			this.name = data.name;
 			this.position = meta.position;
 			this.fields = meta.fields;
 			this.keys = meta.keys;
 			this.page = meta.page;
 			this.content = data.content;
 			this.numColumn = 0;
+			this.checkedRow = 0;
 			
 			temp.push(this.getHeader());
 			temp.push(this.getBody());
@@ -21,6 +22,8 @@
 			
 			this.template.mods = data.mods;
 			this.template.content = temp;
+			
+			this._static('bLink').setUphold(this.name, this);
 
 		},
 		{'tag':'table'},
@@ -36,6 +39,17 @@
 			},
 			'clearTunnel':function(){
 				blib.config('tunnel.'+this.tunnel+'.items',[]);
+			},
+			'_onRemove':[
+				function(){
+					this._static('bLink').dropUphold(this.name, this);
+				}
+			],
+			'getStatus':function(){
+				return (this.checkedRow<1)?{'error':1, 'code':1, 'message':"There is no selected lines."}:{'error':0, 'code':0, 'message':"0"};
+			},
+			'checkRow':function(flag){
+				this.checkedRow += flag?1:-1;
 			}
 		}
 	);
@@ -88,6 +102,8 @@
 		{'tag':'tbody'},
 		{
 			'rebuilding':function(data){
+				var block = this.block;
+				block.checkedRow = 0;
 				this._replace({'block':'bTable', 'elem':'body', 'content':data});
 			}
 		}
@@ -140,6 +156,7 @@
 				items.push(item);
 				tunnel[block.tunnel] = {'items':items};
 				blib.tunnel(tunnel);
+				block.checkRow(true);
 			},
 			
 			'uncheckItem':function(){
@@ -163,6 +180,7 @@
 				
 				tunnel[block.tunnel] = {'items':items};
 				blib.tunnel(tunnel,true);
+				block.checkRow(false);
 			}
 		}
 	);
@@ -235,7 +253,7 @@
 			'onclick':function(){
 				var self = this,
 					block = self.block,
-					table = block.table,
+					name = block.name,
 					body = block.children.bTable__body[0];
 				
 				block.page.number = this.id;
@@ -243,7 +261,7 @@
 				blib
 				.tunnel({'bTable':{'page':block.page}})
 				.ajax({
-					'data':{'blib':'bTable','table':table},
+					'data':{'blib':'bTable','name':name},
 					'dataType':'json',
 					'success':function(data){
 						body.rebuilding(data);

@@ -14,21 +14,22 @@ class bTable extends bBlib{
 	protected function input($data, $caller){
 		/** parent */
 		if($caller){
+			if(!$data['name'])$data['name'] = $this->generateName();
 			$this->caller = $caller;
-			$this->table = $data['table'];
+			$this->name = $data['name'];
 			$this->setQuery($data['query']);
 			$this->setMeta($data['meta']);
 			
 			$this->blockTunnel = get_class($caller);
 			
 			$data['caller'] = $this->blockTunnel;
-			$this->_setSession($data['table'], $data);
+			$this->_setSession($this->name, $data);
 			
 		/** ajax */
-		}else if($data['table']){
+		}else if($data['name']){
 			
-			$this->table = $data['table'];
-			$data = $this->_getSession($this->table);
+			$this->name = $data['name'];
+			$data = $this->_getSession($this->name);
 			$this->caller = new $data['caller'](array());
 			
 			$this->setQuery($data['query']);
@@ -65,6 +66,16 @@ class bTable extends bBlib{
 		return $Q;
 	}
 	
+	private function generateName($length = 8){
+		$chars = 'abdefhiknrstyzABDEFGHKNQRSTYZ23456789';
+		$numChars = strlen ($chars);
+		$string = '';
+		for ($i = 0; $i < $length; $i++) {
+			$string .= substr ($chars, rand (1, $numChars) - 1, 1);
+		}
+		return $string;
+	}
+	
 	public function setMeta($data){
 		$tunnel = $this->getTunnel();
 		$tunnelPage = ($tunnel['page'])?$tunnel['page']:array();
@@ -93,7 +104,7 @@ class bTable extends bBlib{
 	public function getTable(){
 		$Q = $this->getQuery();
 		$result = $this->caller->_query($Q);
-		return array('block'=>__class__, 'tunnel'=>$this->blockTunnel, 'table'=>$this->table, 'meta'=>$this->getMeta(), 'content'=>$result->fetchAll(PDO::FETCH_ASSOC));
+		return array('block'=>__class__, 'tunnel'=>$this->blockTunnel, 'name'=>$this->name, 'meta'=>$this->getMeta(), 'content'=>$result->fetchAll(PDO::FETCH_ASSOC));
 	}
 
 	public function _getTable($data = array(), $caller = null){

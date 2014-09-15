@@ -2,11 +2,22 @@
 	text-decoration:none;
 	cursor:pointer;
 	color:black;}
+	.bLink__error{
+		display: none;}
+		.bLink__error_active{
+			display:inline;}
 	
 	.bLink_style_default{
 		}
 		.bLink_style_default:hover{
 			text-decoration:underline;}
+	.bLink_style_default .bLink__error_active{			
+		position: absolute;
+		z-index: 1;
+		background-color: white;
+		padding: 5px;
+		border: 1px solid rgb(197, 197, 197);
+		margin: -20px 50px;}
 	
 	.bLink_style_breadcrumbs{
 		margin-right:5px;}

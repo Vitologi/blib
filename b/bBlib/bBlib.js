@@ -118,11 +118,16 @@
 			}
 			
 			//for all OTHER
-			var temp = new obj.constructor();
-			for (i in obj){
-				if(temp[i] === obj[i]){continue;};
-				temp[i] = clone(obj[i]);
-			}
+			try{
+				var temp = new obj.constructor();
+						
+				for (i in obj){
+					if(temp[i] === obj[i]){continue;};
+					temp[i] = clone(obj[i]);
+				}
+			
+			}catch(e){Blib.exception("Cannot clone object.", e);}
+			
 			return temp;
 		},
 		
@@ -325,7 +330,6 @@
 	};
 			
 	Blib.config = function(option, value){
-		
 		if(typeof(option) != 'string') return clone(config);
 		
 		var result = config,
@@ -871,6 +875,9 @@
 			'template':{
 				'attrs':{},
 				'mods':{}
+			},
+			'_static':function(name){
+				return (name in config.block)?config.block[name].prototype:baseProto;
 			},
 			'_onRemove':[],
 			'_onSetMode':{/* 'js':{'init':function(){alert('block inited');}} */ },

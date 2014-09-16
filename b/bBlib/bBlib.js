@@ -432,7 +432,7 @@
 		return function(param){
 			var dataType	= param['dataType'] || "text",
 				success		= param['success'] || function(){},
-				data		= param['data'] || null,
+				data		= param['data'] || {},
 				files		= param['files'] || null,
 				type		= param['type'] || "POST",
 				url			= param['url'] || "/",
@@ -440,6 +440,10 @@
 				head 		= getElement(['head'])[0],
 				jsonpElement, temp, key, i, j, len, fileName;
 			
+			if(config['tunnel']['_files']){
+				files = config['tunnel']['_files'];
+				config['tunnel']['_files'] = null;
+			}
 			data['_tunnel'] = config['tunnel'];
 			config['tunnel'] = {};
 			

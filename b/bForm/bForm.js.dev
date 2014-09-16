@@ -5,7 +5,6 @@
 			'prepare':function(data){
 				if(!data.attrs)data.attrs={};
 				this.name = data.name || data.attrs.name;
-				if(!data.attrs)data.attrs = {};
 				data.attrs.name = data.name;
 				
 				
@@ -13,7 +12,6 @@
 				this.template = data;
 			},
 			'prepareValue':function(){
-				if(!this.template.attrs)this.template.attrs={};
 				this.template.attrs.value = this.template.content;
 				this.template.content = false;
 			},
@@ -32,20 +30,20 @@
 		{'block':'bForm'},
 		function(data){
 			if(!data.attrs)data.attrs={};
-			var config = {
-				'ajax':data.ajax || data.attrs.ajax || false,
+			var meta = this.meta = {
 				'processor':data.processor || false,
+				'tunnel':data.tunnel || false,
+				'ajax':('ajax' in data)?data.ajax:true,
 				'action':data.action || data.attrs.action || '',
 				'method':data.method || data.attrs.method || 'POST'
 			}
-			
-			this.config = config;
+
 			this.fields = {};
 			this.template = data;
 			
-			if(!config.ajax){
-				this.template.attrs.action = config.action;
-				this.template.attrs.method = config.method;
+			if(!meta.ajax){
+				this.template.attrs.action = meta.action;
+				this.template.attrs.method = meta.method;
 			}
 			
 		},
@@ -83,12 +81,12 @@
 				return result;
 			},
 			'submit':function(handler){
-				var config = this.config,
-					ajax = config.ajax,
-					processor = config.processor,
-					action = config.action,
-					method = config.method,
-					request, files;
+				var meta = this.meta,
+					ajax = meta.ajax,
+					processor = meta.processor,
+					action = meta.action,
+					method = meta.method,
+					request, files, temp;
 				
 				if(ajax){					
 					request = this.serialize();
@@ -97,8 +95,17 @@
 						delete request['_files'];
 					}
 					
+					if(meta.tunnel){
+						temp = {};
+						temp[meta.tunnel] = request;
+						if(files)temp._files = files;
+						blib.tunnel(temp);
+						request = {};
+						files = undefined;
+					}
+					
 					if(processor)request.blib = processor;
-
+					
 					blib.ajax({
 						'url':action,
 						'type':method,
@@ -182,7 +189,7 @@
 	blib.build.define(
 		{'block':'bForm', 'elem':'submit'},
 		function(data){
-			this.template = data;
+			this.template.content = data.content;
 			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"submit"}},
@@ -190,13 +197,13 @@
 			'onclick':function(e){
 				var self = this,
 					block = self.block,
-					config = block.config,
+					meta = block.meta,
 					handler = function(data){
 						if(data.reset)block.dom.reset();
 						if(data.message)block.children.bForm__message[0].setText(data.message);
 					};
 					
-				if(!config.ajax)return true;
+				if(!meta.ajax)return true;
 				
 				if(e.preventDefault){
 					e.preventDefault();
@@ -213,7 +220,7 @@
 	blib.build.define(
 		{'block':'bForm', 'elem':'reset'},
 		function(data){
-			this.template = data;
+			this.template.content = data.content;
 			this.prepareValue();			
 		},
 		{'tag':"input", 'attrs':{'type':"reset"}},
@@ -224,7 +231,7 @@
 	blib.build.define(
 		{'block':'bForm', 'elem':'button'},
 		function(data){
-			this.template = data;
+			this.template.content = data.content;
 			this.prepareValue();			
 		},
 		{'tag':"input", 'attrs':{'type':"button"}},
@@ -235,7 +242,7 @@
 	blib.build.define(
 		{'block':'bForm', 'elem':'image'},
 		function(data){
-			this.template = data;
+			this.template.content = data.content;
 			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"image"}},

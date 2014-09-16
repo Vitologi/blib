@@ -14,9 +14,8 @@ class bTable extends bBlib{
 	protected function input($data, $caller){
 		/** parent */
 		if($caller){
-			if(!$data['name'])$data['name'] = $this->generateName();
+			$this->name = ($data['name']?$data['name']:$this->generateName());
 			$this->caller = $caller;
-			$this->name = $data['name'];
 			$this->setQuery($data['query']);
 			$this->setMeta($data['meta']);
 			

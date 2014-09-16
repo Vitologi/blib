@@ -25,7 +25,7 @@
 			for(key in data.content){
 				item = data.content[key];
 				item.elem = 'item';
-				if(+item.parent === 0){combine = item; continue;}
+				if(item.id == this.id){combine = item; continue;}
 				if(!content[item.parent]){content[item.parent] = [];}
 				content[item.parent].push(item);
 			}

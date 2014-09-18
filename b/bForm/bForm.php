@@ -4,7 +4,19 @@ defined('_BLIB') or die;
 class bForm extends bBlib{
 	
 	private $meta = null;
-	private $query = array();
+	private $query = null;
+	private $select = null;
+	private $radio = null;
+	private $content = null;
+	private $mods = array();
+	
+	private function getMeta(){return $this->meta;}
+	private function getQuery(){return $this->query;}
+	public function setQuery($data){$this->query = $data;}
+	private function getMods(){return $this->mods;}
+	private function setMods($data){$this->mods = $data;}
+	private function getContent(){return $this->content;}
+	private function setContent($data){$this->content = $data;}
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
@@ -16,25 +28,18 @@ class bForm extends bBlib{
 		$this->name = ($data['name']?$data['name']:$this->generateName());
 		$this->caller = $caller;
 		
-		$this->setQuery($data['query']);
+		if($data['query'])$this->setQuery($data['query']);
+		if($data['mods'])$this->setMods($data['mods']);
+		if($data['content'])$this->setContent($data['content']);
 		$this->setMeta($data['meta']);
 		
 		$this->blockTunnel = get_class($caller);
-		
-		$data['caller'] = $this->blockTunnel;
-		$this->_setSession($this->name, $data);
 	}
 	
 	public function output(){
 		if($this->caller)return array('bForm'=>$this);
 	}
-	
-	private function getQuery(){
-	
-		$Q = $this->query;
-		return $Q;
-	}
-	
+
 	private function generateName($length = 8){
 		$chars = 'abdefhiknrstyzABDEFGHKNQRSTYZ23456789';
 		$numChars = strlen ($chars);
@@ -46,32 +51,21 @@ class bForm extends bBlib{
 	}
 	
 	public function setMeta($data){
-		$tunnel = $this->getTunnel();
-		
-		$Q = $this->query;
-		
-		if(!$page['count']){
-			$result = $this->caller->_query($Q);
-			$page['count']= $result->rowCount();
+		$select = ($data['select']?$data['select']:array());
+		$temp = array();
+		foreach($select as $key => $value){
+			$result = $this->caller->_query($value);
+			
+			$temp[$key] = $result->fetchAll(PDO::FETCH_ASSOC);
 		}
+		$data['select'] = $temp;	
 		
 		$this->meta = $data;
-		$this->meta['page'] = $page;
 		
-	}
-	
-	public function getMeta(){
-		return $this->meta;
-	}
-	
-	public function setQuery($data){
-		$this->query = $data;
 	}
 	
 	public function getForm(){
-		$Q = $this->getQuery();
-		$result = $this->caller->_query($Q);
-		return array('block'=>__class__, 'tunnel'=>$this->blockTunnel, 'name'=>$this->name, 'meta'=>$this->getMeta(), 'content'=>$result->fetchAll(PDO::FETCH_ASSOC));
+		return array('block'=>__class__, 'mods'=>$this->mods, 'tunnel'=>$this->blockTunnel, 'name'=>$this->name, 'meta'=>$this->getMeta(), 'content'=>$this->getContent());
 	}
 
 	public function _getForm($data = array(), $caller = null){
@@ -80,143 +74,3 @@ class bForm extends bBlib{
 	}
 	
 }
-
-
-
-/*
-
-{
-    "block": "bForm",
-    "mods": {
-        "style": "default"
-    },
-    "ajax": true,
-    "processor": "bLK",
-    "tag": "form",
-    "attrs": {
-        "method": "POST",
-        "action": "/downloads/"
-    },
-    "content": [
-        {
-            "elem": "message"
-        },
-        {
-            "elem": "label",
-            "name": "label",
-            "content": "label"
-        },
-        {
-            "elem": "text",
-            "name": "text[]",
-            "content": "example"
-        },
-        {
-            "elem": "label",
-            "name": "label",
-            "content": "label"
-        },
-        {
-            "elem": "password",
-            "name": "password",
-            "content": "example"
-        },
-        {
-            "elem": "label",
-            "name": "label",
-            "content": "label"
-        },
-        {
-            "elem": "checkbox",
-            "name": "checkbox"
-        },
-        {
-            "elem": "label",
-            "name": "label",
-            "content": "label"
-        },
-        {
-            "elem": "radio",
-            "name": "radio",
-            "content": "radio1"
-        },
-        {
-            "elem": "label",
-            "name": "label",
-            "content": "label"
-        },
-        {
-            "elem": "radio",
-            "name": "radio",
-            "content": "radio2"
-        },
-        {
-            "elem": "label",
-            "name": "label",
-            "content": "label"
-        },
-        {
-            "elem": "radio",
-            "name": "radio"
-        },
-        {
-            "elem": "label",
-            "name": "label",
-            "content": "label"
-        },
-        {
-            "elem": "file",
-            "name": "file",
-            "content": "example"
-        },
-        {
-            "elem": "hidden",
-            "name": "hidden",
-            "content": "example"
-        },
-        {
-            "elem": "textarea",
-            "name": "textarea",
-            "content": "example"
-        },
-        {
-            "elem": "select",
-            "name": "select",
-            "content": [
-                {
-                    "elem": "option",
-                    "value": 1,
-                    "content": "example"
-                },
-                {
-                    "elem": "option",
-                    "value": 2,
-                    "content": "example"
-                }
-            ]
-        },
-        {
-            "elem": "submit",
-            "name": "submit",
-            "content": "example"
-        },
-        {
-            "elem": "reset",
-            "name": "reset",
-            "content": "example"
-        },
-        {
-            "elem": "button",
-            "name": "button",
-            "content": "example"
-        },
-        {
-            "elem": "image",
-            "name": "image",
-            "content": "example"
-        }
-    ]
-}
-
-
-*/

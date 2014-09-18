@@ -29,17 +29,22 @@
 	blib.build.define(
 		{'block':'bForm'},
 		function(data){
+		console.log(data);
 			if(!data.attrs)data.attrs={};
-			var meta = this.meta = {
-				'processor':data.processor || false,
-				'tunnel':data.tunnel || false,
-				'ajax':('ajax' in data)?data.ajax:true,
-				'action':data.action || data.attrs.action || '',
-				'method':data.method || data.attrs.method || 'POST'
+			var meta = data.meta;
+			this.meta = {
+				'processor':meta.processor || false,
+				'tunnel':meta.tunnel || false,
+				'ajax':('ajax' in meta)?meta.ajax:true,
+				'action':meta.action || data.attrs.action || '',
+				'method':meta.method || data.attrs.method || 'POST',
+				'select':meta.select || {}
 			}
 
 			this.fields = {};
-			this.template = data;
+			this.template.mods = data.mods;
+			this.template.attrs = data.attrs;
+			this.template.content = data.content;
 			
 			if(!meta.ajax){
 				this.template.attrs.action = meta.action;
@@ -122,6 +127,9 @@
 					}catch(e){Blib.exception("[bForm] Submit error.",e);}
 				}
 
+			},
+			'_getStatus':function(){
+				return this._getStatusList(this.fields);
 			}
 		})
 	);

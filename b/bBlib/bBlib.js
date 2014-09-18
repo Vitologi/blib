@@ -1068,6 +1068,26 @@
 				
 				this._remove();
 				parent.dom.insertBefore(blib.build(data,{'parent':parent, 'blocks':blocks}), nextSibling);				
+			},
+			'_getStatus':function(){
+				return {'error':0, 'code':0, 'message':'', 'stack':[]};
+			},
+			'_getStatusList':function(list){
+				var result = {'error':0, 'code':0, 'message':'', 'stack':[]},
+					key, temp, status, stack;
+				
+				for(key in list){
+					temp = list[key];
+					if(!('_getStatus' in  temp))continue;
+					
+					status = temp._getStatus();
+					stack = result.stack;
+					if(status.error)result = blib.extend({'error':0, 'code':0, 'message':'', 'stack':[]}, status);
+					stack.push(status);
+					result.stack = stack;
+				}
+				
+				return result;
 			}
 		},
 		defaultBlock = function(){};

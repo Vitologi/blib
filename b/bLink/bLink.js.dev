@@ -33,25 +33,17 @@
 			'tag':'a'
 		},
 		{	
-			'getUpholdStatus':function(){
+			'_getStatus':function(){
 				var self = this,
-					result = {'error':0, 'code':0, 'message':'', 'stack':[]},
 					uphold = self.uphold,
 					uLen = uphold.length,
-					i=0, j, temp, status, stack;
+					i=0, temp = [], status, stack;
 				
 				for(;i<uLen;i++){
-					temp = storage[uphold[i]];
-					if(!temp || !('getStatus' in  temp))continue;
-					
-					status = temp.getStatus();
-					stack = result.stack;
-					if(status.error)result = blib.extend({'error':0, 'code':0, 'message':'', 'stack':[]}, status);
-					stack.push(status);
-					result.stack = stack;
+					temp.push(storage[uphold[i]]);
 				}
 				
-				return result;
+				return self._getStatusList(temp);
 				
 			},
 			'setUphold':function(name, obj){
@@ -73,7 +65,7 @@
 				
 				
 				if(self.disabled)return false;
-				allow = self.getUpholdStatus();
+				allow = self._getStatus();
 				if(allow.error)return self.showError(allow);
 				self.clearError();
 				

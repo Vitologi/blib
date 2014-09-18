@@ -45,7 +45,7 @@
 					this._static('bLink').dropUphold(this.name, this);
 				}
 			],
-			'getStatus':function(){
+			'_getStatus':function(){
 				return (this.checkedRow<1)?{'error':1, 'code':1, 'message':"There is no selected lines."}:{'error':0, 'code':0, 'message':"0"};
 			},
 			'checkRow':function(flag){

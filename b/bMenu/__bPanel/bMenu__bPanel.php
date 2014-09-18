@@ -91,20 +91,34 @@ class bMenu__bPanel extends bBlib{
 	
 		$config = array(
 			'name'	=> 'menuForm',
+			//'mods'=>array('style'=>'default'), //0_0 need frontend side
 			'meta'	=> array(
 				'processor'	=> false,
 				'method' => "POST",
 				'action' => "/",
 				'ajax' =>true,
-				'position'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id'),
-				'fields'	=> array(
-					'id'	=> array('title'=>'Ключевое поле', 'note'=>'Подле для хранения ключа таблицы', 'type'=>'hidden'),
-					'menu'	=> array('title'=>'Номер меню', 'note'=>'К какому меню принадлежит', 'type'=>'text', 'mods'=>array('align'=>'center')),
-					'name'	=> array('title'=>'Название', 'note'=>'Название пункта меню', 'type'=>'text'),
-					'link'	=> array('title'=>'Ссылка', 'note'=>'На что ссылается пункт (если пусто, значит меню-контейнер)', 'type'=>'text'),
-					'bconfig_id'	=> array('title'=>'Настройки', 'note'=>'Номер конфигурационных настроек', 'type'=>'text'),
-					'bmenu_id'	=> array('title'=>'Родитель', 'note'=>'Корневой пункт меню (куда будет вложен)', 'type'=>'text', 'mods'=>array('align'=>'center'))
+				'select' => array(
+					'bmenu_id'	=> array('select'=>array('bMenu'=>array('id', 'name')))
 				)
+			),
+			'content'	=> array(
+
+				array('elem'=>'hidden', 'name'=>'id'),
+				
+				array('elem'=>'label', 'content'=>'Номер меню', 'attrs'=>array('title'=>'К какому меню принадлежит')),
+				array('elem'=>'text', 'name'=>'menu'),
+				
+				array('elem'=>'label', 'content'=>'Название', 'attrs'=>array('title'=>'Название пункта меню')),
+				array('elem'=>'text', 'name'=>'name'),
+				
+				array('elem'=>'label', 'content'=>'Ссылка', 'attrs'=>array('title'=>'На что ссылается пункт (если пусто, значит меню-контейнер)')),
+				array('elem'=>'text', 'name'=>'link'),
+				
+				array('elem'=>'label', 'content'=>'Настройки', 'attrs'=>array('title'=>'Номер конфигурационных настроек')),
+				array('elem'=>'select', 'name'=>'bconfig_id'),
+				
+				array('elem'=>'label', 'content'=>'Родитель', 'attrs'=>array('title'=>'Корневой пункт меню (куда будет вложен)')),
+				array('elem'=>'select', 'show'=>array('id', 'name'), 'name'=>'bmenu_id')
 			)
 		);
 		
@@ -112,7 +126,6 @@ class bMenu__bPanel extends bBlib{
 		
 		$caller->setParent('bForm', $config);
 		$form = $caller->_getForm();
-		$form['mods']=array('style'=>'default');
 		
 		return $form;
 	}

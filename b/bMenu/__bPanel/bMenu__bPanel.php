@@ -45,7 +45,7 @@ class bMenu__bPanel extends bBlib{
 		switch($pannel->getView()){
 			case "add":
 				$tools = array('content'=>array(
-					array('block'=>'bPanel','elem'=>'button', 'layout'=>'add', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Сохранить'),
+					array('block'=>'bPanel','elem'=>'button', 'uphold'=>array('menuForm'), 'layout'=>'add', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Сохранить'),
 					array('block'=>'bPanel','elem'=>'button', 'layout'=>'show', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Отмена')
 				));
 				
@@ -58,7 +58,7 @@ class bMenu__bPanel extends bBlib{
 			
 			case "edit":
 				$tools = array('content'=>array(
-					array('block'=>'bPanel','elem'=>'button', 'layout'=>'edit', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Сохранить'),
+					array('block'=>'bPanel','elem'=>'button', 'uphold'=>array('menuForm'), 'layout'=>'edit', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Сохранить'),
 					array('block'=>'bPanel','elem'=>'button', 'layout'=>'show', 'view'=>'list', 'controller'=>'bMenu', 'content'=>'Отмена')
 				));
 				
@@ -91,7 +91,7 @@ class bMenu__bPanel extends bBlib{
 	
 		$config = array(
 			'name'	=> 'menuForm',
-			//'mods'=>array('style'=>'default'), //0_0 need frontend side
+			'mods'=>array('style'=>'default'), //0_0 need frontend side
 			'meta'	=> array(
 				'processor'	=> false,
 				'method' => "POST",
@@ -118,12 +118,12 @@ class bMenu__bPanel extends bBlib{
 				array('elem'=>'select', 'name'=>'bconfig_id'),
 				
 				array('elem'=>'label', 'content'=>'Родитель', 'attrs'=>array('title'=>'Корневой пункт меню (куда будет вложен)')),
-				array('elem'=>'select', 'show'=>array('id', 'name'), 'name'=>'bmenu_id')
+				array('elem'=>'select', 'key'=>'id', 'show'=>array('id', 'name'), 'name'=>'bmenu_id')
 			)
 		);
-		
-		if($data['id'])$config['query'] = array('select'=>array('bMenu'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id')),'where'=>array('bMenu'=>array('id'=>$data['id'])));
-		
+
+		if($data['id'])$config['meta']['query'] = array('select'=>array('bMenu'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id')),'where'=>array('bMenu'=>array('id'=>$data['id'])));
+
 		$caller->setParent('bForm', $config);
 		$form = $caller->_getForm();
 		

@@ -12,6 +12,8 @@
 				this.template = data;
 			},
 			'prepareValue':function(){
+				var query = this.block.meta.query[0];
+				if(!this.template.content && query)this.template.content = query[this.name];
 				this.template.attrs.value = this.template.content;
 				this.template.content = false;
 			},
@@ -29,19 +31,20 @@
 	blib.build.define(
 		{'block':'bForm'},
 		function(data){
-		console.log(data);
 			if(!data.attrs)data.attrs={};
-			var meta = data.meta;
+			var meta = data.meta || {'processor':false,	'tunnel':false,	'ajax':true, 'action':'', 'method':'POST', 'select':{}, 'query':{}};
 			this.meta = {
 				'processor':meta.processor || false,
 				'tunnel':meta.tunnel || false,
 				'ajax':('ajax' in meta)?meta.ajax:true,
 				'action':meta.action || data.attrs.action || '',
 				'method':meta.method || data.attrs.method || 'POST',
-				'select':meta.select || {}
+				'select':meta.select || {},
+				'query':meta.query || {}
 			}
 
 			this.fields = {};
+			this.name = data.name;
 			this.template.mods = data.mods;
 			this.template.attrs = data.attrs;
 			this.template.content = data.content;
@@ -50,6 +53,9 @@
 				this.template.attrs.action = meta.action;
 				this.template.attrs.method = meta.method;
 			}
+			
+			//console.log(this.name, this);
+			this._static('bLink').setUphold(this.name, this);
 			
 		},
 		{
@@ -128,9 +134,31 @@
 				}
 
 			},
-			'_getStatus':function(){
-				return this._getStatusList(this.fields);
-			}
+			'_getStatus':function(){				
+				var status = this._getStatusList(this.fields),
+					tunnel = this.meta.tunnel,
+					serialized, temp = {};
+				
+				if(!status.error){
+					serialized = this.serialize();
+					
+					if('_files'in serialized){
+						blib.tunnel({'_files':serialized['_files']});
+						serialized['_files'] = null;
+					}
+					
+					temp[tunnel] = {'items':[serialized]};
+					blib.tunnel(temp);					
+				}
+				
+				return status;
+				
+			},
+			'_onRemove':[
+				function(){
+					this._static('bLink').dropUphold(this.name, this);
+				}
+			]
 		})
 	);
 	
@@ -336,8 +364,28 @@
 	blib.build.define(
 		{'block':'bForm', 'elem':'select'},
 		function(data){
-			this.options = {};
-			this.prepare(data);			
+			this.prepare(data);
+			
+			var meta = this.block.meta,
+				options = meta.select[this.name],
+				defValue = (meta.query && meta.query[0])?meta.query[0][this.name]:null,
+				optionText;
+			
+			this.options = {};			
+			this.show = data.show;
+			this.key = data.key;
+			this.defValue = defValue;
+			
+			if(!this.template.content)this.template.content = [];
+			
+			for(i in options){
+				optionText = '';
+				for(j in this.show){
+					optionText += ' '+options[i][this.show[j]];
+				}
+				this.template.content.push({'block':'bForm', 'elem':'option', 'value':options[i][this.key], 'content':optionText});
+			}
+			
 		},
 		{'tag':"select"},
 		new standartFunction({

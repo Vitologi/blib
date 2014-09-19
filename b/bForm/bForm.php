@@ -24,16 +24,15 @@ class bForm extends bBlib{
 	
 	protected function input($data, $caller){
 		if(!$caller)return;
-		
 		$this->name = ($data['name']?$data['name']:$this->generateName());
 		$this->caller = $caller;
 		
-		if($data['query'])$this->setQuery($data['query']);
+		//if($data['query'])$this->setQuery($data['query']);
 		if($data['mods'])$this->setMods($data['mods']);
 		if($data['content'])$this->setContent($data['content']);
 		$this->setMeta($data['meta']);
 		
-		$this->blockTunnel = get_class($caller);
+		
 	}
 	
 	public function output(){
@@ -51,6 +50,13 @@ class bForm extends bBlib{
 	}
 	
 	public function setMeta($data){
+		
+		if($data['query']){
+			$result = $this->caller->_query($data['query']);
+			$data['query'] = $result->fetchAll(PDO::FETCH_ASSOC);
+		}
+		
+	
 		$select = ($data['select']?$data['select']:array());
 		$temp = array();
 		foreach($select as $key => $value){
@@ -58,7 +64,10 @@ class bForm extends bBlib{
 			
 			$temp[$key] = $result->fetchAll(PDO::FETCH_ASSOC);
 		}
-		$data['select'] = $temp;	
+		$data['select'] = $temp;
+		
+		
+		$data['tunnel'] = get_class($this->caller);
 		
 		$this->meta = $data;
 		

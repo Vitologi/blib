@@ -488,7 +488,7 @@
 					
 				}
 				for(key in data){
-					if(is(data[key],['array', 'object'])){ data[key]=JSON.stringify(data[key]); }
+					if(is(data[key],['array', 'object'])){ data[key]=JSON.stringify(data[key]); } //0_0 bug in multy sending
 					temp.append(key, data[key]);
 				}
 				
@@ -1078,7 +1078,7 @@
 				
 				for(key in list){
 					temp = list[key];
-					if(!('_getStatus' in  temp))continue;
+					if(!temp || !('_getStatus' in  temp))continue;
 					
 					status = temp._getStatus();
 					stack = result.stack;

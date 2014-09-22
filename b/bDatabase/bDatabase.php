@@ -278,13 +278,15 @@ class bDatabase extends bBlib{
 			foreach($Q['where'] as $table => $columns){
 				if(is_array($columns[0])){
 					foreach($columns as $value){
+						$value[1] = ($value[1] && mb_strtoupper($value[1])!=='NULL')?$this->pdo->quote($value[1]):'NULL';
 						$value[2] = ($value[2])?$value[2]:'=';
 						$value[3] = ($value[3])?' OR ':' AND';
-						$where .= sprintf(' `%1$s`.`%2$s` %3$s %4$s %5$s', $table, $value[0], $value[2], $this->pdo->quote($value[1]), $value[3]);
+						$where .= sprintf(' `%1$s`.`%2$s` %3$s %4$s %5$s', $table, $value[0], $value[2], $value[1], $value[3]);
 					}
 				}else{			
 					foreach($columns as $column => $value){
-						$where .= sprintf(' `%1$s`.`%2$s` = %3$s AND', $table, $column, $this->pdo->quote($value));
+						$value = ($value && mb_strtoupper($value)!=='NULL')?$this->pdo->quote($value):'NULL';
+						$where .= sprintf(' `%1$s`.`%2$s` = %3$s AND', $table, $column, $value);
 					}
 				}
 			}

@@ -365,23 +365,23 @@
 		{'block':'bForm', 'elem':'select'},
 		function(data){
 			this.prepare(data);
+			this.options = {};	
+			this.select = data.select;
+			this.show = data.show;
+			this.key = data.key;
 			
 			var meta = this.block.meta,
-				options = meta.select[this.name],
+				options = meta.select[data.select],
 				defValue = (meta.query && meta.query[0])?meta.query[0][this.name]:null,
 				optionText;
 			
-			this.options = {};			
-			this.show = data.show;
-			this.key = data.key;
 			this.defValue = defValue;
-			
 			if(!this.template.content)this.template.content = [];
 			
 			for(i in options){
 				optionText = '';
 				for(j in this.show){
-					optionText += ' '+options[i][this.show[j]];
+					optionText += options[i][this.show[j]]+' . ';
 				}
 				this.template.content.push({'block':'bForm', 'elem':'option', 'value':options[i][this.key], 'content':optionText});
 			}
@@ -401,11 +401,15 @@
 	blib.build.define(
 		{'block':'bForm', 'elem':'option'},
 		function(data){
-			
+			this.value = data.value;
 			this.parent.options[data.value] = this;
-			this.template = data;
-			if(!this.template.attrs)this.template.attrs={};
-			this.template.attrs.value = data.value;
+			this.template = {
+				'content':data.content,
+				'attrs':{
+					'value':data.value,
+					'selected':(this.parent.defValue == this.value ?'selected':false)
+				}
+			}
 		},
 		{'tag':"option"},
 		new standartFunction({})

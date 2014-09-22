@@ -11,8 +11,6 @@ class bForm extends bBlib{
 	private $mods = array();
 	
 	private function getMeta(){return $this->meta;}
-	private function getQuery(){return $this->query;}
-	public function setQuery($data){$this->query = $data;}
 	private function getMods(){return $this->mods;}
 	private function setMods($data){$this->mods = $data;}
 	private function getContent(){return $this->content;}
@@ -26,8 +24,7 @@ class bForm extends bBlib{
 		if(!$caller)return;
 		$this->name = ($data['name']?$data['name']:$this->generateName());
 		$this->caller = $caller;
-		
-		//if($data['query'])$this->setQuery($data['query']);
+
 		if($data['mods'])$this->setMods($data['mods']);
 		if($data['content'])$this->setContent($data['content']);
 		$this->setMeta($data['meta']);
@@ -61,7 +58,6 @@ class bForm extends bBlib{
 		$temp = array();
 		foreach($select as $key => $value){
 			$result = $this->caller->_query($value);
-			
 			$temp[$key] = $result->fetchAll(PDO::FETCH_ASSOC);
 		}
 		$data['select'] = $temp;
@@ -74,7 +70,7 @@ class bForm extends bBlib{
 	}
 	
 	public function getForm(){
-		return array('block'=>__class__, 'mods'=>$this->mods, 'tunnel'=>$this->blockTunnel, 'name'=>$this->name, 'meta'=>$this->getMeta(), 'content'=>$this->getContent());
+		return array('block'=>__class__, 'mods'=>$this->mods, 'name'=>$this->name, 'meta'=>$this->getMeta(), 'content'=>$this->getContent());
 	}
 
 	public function _getForm($data = array(), $caller = null){

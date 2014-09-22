@@ -81,22 +81,21 @@
 
 				self.data.ajax = true;
 				
-				blib
-				.tunnel(self.tunnel)
-				.ajax({
+				blib.tunnel(self.tunnel);
+				
+										
+				if(!self.invisible){
+					self.setCurloc(self.link);
+					self.setLocation();
+				}
+				
+				blib.ajax({
 					url:self.link,
 					data:self.data,
 					dataType:'json',
 					'success':function(data){
 						
-						if(!self.invisible){
-							self.setCurloc(self.link);
-							blib.tunnel(self.tunnel);
-						}
-						
 						blib('body').html(blib.build(data));
-						
-						self.setLocation();
 						
 						for(key in after){
 							after[key].call(self, [data]);
@@ -127,6 +126,26 @@
 				var elem = (this.children && this.children.bLink__error)?this.children.bLink__error[0]:false;
 				if(elem)elem.clear();
 			}
+		}
+	);
+	
+	blib.build.define(
+		{'block':'bLink', 'elem':'location'},
+		function(data){
+			console.log(data);
+			var tunnel = blib.config('tunnel')||{},
+				content = data.content,
+				key, item;
+			
+			for(key in content){
+				item = content[key];
+				tunnel[key] = item;
+			}
+
+			blib.tunnel(tunnel);
+			
+			this._static('bLink').setLocation();
+			this.template = false;
 		}
 	);
 	

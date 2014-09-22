@@ -14,32 +14,37 @@ class bMenu__bPanel extends bBlib{
 		$items = $tunnel['items'];
 		$item = $items[0];
 		
+		
 		$pannel->setModule('"{1}"', $pannel->showBlocks());
+		$defaultLocation = array(
+			'block'=>'bLink',
+			'elem'=>'location',
+			'content'=> array(
+				'bPanel' => array('controller'=>'bMenu'),
+				'bMenu' => array('layout'=>'show', 'view'=>'list')
+			)
+		);
 		
 		switch($pannel->getLayout()){
-			
 			case "add":
 				$message = ($block->_addItem($item)?"Запись добавлена":"Ошибка добавления записи");
-				$pannel->setModule('"{2}"', array('content'=>array($pannel->showError($message),array('block'=>'bPanel', 'elem'=>'location', 'controller'=>'bMenu', 'layout'=>'show', 'view'=>'list'))));
 				break;
 			
 			case "edit":
 				$message = ($block->_editItem($item)?"Запись отредактирована":"Ошибка редактирования записи");
-				$pannel->setModule('"{2}"', array('content'=>array($pannel->showError($message),array('block'=>'bPanel', 'elem'=>'location', 'controller'=>'bMenu', 'layout'=>'show', 'view'=>'list'))));
 				break;
 				
 			case "delete":
 				$message = ($block->_delItem($items)?"Строки удалены":"Ошибка удаления записей");
-				$pannel->setModule('"{2}"', array('content'=>array($pannel->showError($message),array('block'=>'bPanel', 'elem'=>'location', 'controller'=>'bMenu', 'layout'=>'show', 'view'=>'list'))));
 				break;
 			
 			case "show":
 			default:
-				$pannel->setModule('"{2}"', $pannel->showError('Панель редактирования пунктов меню'));
+				$message = 'Панель редактирования пунктов меню';
 				break;
 		}
 		
-		
+		$pannel->setModule('"{2}"', array('content'=>array($pannel->showError($message), $defaultLocation)));
 		
 		
 		switch($pannel->getView()){
@@ -98,7 +103,7 @@ class bMenu__bPanel extends bBlib{
 				'action' => "/",
 				'ajax' =>true,
 				'select' => array(
-					'bmenu_id'	=> array('select'=>array('bMenu'=>array('id', 'name')))
+					'puncts' => array('select'=>array('bMenu'=>array('id', 'name', 'link')))
 				)
 			),
 			'content'	=> array(
@@ -106,7 +111,7 @@ class bMenu__bPanel extends bBlib{
 				array('elem'=>'hidden', 'name'=>'id'),
 				
 				array('elem'=>'label', 'content'=>'Номер меню', 'attrs'=>array('title'=>'К какому меню принадлежит')),
-				array('elem'=>'text', 'name'=>'menu'),
+				array('elem'=>'select', 'name'=>'menu', 'select'=>'puncts', 'key'=>'id', 'show'=>array('id', 'name')),
 				
 				array('elem'=>'label', 'content'=>'Название', 'attrs'=>array('title'=>'Название пункта меню')),
 				array('elem'=>'text', 'name'=>'name'),
@@ -118,7 +123,7 @@ class bMenu__bPanel extends bBlib{
 				array('elem'=>'select', 'name'=>'bconfig_id'),
 				
 				array('elem'=>'label', 'content'=>'Родитель', 'attrs'=>array('title'=>'Корневой пункт меню (куда будет вложен)')),
-				array('elem'=>'select', 'key'=>'id', 'show'=>array('id', 'name'), 'name'=>'bmenu_id')
+				array('elem'=>'select', 'name'=>'bmenu_id', 'select'=>'puncts', 'key'=>'id', 'show'=>array('name', 'link'))
 			)
 		);
 
@@ -163,9 +168,9 @@ class bMenu__bPanel extends bBlib{
 		if($caller == null){return;}
 		$data = array_merge(
 			array(
-				'menu'=>'1',
+				'menu'=>NULL,
 				'name'=>'noname',
-				'link'=>'/',
+				'link'=>NULL,
 				'bconfig_id'=>NULL,
 				'bmenu_id'=>NULL
 			),
@@ -189,24 +194,28 @@ class bMenu__bPanel extends bBlib{
 	
 	public function _editItem($data = array(), $caller = null){
 		if($caller == null){return;}
-		$data = $data[0];
 		
-		$update = array();
-		if($data['menu'])$update['menu'] = $data['menu'];
-		if($data['name'])$update['name'] = $data['name'];
-		if($data['link'])$update['link'] = $data['link'];
-		if($data['bconfig_id'])$update['bconfig_id'] = $data['bconfig_id'];
-		if($data['bmenu_id'])$update['bmenu_id'] = $data['bmenu_id'];
+		$update = array_merge(
+			array(
+				'menu'=>NULL,
+				'name'=>'noname',
+				'link'=>NULL,
+				'bconfig_id'=>NULL,
+				'bmenu_id'=>NULL
+			),
+			(array) $data[0]
+		);
+		$id = $update[id];
+		unset($update[id]);
 		
 		$Q = array(
 			'update'=>array(
 				'bMenu'=>$update
 			),
 			'where'=>array(
-				'bMenu'=>array('id'=>$data['id'])
+				'bMenu'=>array('id'=>$id)
 			)
 		);
-		
 		return $caller->_query($Q);
 	}
 	

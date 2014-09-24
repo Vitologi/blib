@@ -182,7 +182,7 @@ class bConfig extends bBlib{
 	* @return {string} - id changed/new configuration
 	*/
 	public function _setConfig($data, $caller = null){
-		
+		$data[1] = (array)$data[1];
 		if($caller !== null){
 			if(!$data[2]['group']){$data[2]['group'] = get_class($caller);}
 			return $caller->local['bConfig']->_setConfig($data);

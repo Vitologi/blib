@@ -17,6 +17,9 @@
 	.bForm__textarea{
 		max-width: 100%;}
 	.bForm__select{}
+	.bForm__selectplus{}
+	.bForm__selectadd{}
+	.bForm__selectinput{}
 	
 	.bForm_style_default{}
 		.bForm_style_default .bForm__label,
@@ -75,4 +78,27 @@
 			margin: 5px 1%;}
 		.bForm_style_default .bForm__select{
 			padding: .3em .6em;}
+		.bForm_style_default .bForm__selectplus{}
+		.bForm_style_default .bForm__selectadd,
+		.bForm_style_default .bForm__selectinput{
+			position: absolute;
+			background-color: rgb(255, 255, 255);
+			border: 1px solid rgb(231, 231, 231);
+			padding: .1em .6em;
+			margin: 10px 1%;
+			text-align: center;}
+		.bForm_style_default .bForm__selectadd{
+			cursor:pointer;
+			width: 14px;}
+		.bForm_style_default .bForm__selectinput{
+			padding: .15em .6em;
+			margin-left: 50px;
+			display:none;}
+			.bForm_style_default .bForm__selectinput_open{
+				display:inline;}
+
+			.bForm_style_default .bForm__selectplus .bForm__select{
+				padding-left:40px;}
+		
+		
 	

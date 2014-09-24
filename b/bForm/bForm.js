@@ -360,6 +360,30 @@
 		new standartFunction({})
 	);
 	
+	blib.build.define(
+		{'block':'bForm', 'elem':'option'},
+		function(data){
+			this.value = data.value;
+			this.parent.options[data.value] = this;
+			this.template = {
+				'content':data.content,
+				'attrs':{
+					'value':data.value,
+					'selected':(data.selected)?'selected':false
+				}
+			}
+		},
+		{'tag':"option"},
+		new standartFunction({
+			'deselect':function(){
+				this._attr('selected',false);
+			},
+			'select':function(){
+				this._attr('selected','selected');
+			}
+		})
+	);
+	
 	//SELECT
 	blib.build.define(
 		{'block':'bForm', 'elem':'select'},
@@ -373,17 +397,30 @@
 			var meta = this.block.meta,
 				options = meta.select[data.select],
 				defValue = (meta.query && meta.query[0])?meta.query[0][this.name]:null,
-				optionText;
+				optionValue, optionText, optionSelected, setDefault;
 			
 			this.defValue = defValue;
 			if(!this.template.content)this.template.content = [];
 			
 			for(i in options){
 				optionText = '';
+				optionValue = options[i][this.key];
 				for(j in this.show){
-					optionText += options[i][this.show[j]]+' . ';
+					optionText += options[i][this.show[j]]+' ';
 				}
-				this.template.content.push({'block':'bForm', 'elem':'option', 'value':options[i][this.key], 'content':optionText});
+				
+				if(this.defValue == optionValue){
+					setDefault = optionSelected = true;
+				}else{
+					optionSelected = false;
+				}
+				
+				this.template.content.push({'block':'bForm', 'elem':'option', 'selected':optionSelected, 'value':optionValue, 'content':optionText});
+			}
+			
+			
+			if(!setDefault){
+				this.template.content.push({'block':'bForm', 'elem':'option', 'selected':true, 'value':this.defValue, 'content':'default'});
 			}
 			
 		},
@@ -394,25 +431,91 @@
 					if(!this.options[key].dom.selected)continue;
 					return this.options[key].val();
 				};
+			},
+			'addOption':function(value){
+				this.deselect();
+				this._append({'block':'bForm', 'elem':'option', 'selected':true, 'value':value, 'content':value});
+			},
+			'deselect':function(){
+				var options = this.options,
+					key;
+				for(key in options){
+					options[key].deselect();
+				}
 			}
 		})
 	);
 	
+	//SELECTPLUS
 	blib.build.define(
-		{'block':'bForm', 'elem':'option'},
+		{'block':'bForm', 'elem':'selectplus'},
 		function(data){
-			this.value = data.value;
-			this.parent.options[data.value] = this;
-			this.template = {
-				'content':data.content,
-				'attrs':{
-					'value':data.value,
-					'selected':(this.parent.defValue == this.value ?'selected':false)
+			data.elem = 'select';
+			this.template.content = [
+				{'block':'bForm', 'elem':'selectadd'},
+				{'block':'bForm', 'elem':'selectinput'},
+				data
+			];
+		},
+		{'tag':"span"},
+		{
+			'getSelectinput':function(){
+				return this.children.bForm__selectinput[0];
+			},
+			'getSelect':function(){
+				return this.children.bForm__select[0];
+			}
+		}
+	);
+	
+	//SELECTADD
+	blib.build.define(
+		{'block':'bForm', 'elem':'selectadd'},
+		function(data){
+			this.template.content = '+';
+		},
+		{'tag':"span"},
+		{
+			'html':function(text){
+				this.template.content = text;
+				this.dom.innerHTML = text;
+			},
+			'onclick':function(){
+				var parent = this.parent,
+					input = parent.getSelectinput(),
+					select = parent.getSelect(),
+					status = input._getMode('open');
+				
+				if(status){
+					select.addOption(input.val());
+					input.close();
+					this.html('+');
+				}else{
+					input.open();
+					this.html('ok');
 				}
 			}
+		}
+	);
+	
+	//SELECTINPUT
+	blib.build.define(
+		{'block':'bForm', 'elem':'selectinput'},
+		function(data){
+			
 		},
-		{'tag':"option"},
-		new standartFunction({})
+		{'tag':"input",'attrs':{'type':'text'}},
+		{
+			'open':function(){
+				this._setMode('open',true);
+			},
+			'close':function(){
+				this._setMode('open',false);
+			},
+			'val':function(){
+				return this.dom.value;
+			}
+		}
 	);
 	
 })();

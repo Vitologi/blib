@@ -15,13 +15,15 @@ class bMenu extends bBlib{
 	public function output(){
 	
 		if(!$this->data['menu']){return array();}
-		
 		$Q = array(
 			'select'	=> array(
 				'bmenu' => array('id', 'name', 'link' ,'bconfig_id' ,'bmenu_id')
 			),
 			'where' => array(
-				'bmenu' => array('menu'=>$this->data['menu'])
+				'bmenu' => array(
+					array('menu',$this->data['menu'],false,true),
+					array('id',$this->data['menu'])
+				)
 			),
 			'sql'=>' ORDER BY `id` ASC'
 		);

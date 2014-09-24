@@ -110,7 +110,7 @@ class bMenu__bPanel extends bBlib{
 
 				array('elem'=>'hidden', 'name'=>'id'),
 				
-				array('elem'=>'label', 'content'=>'Номер меню', 'attrs'=>array('title'=>'К какому меню принадлежит')),
+				array('elem'=>'label', 'content'=>'Группируем с пунктом', 'attrs'=>array('title'=>'К какой группе меню принадлежит')),
 				array('elem'=>'select', 'name'=>'menu', 'select'=>'puncts', 'key'=>'id', 'show'=>array('id', 'name')),
 				
 				array('elem'=>'label', 'content'=>'Название', 'attrs'=>array('title'=>'Название пункта меню')),
@@ -122,8 +122,8 @@ class bMenu__bPanel extends bBlib{
 				array('elem'=>'label', 'content'=>'Настройки', 'attrs'=>array('title'=>'Номер конфигурационных настроек')),
 				array('elem'=>'select', 'name'=>'bconfig_id'),
 				
-				array('elem'=>'label', 'content'=>'Родитель', 'attrs'=>array('title'=>'Корневой пункт меню (куда будет вложен)')),
-				array('elem'=>'select', 'name'=>'bmenu_id', 'select'=>'puncts', 'key'=>'id', 'show'=>array('name', 'link'))
+				array('elem'=>'label', 'content'=>'В какой пункт вложен', 'attrs'=>array('title'=>'Корневой пункт меню (куда будет вложен)')),
+				array('elem'=>'selectplus', 'name'=>'bmenu_id', 'select'=>'puncts', 'key'=>'id', 'show'=>array('name', 'link'))
 			)
 		);
 

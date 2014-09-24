@@ -3,15 +3,18 @@
 	blib.build.define(
 		{'block':'bMenu'},
 		function(data){
+		
 			var content = {},
+				combine = {},
 				item,
 				glueMenuItem = function(elem){
 					var itemContent = content[elem.id],
 						temp;
-						
-					if(!itemContent)return elem;
 					
+					if(!itemContent)return elem;
+
 					elem.content = [];
+					
 					
 					for(key in itemContent){
 						elem.content.push(glueMenuItem(itemContent[key]));
@@ -32,7 +35,7 @@
 			
 			temp = glueMenuItem(combine);
 			this.template = data;
-			temp.content.push({'elem':'clear'});
+			if(temp.content)temp.content.push({'elem':'clear'});
 			this.template.content = temp.content;
 
 		},

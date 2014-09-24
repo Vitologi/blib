@@ -132,7 +132,6 @@
 	blib.build.define(
 		{'block':'bLink', 'elem':'location'},
 		function(data){
-			console.log(data);
 			var tunnel = blib.config('tunnel')||{},
 				content = data.content,
 				key, item;

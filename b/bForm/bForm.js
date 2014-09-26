@@ -17,6 +17,10 @@
 				this.template.attrs.value = this.template.content;
 				this.template.content = false;
 			},
+			'prepareContent':function(){
+				var query = this.block.meta.query[0];
+				if(!this.template.content && query)this.template.content = query[this.name];
+			},
 			'val':function(data){
 				return (data)?this._attr('value',data):this.dom.value;
 			}
@@ -353,8 +357,10 @@
 	//TEXTAREA
 	blib.build.define(
 		{'block':'bForm', 'elem':'textarea'},
-		function(data){		
+		function(data){
+		console.log(data);
 			this.prepare(data);
+			this.prepareContent();
 		},
 		{'tag':"textarea"},
 		new standartFunction({})

@@ -100,5 +100,8 @@
 			.bForm_style_default .bForm__selectplus .bForm__select{
 				padding-left:40px;}
 		
+		.bForm_style_default .bForm__textarea_full{
+			width: 98%;}
 		
-	
+		.bForm_style_default .bForm__label_full{
+			width: 98%;}

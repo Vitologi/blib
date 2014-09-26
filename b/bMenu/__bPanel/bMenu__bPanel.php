@@ -205,8 +205,8 @@ class bMenu__bPanel extends bBlib{
 			),
 			(array) $data[0]
 		);
-		$id = $update[id];
-		unset($update[id]);
+		$id = $update['id'];
+		unset($update['id']);
 		
 		$Q = array(
 			'update'=>array(

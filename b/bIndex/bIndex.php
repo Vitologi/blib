@@ -30,7 +30,7 @@ class bIndex extends bBlib{
 		
 		$Q = array(
 			'select'	=> array(
-				'bIndex' => array('template', 'bConfig_id', 'bCategory_id')
+				'bIndex' => array('template', 'bCategory_id')
 			),
 			'where' => array(
 				'bIndex' => array('id'=>$this->data['pageId'])

@@ -141,7 +141,7 @@ class bTemplate__bPanel extends bBlib{
 				'keys'	=> array('id'),
 				'page'	=> array('rows'=>10),
 				'fields'	=> array(
-					'id'	=> array('title'=>'Ключевое поле', 'note'=>'Подле для хранения ключа таблицы', 'type'=>'hidden'),
+					'id'	=> array('title'=>'Ключевое поле', 'note'=>'Подле для хранения ключа таблицы', 'type'=>'text', 'mods'=>array('align'=>'center')),
 					'name'	=> array('title'=>'Название', 'note'=>'Название шаблона', 'type'=>'text', 'mods'=>array('align'=>'center')),
 					'owner'	=> array('title'=>'Блок владелец', 'note'=>'За каким блоком закреплен шаблон', 'type'=>'text'),
 					'blib'	=> array('title'=>'Блок', 'note'=>'Блок который обрабатывает/дорабатывает шаблон)', 'type'=>'text'),

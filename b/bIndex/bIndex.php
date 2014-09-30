@@ -11,19 +11,19 @@ class bIndex extends bBlib{
 	protected function input($data, $caller){
 		$this->data = $this->hook('getData', array($data));
 		$this->defaultPage = 1;
-		if(!$this->data['pageId']){$this->local['data']['pageId'] = $this->defaultPage;}
-		$this->ajax = $data['ajax'];
-		$this->template = $data['template'];
+		if(!isset($this->data['pageId'])){$this->local['data']['pageId'] = $this->defaultPage;}
+		$this->ajax = isset($data['ajax'])?$data['ajax']:false;
+		$this->template = isset($data['template'])?$data['template']:array();
 		$this->skeleton = "bIndex__skeleton_default";
 		$this->cache = 0;		
 	}
 
 	
 	public function output(){
+
+		$config = array("'{keywords}'"=>"","'{description}'"=>"","'{title}'"=>"") + (array) $this->_getConfig($this->data['pageId']);
 		
-		$config = $this->_getConfig($this->data['pageId']);
-		
-		if($config['locked']){
+		if(isset($config['locked'])){
 			$this->setParent('bRbac', $this->data);
 			if(!$this->_checkAccess('unlock',$this->data['pageId']))return;
 		}

@@ -7,7 +7,7 @@ class bTemplate__bPanel extends bBlib{
 		$this->version = '1.0.0';
 	}
 	
-	public function _controller($data = array(), $caller = null){
+	public static function _controller($data = array(), $caller = null){
 		$block = $caller;
 		$pannel = $caller->bPanel;
 		$tunnel = $block->getTunnel();
@@ -90,7 +90,7 @@ class bTemplate__bPanel extends bBlib{
 	
 	
 	
-	public function _showItem($data = array(), $caller = null){
+	public static function _showItem($data = array(), $caller = null){
 		if($caller == null){return;}
 		$data = $data[0];
 	

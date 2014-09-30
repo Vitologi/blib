@@ -32,7 +32,7 @@ class bMenu extends bBlib{
 		$menu = array();
 		
 		while($row = $result->fetch()){
-			if($row['bconfig_id']){$config = $this->_getConfig($row['bconfig_id']);}
+			$config = ($row['bconfig_id'])?$this->_getConfig($row['bconfig_id']):array();
 			$menu[] = array('id'=>$row['id'], 'name'=>$row['name'], 'config'=>$config, 'link'=>$row['link'], 'parent'=>$row['bmenu_id']);
 		}
 

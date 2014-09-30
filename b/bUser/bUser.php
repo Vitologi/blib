@@ -18,7 +18,7 @@ class bUser extends bBlib{
 	}
 	
 	public function output(){
-		if($this->_request['logout'])$this->logout();
+		if(array_key_exists('logout', $this->_request))$this->logout();
 		$bUser = $this->getSingleton();
 
 		//for system

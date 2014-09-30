@@ -23,17 +23,22 @@ abstract class bBlib{
 		
 		$this->inputSelf();
 		
-		$parents = is_array($this->local['parents'])?$this->local['parents']:array();
-		foreach($parents as $value){
-			$this->setParent($value, $data);
+		if(array_key_exists('parents', $this->local)){
+			$parents = is_array($this->local['parents'])?$this->local['parents']:array();
+			foreach($parents as $value){
+				$this->setParent($value, $data);
+			}
 		}
-
+		
 		$this->input($data, $caller);
 	}
 	
 	//increases the access time (local by 11 times)(global by 5 times) (1kk iteration test) need use $this->local['name'] or bBlib::$global['name'] for ignore it
 	function __get($property){
-		return ($property{0}==="_")?self::$global[$property]:$this->local[$property];
+		if($property{0}==="_"){
+			return isset(self::$global[$property])?self::$global[$property]:null;
+		}
+		return isset($this->local[$property])?$this->local[$property]:null;
 	}
 	
 	function __set($property, $value){
@@ -73,7 +78,7 @@ abstract class bBlib{
 	/** SETTERS */
 	private static function inputGlobals(){
 		self::$global['_request'] = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET;
-		self::$global['_tunnel'] = self::$global['_request']['_tunnel'];
+		self::$global['_tunnel'] = isset(self::$global['_request']['_tunnel'])?self::$global['_request']['_tunnel']:array();
 		unset(self::$global['_request']['_tunnel']);
 	}
 	
@@ -92,6 +97,12 @@ abstract class bBlib{
 	public function output(){}
 
 	/** INTERFACES */
+	final public static function path($name = null, $ext = null){
+		$name = ($name)?$name:get_class($this);
+		if($ext){$ext = $name.'.'.$ext;}
+		return $name{0}.'/'.preg_replace('/(_+)/i', '/${1}', $name).'/'.$ext;		
+	}
+	
 	final protected function &getTunnel(){
 		return self::$global['_tunnel'][get_class($this)];
 	}
@@ -106,15 +117,9 @@ abstract class bBlib{
 	final public function call($name, $args){
 		return call_user_func_array(array($this, $name), (array)$args);
 	}
-	
-	final public function path($name = null, $ext = null){
-		$name = ($name)?$name:get_class($this);
-		if($ext){$ext = $name.'.'.$ext;}
-		return $name{0}.'/'.preg_replace('/(_+)/i', '/${1}', $name).'/'.$ext;		
-	}
 
 	final protected function hook($method, $input = array()){
-		
+		$output = array();
 		$block = get_class($this);
 		$_hook = bBlib::$global['hook'];
 		
@@ -126,12 +131,14 @@ abstract class bBlib{
 		}
 		
 		$returnFlag = false;
-		if($_list[$block]){
+		if(isset($_list[$block])){
 				
 			$list = $_list[$block];
 			$answer = array();
 			
-			if(!$handlers = $_hook['handlers'][$block]){
+			if(isset($_hook['handlers'][$block])){
+				$handlers = $_hook['handlers'][$block];
+			}else{
 				$handlers = array();
 				foreach($list as $value){
 					$handlers[$value] = new $value(array(), $this);
@@ -143,10 +150,10 @@ abstract class bBlib{
 				if(!method_exists($value, $method)){continue;}
 				$answer = (array)$value->$method(array('input'=> $input, 'output'=> $output), $this);
 
-				if($answer['input']){
+				if(isset($answer['input'])){
 					$input = $answer['input'];
 				}
-				if($answer['output']){
+				if(isset($answer['output'])){
 					$output = $answer['output'];
 					$returnFlag = true;
 				}

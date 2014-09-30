@@ -83,7 +83,7 @@ class bRbac extends bBlib{
 	}
 	
 	
-	protected function _checkAccess($data, $caller = null){
+	protected static function _checkAccess($data, $caller = null){
 		if($caller == null)throw new Exception("Try call access check for not defined object.");
 		return bRbac::$singleton->checkAccess($data[0], $data[1], $caller);
 	}

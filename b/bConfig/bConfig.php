@@ -35,6 +35,9 @@ class bConfig extends bBlib{
 	private function getConfig($name, $param){
 		$param = (array) $param + array('group'=>'blib', 'deep'=>true);
 		$used = array();
+		$config = array();
+		$default = null;
+		
 		do{
 			$Q = array(
 				'select' => array(
@@ -164,12 +167,11 @@ class bConfig extends bBlib{
 	* @param {bBlib} $caller - method initiator
 	* @return {array} - configuration
 	*/
-	public function _getConfig($data, $caller = null){
-		if($caller !== null){
-			if(!$data[1]['group']){$data[1]['group'] = get_class($caller);}
-			return $caller->local['bConfig']->_getConfig($data);
-		}
-		return $this->getConfig($data[0], $data[1]);
+	public static function _getConfig($data, $caller = null){
+		if($caller == null)return array();
+		if(!isset($data[1]))$data[1] = array();
+		if(!isset($data[1]['group'])){$data[1]['group'] = get_class($caller);}
+		return $caller->local['bConfig']->getConfig($data[0], $data[1]);
 	}
 	
 	/** 
@@ -181,14 +183,11 @@ class bConfig extends bBlib{
 	* @param {bBlib} $caller - method initiator
 	* @return {string} - id changed/new configuration
 	*/
-	public function _setConfig($data, $caller = null){
+	public static function _setConfig($data, $caller = null){
+		if($caller == null)return false;
 		$data[1] = (array)$data[1];
-		if($caller !== null){
-			if(!$data[2]['group']){$data[2]['group'] = get_class($caller);}
-			return $caller->local['bConfig']->_setConfig($data);
-		}
-		return $this->setConfig($data[0], $data[1], $data[2]);
-
+		if(!$data[2]['group']){$data[2]['group'] = get_class($caller);}
+		return $caller->local['bConfig']->setConfig($data[0], $data[1], $data[2]);
 	}
 	
 	

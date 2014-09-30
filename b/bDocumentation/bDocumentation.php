@@ -16,10 +16,10 @@ class bDocumentation extends bBlib{
 
 		$answer = array(
 			'block' => __class__,
-			'mods' => $this->data['mods']
+			'mods' => isset($this->data['mods'])?$this->data['mods']:array()
 		);
 
-		if($this->data['id']){
+		if(isset($this->data['id'])){
 		
 			$Q = array(
 				'select'	=> array(
@@ -33,6 +33,7 @@ class bDocumentation extends bBlib{
 			$temp = $result->fetch(PDO::FETCH_ASSOC);
 			$temp['description'] = json_decode($temp['description']);
 			$group = json_decode($temp['group']);
+			$content = array();
 			unset($temp['group']);
 			
 			if($group){
@@ -55,7 +56,7 @@ class bDocumentation extends bBlib{
 			$answer['item'] = $temp;
 		}
 		
-		if($this->data['chapter']){
+		if(isset($this->data['chapter'])){
 			$Q = array(
 				'select'	=> array(
 					'bdocumentation' => array('id', 'name', 'parent'=>'bdocumentation_id')
@@ -68,7 +69,7 @@ class bDocumentation extends bBlib{
 			$answer['chapter'] = $this->data['chapter'];
 		}
 		
-		if($this->data['ajax']){
+		if(isset($this->data['ajax'])){
 			echo json_encode($answer);
 		}else{
 			return $answer;

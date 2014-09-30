@@ -11,8 +11,8 @@ class bSlider extends bBlib{
 	protected function input($data, $caller){
 		$this->caller = $caller;
 		$this->data = $data;
-		if(!$this->data['length'])$this->local['data']['length'] = 0;
-		if(!$this->data['delay'])$this->local['data']['delay'] = 10000;
+		if(!isset($this->data['length']))$this->local['data']['length'] = 0;
+		if(!isset($this->data['delay']))$this->local['data']['delay'] = 10000;
 	}
 	
 	public function output(){

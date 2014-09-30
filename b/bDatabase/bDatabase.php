@@ -13,7 +13,7 @@ class bDatabase extends bBlib{
 	);
 	
 	private static function setStructure($block){
-		if(bDatabase::$structures[$block])return;
+		if(array_key_exists($block, bDatabase::$structures))return;
 		
 		$path = bBlib::path($block.'__'.__class__.'_install','php');
 		
@@ -150,8 +150,12 @@ class bDatabase extends bBlib{
 		if(!is_array($structure) || !($tables = array_intersect_key($structure, $query))){ return $temp; }
 		
 		foreach($tables as $selfTable => $table){
-			$foreings = $table['foreign'];
-			if(!is_array($foreings)){continue;}
+			
+			if(isset($table['foreign']) && is_array($table['foreign'])){
+				$foreings = $table['foreign'];
+			}else{
+				continue;
+			}
 			
 			foreach($foreings as $selfColumn => $column){
 				if($column === null){
@@ -170,15 +174,15 @@ class bDatabase extends bBlib{
 		return ($temp!='')?substr($temp, 0, -3):$temp;		
 	}
 	
-
-	public function _query($Q, $caller = null){
-		
-		
-		//protect call from block
+	public static function _query($Q, $caller = null){
 		if($caller !== null){
-			return $caller->bDatabase->_query($Q);
+			return $caller->bDatabase->query($Q);
 		}
-		$debug = $Q[1];
+	}
+
+	private function query($Q){//0_0 PRIVATE
+
+		$debug = isset($Q[1]);
 		$Q = $Q[0];
 		
 		//for native sql queries
@@ -273,14 +277,15 @@ class bDatabase extends bBlib{
 		
 		
 		/** WHERE STATEMENT */
+		$where = '';
 		if(array_key_exists('where', $Q) && count($Q['where'])){
-			$where = '';
 			foreach($Q['where'] as $table => $columns){
-				if(is_array($columns[0])){
+				
+				if(isset($columns[0]) && is_array($columns[0])){
 					foreach($columns as $value){
 						$value[1] = ($value[1] && mb_strtoupper($value[1])!=='NULL')?$this->pdo->quote($value[1]):'NULL';
-						$value[2] = ($value[2])?$value[2]:'=';
-						$value[3] = ($value[3])?' OR ':' AND';
+						$value[2] = (isset($value[2]) && $value[2])?$value[2]:'=';
+						$value[3] = (isset($value[3]) && $value[3])?' OR ':' AND';
 						$where .= sprintf(' `%1$s`.`%2$s` %3$s %4$s %5$s', $table, $value[0], $value[2], $value[1], $value[3]);
 					}
 				}else{			

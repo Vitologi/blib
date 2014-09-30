@@ -32,21 +32,21 @@ class bPanel extends bBlib{
 		$this->caller = $caller;
 		$tunnel = ($caller)?$caller->getTunnel():$this->getTunnel();
 
-		if($this->data['controller']){
+		if(isset($this->data['controller'])){
 			$this->controller = $this->data['controller'];
-		}elseif($tunnel['controller']){
+		}elseif(isset($tunnel['controller'])){
 			$this->controller = $tunnel['controller'];
 		}
 		
-		if($this->data['layout']){
+		if(isset($this->data['layout'])){
 			$this->layout = $this->data['layout'];
-		}elseif($tunnel['layout']){
+		}elseif(isset($tunnel['layout'])){
 			$this->layout = $tunnel['layout'];
 		}
 		
-		if($this->data['view']){
+		if(isset($this->data['view'])){
 			$this->view = $this->data['view'];
-		}elseif($tunnel['view']){
+		}elseif(isset($tunnel['view'])){
 			$this->view = $tunnel['view'];
 		}
 		
@@ -58,12 +58,19 @@ class bPanel extends bBlib{
 	public function output(){
 		if($this->caller)return array('bPanel'=>$this);
 
-		$block = ($this->controller == "bPanel")?$this:$this->getOverride($this->controller);
-		$block->_controller();
-		$temp = $block->_assembly();
+		if($this->controller == "bPanel"){
+			$this->controller();
+			$temp = $this->assembly();
+		}else{
+			$block = $this->getOverride($this->controller);
+			$block->_controller();
+			$temp = $block->_assembly();
+		}
+		
 		$answer = array('block'=>'bPanel', 'mods'=>array("style"=>"default"), "content"=>array($temp));
 
-		if($this->data['blib']=='bPanel'){
+		
+		if(isset($this->data['blib']) && $this->data['blib']=='bPanel'){
 			header('Content-Type: application/json; charset=UTF-8');
 			echo json_encode($answer);
 			exit;
@@ -107,42 +114,41 @@ class bPanel extends bBlib{
 
 	
 	private function assembly(){
-		
 		if(is_array($this->template))$this->template = json_encode($this->template);
-		
 		foreach($this->module as $key =>$value){
 			if(is_array($value))$this->module[$key] = json_encode($value);
 		}		
 		return json_decode(str_replace(array_keys($this->module), array_values($this->module), $this->template),true);
 	}
 	
+	private function controller($data = array()){
 
-	
-	/** COMPILING ADMIN PANEL */
-	public function _assembly($data = array(), $caller = null){
-		if($caller == null)return $this->assembly();
-		return $caller->local['bPanel']->_assembly();
-	}
-	
-	public function _controller($data = array(), $caller = null){
-		$block = ($caller == null)?$this:$caller;
-		$pannel = ($caller == null)?$this:$caller->local['bPanel'];
-		
-		switch($pannel->getLayout()){
+		switch($this->getLayout()){
 			case "show":
 			default:
 				
-				switch($pannel->getView()){
+				switch($this->getView()){
 					case "error":
 					default:
-						$pannel->setModule('"{1}"', $pannel->showBlocks());
-						$pannel->setModule('"{2}"', $pannel->showError('tools'));
-						$pannel->setModule('"{3}"', $pannel->showError('operation'));
-						$pannel->setModule('"{4}"', $pannel->showError('content'));
+						$this->setModule('"{1}"', $this->showBlocks());
+						$this->setModule('"{2}"', $this->showError('tools'));
+						$this->setModule('"{3}"', $this->showError('operation'));
+						$this->setModule('"{4}"', $this->showError('content'));
 						break;
 				}
 				break;
 		}
+	}
+	
+	/** COMPILING ADMIN PANEL */
+	public static function _assembly($data = array(), $caller = null){
+		if($caller == null)return false;
+		return $caller->local['bPanel']->assembly();
+	}
+	
+	public function _controller($data = array(), $caller = null){
+		if($caller == null)return false;
+		return $caller->local['bPanel']->controller($data);
 	}
 	
 	

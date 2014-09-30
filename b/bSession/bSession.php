@@ -74,7 +74,7 @@ class bSession extends bBlib{
 				if ( !isset($_SESSION) && !session_id() ) { 
 					
 					if(!$this->storePath){
-						$this->storePath = $this->_getBlockPath().'/__storage'; //0_0
+						$this->storePath = bBlib::path('bSession').'__storage';
 						if(!ini_set('session.save_path', $this->storePath)){
 							throw new Exception('Canot set php session save path');
 						};
@@ -96,25 +96,22 @@ class bSession extends bBlib{
 	}
 	
 	/** for child */
-	public function _getSession($data, bBlib $caller = null){
-		
-		if($caller != null){
-			$block = get_class($caller);
-			return $caller->bSession->_getSession(array($block, $data[0]));
-		}
-		
-		return bSession::$data[$data[0]][$data[1]];
-
+	public static function _getSession($data, bBlib $caller = null){
+		if($caller === null)return array();
+		$block = get_class($caller);
+		return bSession::$data[$block][$data[0]];
 	}
 	
-	public function _setSession($data, bBlib $caller = null){
+	public static function _setSession($data, bBlib $caller = null){
+		if($caller === null)return array();
+		return $caller->local['bSession']->setSession($data);
+	}
+	
+	private function setSession($data){
 		
-		if($caller != null){
-			$block = get_class($caller);
-			return $caller->bSession->_setSession(array('block'=>$block, 'data'=>$data));
-		}
-
-		bSession::$data[$data['block']][$data['data'][0]] = $data['data'][1];
+		$block = get_class($this);
+		$data[1] = isset($data[1])?$data[1]:null;
+		bSession::$data[$block][$data[0]] = $data[1];
 		
 		switch($this->sessionType){
 			case "database":

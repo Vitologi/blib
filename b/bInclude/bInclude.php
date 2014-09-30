@@ -8,9 +8,9 @@ class bInclude extends bBlib{
 		$this->parents = array('bSystem', 'bConfig');
 	}
 	
-	protected function input($data){
-		$this->path = $this->path();
-		$this->callback = $this->_request['callback'];
+	protected function input($data, $caller){
+		$this->path = bBlib::path('bInclude');
+		$this->callback = isset($this->_request['callback'])?$this->_request['callback']:null;
 		$this->cache = $this->path."/__cache/bInclude__cache.ini";
 		$this->list = $this->callback?json_decode($this->_request['list']):(array)$data['list'] or array();
 		$this->disableCache = false;

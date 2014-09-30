@@ -25,7 +25,7 @@ class bTable extends bBlib{
 			$this->_setSession($this->name, $data);
 			
 		/** ajax */
-		}else if($data['name']){
+		}else if(isset($data['name'])){
 			
 			$this->name = $data['name'];
 			$data = $this->_getSession($this->name);

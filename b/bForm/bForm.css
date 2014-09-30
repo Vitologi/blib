@@ -16,6 +16,7 @@
 	.bForm__hidden{}
 	.bForm__textarea{
 		max-width: 100%;}
+	.bForm__textareaplus{}
 	.bForm__select{}
 	.bForm__selectplus{}
 	.bForm__selectadd{}
@@ -75,7 +76,8 @@
 		.bForm_style_default .bForm__hidden{}
 		.bForm_style_default .bForm__textarea{
 			width: 98%;
-			margin: 5px 1%;}
+			margin: 5px 1%;
+			resize: vertical;}
 		.bForm_style_default .bForm__select{
 			padding: .3em .6em;}
 		.bForm_style_default .bForm__selectplus{}
@@ -100,8 +102,11 @@
 			.bForm_style_default .bForm__selectplus .bForm__select{
 				padding-left:40px;}
 		
-		.bForm_style_default .bForm__textarea_full{
-			width: 98%;}
+		.bForm_style_default .bForm__textarea_full,
+		.bForm_style_default .bForm__textareaplus_full{
+			display: block;
+			width: 98%;			
+			margin: 0 auto;}
 		
 		.bForm_style_default .bForm__label_full{
 			width: 98%;}

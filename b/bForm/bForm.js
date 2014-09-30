@@ -358,7 +358,6 @@
 	blib.build.define(
 		{'block':'bForm', 'elem':'textarea'},
 		function(data){
-		console.log(data);
 			this.prepare(data);
 			this.prepareContent();
 		},
@@ -520,6 +519,39 @@
 			},
 			'val':function(){
 				return this.dom.value;
+			}
+		}
+	);
+	
+	//TEXTAREAPLUS
+	blib.build.define(
+		{'block':'bForm', 'elem':'textareaplus'},
+		function(data){
+		
+			var self = this,
+				setData = function(data){
+					self.setData(data);
+				};
+			
+			this.editor = data.editor || 'bEditor';
+			data.elem = 'textarea';
+			this.template.mods = data.mods;
+			
+			this.template.content = [
+				{'block':this.editor, 'output':setData},
+				data
+			];
+		},
+		false,
+		{
+			'setData':function(data){
+				this.children.bForm__textarea[0].dom.innerHTML = data;
+			},
+			'getTextarea':function(){
+				return this.children.bForm__textarea[0];
+			},
+			'getEditor':function(){
+				return this.children[this.editor][0];
 			}
 		}
 	);

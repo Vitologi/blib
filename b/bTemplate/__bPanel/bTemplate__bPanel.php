@@ -116,7 +116,7 @@ class bTemplate__bPanel extends bBlib{
 				array('elem'=>'label', 'content'=>'Блок', 'attrs'=>array('title'=>'Блок который обрабатывает/дорабатывает шаблон')),
 				array('elem'=>'text', 'name'=>'block'),
 				
-				array('elem'=>'textarea', 'mods'=>array('full'=>true), 'name'=>'template')
+				array('elem'=>'textareaplus', 'mods'=>array('full'=>true), 'name'=>'template')
 			)
 		);
 

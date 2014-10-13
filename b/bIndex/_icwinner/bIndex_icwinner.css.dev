@@ -4,11 +4,11 @@
 	.bIndex_icwinner .bIndex__header{
 		height: 80px;
 		padding:4px;
+		overflow: hidden;
 		background-color: #9999cc;}
 	.bIndex_icwinner .bIndex__tools{
 		}
-	.bIndex_icwinner .bIndex__body{
-		min-height: 60%;}
+	.bIndex_icwinner .bIndex__body{}
 	.bIndex_icwinner .bIndex__side{
 		}
 	.bIndex_icwinner .bIndex__content{

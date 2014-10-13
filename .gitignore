@@ -5,3 +5,4 @@ b/bExample/
 b/bSession/__storage/*
 b/bBlib/__hook/*
 !index.html
+b/bIndex/bIndex.css

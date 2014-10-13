@@ -6,4 +6,6 @@
 	position:relative;
 	margin:0 auto;}
 	.bWrapper_percent_80{
-		width:80%}
+		width:80% !important;}
+	.bWrapper_percent_90{
+		width:90% !important;}

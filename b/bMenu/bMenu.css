@@ -3,6 +3,9 @@
 	padding: 0;
 	margin:0;}
 	
+	.bMenu__opener{
+		display:none;}
+	
 	.bMenu__child{
 		display: none;
 		padding: 0;
@@ -37,20 +40,34 @@
 		display: block;
 		clear:both;}
 
-	
-	
+	.bMenu_position_float{
+		}
 	
 	.bMenu_position_horizontal{
 		}
-		.bMenu_position_horizontal >.bMenu__item{
+		
+		.bMenu_position_float .bMenu__container  > .bMenu__item,
+		.bMenu_position_horizontal .bMenu__container  > .bMenu__item{
 			float:left;}
-		.bMenu_position_horizontal  .bMenu__item > .bMenu__child{
+		.bMenu_position_float  .bMenu__item  > .bMenu__child,
+		.bMenu_position_horizontal  .bMenu__item  > .bMenu__child{
 			margin-top: -1.7em;
 			margin-left: 100%;}
-		.bMenu_position_horizontal >.bMenu__item > .bMenu__child{
+		.bMenu_position_float .bMenu__container > .bMenu__item  > .bMenu__child,
+		.bMenu_position_horizontal .bMenu__container > .bMenu__item  > .bMenu__child{
 			margin-top: 0;
 			margin-left: 0px;}
 		
+		@media screen and (max-width: 800px){
+			.bMenu_position_float .bMenu__opener{
+				display:block;}
+			.bMenu_position_float .bMenu__container{
+				display:none;}
+				.bMenu_position_float .bMenu__container_open{
+					display:block;}
+			.bMenu_position_float .bMenu__container > .bMenu__item{
+				float:none;}
+		}
 
 	.bMenu_default{
 		background-color:white;}
@@ -68,10 +85,8 @@
 		.bMenu_default .bMenu__item:hover,
 		.bMenu_default .bMenu__item_active{
 			background-color: rgb(240, 240, 240);}
-		
-		/*
-		.bMenu__opener:hover > .bMenu__child{
-			display:block;
-			position:absolute;
-			margin: -1px 0 0 10px;}
-		*/
+		.bMenu_default .bMenu__opener{
+			text-align: center;
+			padding: 5px;
+			font-weight: bold;
+			cursor:pointer;}

@@ -21,7 +21,8 @@
 					};
 					
 					return elem;
-				};
+				},
+				temp;
 			
 			this.id = data.id;
 			
@@ -35,12 +36,24 @@
 			
 			temp = glueMenuItem(combine);
 			this.template = data;
-			if(temp.content)temp.content.push({'elem':'clear'});
-			this.template.content = temp.content;
+			this.template.content = [
+				{'elem':'opener'},
+				{'elem':'container', 'content':temp.content},
+				{'elem':'clear'}
+			];
 
 		},
 		{
 			'tag':'ul'
+		},
+		{
+			'_onSetMode':{
+				'position':{
+					'float':function(){
+						
+					}
+				}
+			}
 		}
 	);
 
@@ -162,8 +175,8 @@
 			'rollUp':function(){
 				var self = this,
 					tracker = self.parent;
-					
-				while(tracker.parent != self.block){
+				
+				while(tracker.parent.parent != self.block){
 					tracker = tracker.parent;
 				}
 				
@@ -182,6 +195,37 @@
 		//template
 		{
 			'tag':'ul'
+		}
+	);
+	
+	blib.build.define(
+		{'block':'bMenu', 'elem':'opener'},
+		function(data){
+			this.template = data;
+			this.template.content = 'Menu';
+		},
+		//template
+		{},
+		{
+			'onclick':function(){
+				var container = this.block.children.bMenu__container[0];
+				container.toggle();
+			}
+		}
+	);
+	
+	blib.build.define(
+		{'block':'bMenu', 'elem':'container'},
+		function(data){
+			this.template = data;
+		},
+		//template
+		{},
+		{
+			'toggle':function(){
+				var open = this._getMode('open');
+				this._setMode('open', !open);
+			}
 		}
 	);
 

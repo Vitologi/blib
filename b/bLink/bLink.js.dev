@@ -14,7 +14,7 @@
 			this.ajax = data.ajax;
 			this.link = data.link||this.getCurloc();
 			this.tunnel = data.tunnel;
-			this.data = data.data;
+			this.data = data.data || {};
 			this.disabled = (data.mods)?data.mods.disabled:false;
 			this.uphold = data.uphold || [];
 			this.before = data.before || [];

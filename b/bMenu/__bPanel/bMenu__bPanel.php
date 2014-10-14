@@ -103,7 +103,7 @@ class bMenu__bPanel extends bBlib{
 				'action' => "/",
 				'ajax' =>true,
 				'select' => array(
-					'puncts' => array('select'=>array('bMenu'=>array('id', 'name', 'link')))
+					'puncts' => array('select'=>array('bmenu'=>array('id', 'name', 'link')))
 				)
 			),
 			'content'	=> array(
@@ -127,7 +127,7 @@ class bMenu__bPanel extends bBlib{
 			)
 		);
 
-		if($data['id'])$config['meta']['query'] = array('select'=>array('bMenu'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id')),'where'=>array('bMenu'=>array('id'=>$data['id'])));
+		if($data['id'])$config['meta']['query'] = array('select'=>array('bmenu'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id')),'where'=>array('bmenu'=>array('id'=>$data['id'])));
 
 		$caller->setParent('bForm', $config);
 		$form = $caller->_getForm();
@@ -141,7 +141,7 @@ class bMenu__bPanel extends bBlib{
 		
 		$caller->setParent('bTable', array(
 			'name'	=> 'menuTable',
-			'query'	=> array('select'=>array('bMenu'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id'))),
+			'query'	=> array('select'=>array('bmenu'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id'))),
 			'meta'	=> array(
 				'processor'	=> false,
 				'position'=>array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id'),
@@ -179,7 +179,7 @@ class bMenu__bPanel extends bBlib{
 		
 		$Q = array(
 			'insert'=>array(
-				'bMenu'=>array(
+				'bmenu'=>array(
 					'menu'=>$data['menu'],
 					'name'=>$data['name'],
 					'link'=>$data['link'],
@@ -210,10 +210,10 @@ class bMenu__bPanel extends bBlib{
 		
 		$Q = array(
 			'update'=>array(
-				'bMenu'=>$update
+				'bmenu'=>$update
 			),
 			'where'=>array(
-				'bMenu'=>array('id'=>$id)
+				'bmenu'=>array('id'=>$id)
 			)
 		);
 		return $caller->_query($Q);
@@ -234,8 +234,8 @@ class bMenu__bPanel extends bBlib{
 		}
 		
 		return $caller->_query(array(
-			'delete'=>array('bMenu'),
-			'where'=>array('bMenu'=>$where)
+			'delete'=>array('bmenu'),
+			'where'=>array('bmenu'=>$where)
 		));
 	}
 }

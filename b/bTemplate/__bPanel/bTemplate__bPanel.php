@@ -120,7 +120,7 @@ class bTemplate__bPanel extends bBlib{
 			)
 		);
 
-		if($data['id'])$config['meta']['query'] = array('select'=>array('bTemplate'=>array('id', 'name', 'owner', 'block'=>'blib', 'template')),'where'=>array('bTemplate'=>array('id'=>$data['id'])));
+		if($data['id'])$config['meta']['query'] = array('select'=>array('btemplate'=>array('id', 'name', 'owner', 'block'=>'blib', 'template')),'where'=>array('btemplate'=>array('id'=>$data['id'])));
 
 		$caller->setParent('bForm', $config);
 		$form = $caller->_getForm();
@@ -134,7 +134,7 @@ class bTemplate__bPanel extends bBlib{
 		
 		$caller->setParent('bTable', array(
 			'name'	=> 'templateTable',
-			'query'	=> array('select'=>array('bTemplate'=>array('id', 'name', 'owner', 'blib', 'template'))),
+			'query'	=> array('select'=>array('btemplate'=>array('id', 'name', 'owner', 'blib', 'template'))),
 			'meta'	=> array(
 				'processor'	=> false,
 				'position'=>array('id', 'name', 'owner', 'blib', 'template'),
@@ -170,7 +170,7 @@ class bTemplate__bPanel extends bBlib{
 		
 		$Q = array(
 			'insert'=>array(
-				'bTemplate'=>array(
+				'btemplate'=>array(
 					'name'=>$data['name'],
 					'owner'=>$data['owner'],
 					'blib'=>$data['blib'],
@@ -202,10 +202,10 @@ class bTemplate__bPanel extends bBlib{
 		
 		$Q = array(
 			'update'=>array(
-				'bTemplate'=>$update
+				'btemplate'=>$update
 			),
 			'where'=>array(
-				'bTemplate'=>array('id'=>$id)
+				'btemplate'=>array('id'=>$id)
 			)
 		);
 		//var_dump($Q, $caller->_query($Q,true));
@@ -227,8 +227,8 @@ class bTemplate__bPanel extends bBlib{
 		}
 		
 		return $caller->_query(array(
-			'delete'=>array('bTemplate'),
-			'where'=>array('bTemplate'=>$where)
+			'delete'=>array('btemplate'),
+			'where'=>array('btemplate'=>$where)
 		));
 	}
 }

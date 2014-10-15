@@ -146,7 +146,7 @@ class bPanel extends bBlib{
 		return $caller->local['bPanel']->assembly();
 	}
 	
-	public function _controller($data = array(), $caller = null){
+	public static function _controller($data = array(), $caller = null){
 		if($caller == null)return false;
 		return $caller->local['bPanel']->controller($data);
 	}

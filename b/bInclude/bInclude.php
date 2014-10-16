@@ -9,10 +9,14 @@ class bInclude extends bBlib{
 	}
 	
 	protected function input($data, $caller){
+		$list = bBlib::extend(bBlib::$global['_request'], 'list', array());
+		if(is_string($list))$list = (array)json_decode($list);
+		$this->list = $list;
+		$this->callback = bBlib::extend(bBlib::$global['_request'], 'callback');
+		
 		$this->path = bBlib::path('bInclude');
-		$this->callback = isset($this->_request['callback'])?$this->_request['callback']:null;
 		$this->cache = $this->path."/__cache/bInclude__cache.ini";
-		$this->list = $this->callback?json_decode($this->_request['list']):(array)$data['list'] or array();
+		
 		$this->disableCache = false;
 	}
 	

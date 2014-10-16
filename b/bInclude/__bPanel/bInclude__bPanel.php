@@ -7,7 +7,7 @@ class bInclude__bPanel extends bBlib{
 		$this->version = '1.0.0';
 	}
 	
-	public function _controller($data = array(), $caller = null){
+	public static function _controller($data = array(), $caller = null){
 		$block = $caller;
 		$pannel = $caller->bPanel;
 		$tunnel = $block->getTunnel();		

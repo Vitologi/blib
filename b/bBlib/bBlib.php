@@ -222,5 +222,24 @@ abstract class bBlib{
 		
 		return $stack;
 	}
+	
+	//for set default value work slowler in 4 times than      $X = isset($X)?$X:$Y;
+	final public static function extend(&$target){
+		if(func_num_args()<2)return;
+		$arguments = func_get_args();
+		$property = is_string($arguments[1])?$arguments[1]:null;
+		
+		if( $property === null ){
+			return call_user_func_array('array_replace_recursive', $arguments);
+		}
+		if(!isset($target[$property])){
+			$default = isset($arguments[2])?$arguments[2]:null;
+			$target[$property] = $default;
+		}
+		
+		return $target[$property];
+		
+	}
+	
+	
 }
-

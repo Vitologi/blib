@@ -9,13 +9,18 @@ class bIndex extends bBlib{
 	}
 	
 	protected function input($data, $caller){
-		$this->data = $this->hook('getData', array($data));
+		$this->cache = 0;
 		$this->defaultPage = 1;
-		if(!isset($this->data['pageId'])){$this->local['data']['pageId'] = $this->defaultPage;}
-		$this->ajax = isset($data['ajax'])?$data['ajax']:false;
-		$this->template = isset($data['template'])?$data['template']:array();
 		$this->skeleton = "bIndex__skeleton_default";
-		$this->cache = 0;		
+		
+		$data = $this->hook('getData', array($data));
+		$default = array('ajax'=>false, 'template'=>array(), 'pageId'=>$this->defaultPage);
+
+		$this->data = bBlib::extend($default, $data);
+
+		$this->ajax = $this->data['ajax'];
+		$this->template = $this->data['template'];
+		
 	}
 
 	

@@ -136,10 +136,10 @@ class bConfig extends bBlib{
 	*   {bool} 1 - reduced or not
 	* @return {array} - configuration
 	*/
-	public function _getDefaultConfig($data, $caller = null){
+	public static function _getDefaultConfig($data, $caller = null){
 		if($caller === null){return;}
-		$name = $data[0]?$data[0]:'block';
-		$reduced = $data[1]?$data[1]:true;
+		$name = isset($data[0])?$data[0]:'block';
+		$reduced = isset($data[1])?$data[1]:true;
 		$path = bBlib::path(get_class($caller).'__'.__class__.'_'.$name,'php');
 		if(!file_exists($path)){return array();}
 		

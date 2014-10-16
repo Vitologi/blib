@@ -47,6 +47,7 @@ class bForm extends bBlib{
 	}
 	
 	public function setMeta($data){
+		bBlib::extend($data,'query');
 		
 		if($data['query']){
 			$result = $this->caller->_query($data['query']);

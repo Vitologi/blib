@@ -174,12 +174,6 @@ class bDatabase extends bBlib{
 		return ($temp!='')?substr($temp, 0, -3):$temp;		
 	}
 	
-	public static function _query($Q, $caller = null){
-		if($caller !== null){
-			return $caller->bDatabase->query($Q);
-		}
-	}
-
 	private function query($Q){//0_0 PRIVATE
 
 		$debug = isset($Q[1]);
@@ -393,30 +387,36 @@ class bDatabase extends bBlib{
 	}
 	
 	//methods for child blocks
-	public function _install($data, $caller = null){
-		return ($caller === null)?bDatabase::$structures[$this->block]['install']:$caller->bDatabase->_install($data);
+	public static function _install($data, $caller = null){
+		if($caller === null)return;
+		return bDatabase::$structures[get_class($caller)]['install'];
 	}
 	
-	public function _uninstall($data, $caller = null){
-		return ($caller === null)?bDatabase::$structures[$this->block]['uninstall']:$caller->bDatabase->_uninstall($data);
+	public static function _uninstall($data, $caller = null){
+		if($caller === null)return;
+		return bDatabase::$structures[get_class($caller)]['uninstall'];
 	}
 	
-	public function _update($data, $caller = null){
+	public static function _update($data, $caller = null){
+		if($caller === null)return;
 		
-		if($caller != null){
-			return $caller->bDatabase->_update($data);
-		}
-		
-		$temp = bDatabase::$structures[$this->block]['update'];
+		$temp = bDatabase::$structures[get_class($caller)]['update'];
 		uksort($temp, 'version_compare');
 		return $temp;
 	}
 	
-	public function _lastInsertId($data, $caller = null){
+	public static function _lastInsertId($data, $caller = null){
 		return bDatabase::$pdo->lastInsertId();
 	}
 	
-	public function _getStructure($data, $caller = null){
+	public static function _getStructure($data, $caller = null){
+		if($caller === null)return;
 		return bDatabase::$structures[$caller->bDatabase->getBlock()];
 	}
+	
+	public static function _query($Q, $caller = null){
+		if($caller === null)return;
+		return $caller->bDatabase->query($Q);
+	}
+	
 }

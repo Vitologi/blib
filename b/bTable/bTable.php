@@ -106,9 +106,9 @@ class bTable extends bBlib{
 		return array('block'=>__class__, 'tunnel'=>$this->blockTunnel, 'name'=>$this->name, 'meta'=>$this->getMeta(), 'content'=>$result->fetchAll(PDO::FETCH_ASSOC));
 	}
 
-	public function _getTable($data = array(), $caller = null){
-		if($caller)return $caller->bTable->getTable($data);
-		return $this->getTable();
+	public static function _getTable($data = array(), $caller = null){
+		if($caller == null)return;
+		return $caller->bTable->getTable($data);
 	}
 	
 }

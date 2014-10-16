@@ -31,16 +31,11 @@ class bUser extends bBlib{
 	
 	private function getSingleton(){
 		if(!bUser::$singleton){
-			
-			$this->id = $this->_getSession('id');
-			
-			if($this->id){
-				$this->config = $this->_getSession('config');
-				$this->login = $this->_getSession('login');
-			}else{
-				$login = $this->_request['login'];
-				$password = $this->_request['password'];
-			
+			$login = bBlib::extend(bBlib::$global['_request'], 'login', null);
+			$password = bBlib::extend(bBlib::$global['_request'], 'password', null);
+
+			//autentication
+			if($login){
 				$Q = array(
 					'select' => array(
 						'buser' => array('id','bconfig_id')
@@ -63,8 +58,20 @@ class bUser extends bBlib{
 					$this->_setSession('login', $this->login);
 					$this->_setSession('config', $this->config);
 				}
+			
+			//autentication from session
+			}else{
+				$this->id = $this->_getSession('id');
+				
+				if($this->id){
+					$this->config = $this->_getSession('config');
+					$this->login = $this->_getSession('login');
+				}else{			
+					$this->config = null;
+					$this->login = null;
+				}
 			}
-		
+
 			bUser::$singleton = $this;
 		}
 		
@@ -80,7 +87,7 @@ class bUser extends bBlib{
 	}
 	
 	protected function logout(){
-		$this->_setSession('id');
+		$this->_setSession();
 		unset(bBlib::$global['_request']['logout']);
 		bUser::$singleton = null;
 	}

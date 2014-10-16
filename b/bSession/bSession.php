@@ -82,9 +82,8 @@ class bSession extends bBlib{
 					
 					if(!session_start()){throw new Exception('Cannot use php session.');}; 
 				}
-				
-				
-				
+
+				bBlib::extend($_SESSION, __class__ , array());
 				bSession::$data = $_SESSION[__class__];
 				bSession::$singleton = $this;
 				break;
@@ -97,21 +96,32 @@ class bSession extends bBlib{
 	
 	/** for child */
 	public static function _getSession($data, bBlib $caller = null){
-		if($caller === null)return array();
+		if($caller === null)return;
 		$block = get_class($caller);
-		return bSession::$data[$block][$data[0]];
+		$name = bBlib::extend($data, '0', null);
+		
+		if(!isset(bSession::$data[$block]))return;
+		if(!isset(bSession::$data[$block][$name]))return;
+		
+		return bSession::$data[$block][$name];
 	}
 	
 	public static function _setSession($data, bBlib $caller = null){
-		if($caller === null)return array();
-		return $caller->local['bSession']->setSession($data);
+		if($caller === null)return;
+		$block = get_class($caller);
+		$name = bBlib::extend($data, '0', null);
+		$value = bBlib::extend($data, '1', null);
+
+		return $caller->local['bSession']->setSession($block, $name, $value);
 	}
 	
-	private function setSession($data){
+	private function setSession($block = 'bSession', $name, $value){
 		
-		$block = get_class($this);
-		$data[1] = isset($data[1])?$data[1]:null;
-		bSession::$data[$block][$data[0]] = $data[1];
+		if($name === null){
+			bSession::$data[$block] = array();
+		}else{
+			bSession::$data[$block][$name] = $value;
+		}
 		
 		switch($this->sessionType){
 			case "database":
@@ -134,10 +144,15 @@ class bSession extends bBlib{
 				if ( !isset($_SESSION) && !session_id() ) { 
 					if(!session_start()){throw new Exception('Cannot use php session.');}; 
 				}
-				$_SESSION[__class__] = bSession::$data;	
+				
+				$_SESSION[__class__] = bSession::$data;
 				break;
-			
 		}
-
 	}
+	
+	public static function _clearSession(){
+		bSession::$data = null;
+		session_destroy();
+	}
+	
 }

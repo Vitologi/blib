@@ -212,16 +212,22 @@
 
 			return first;
 		},
-		object2url = function(obj, prefix, deep){
+		object2url = function(obj, params){
 			var url = '',
+				params = params || {'prefix':false, 'deep':false, 'length':0},
 				i, key;
 			
 			for(i in obj){
-				key = (prefix)?prefix+'['+i+']':i;
-				url += (is(obj[i],['array','object']))?object2url(obj[i],key,true):('&'+key+'='+obj[i]);
+				key = (params.prefix)?params.prefix+'['+i+']':i;
+				if(is(obj[i],['array','object'])){
+					url += object2url(obj[i],{'prefix':key, 'deep':true, 'length':params.length});
+				}else if(!params.length || obj[i].length < params.length){
+					url += '&'+key+'='+obj[i];
+				}
+				//url += (is(obj[i],['array','object']))?object2url(obj[i],{'prefix':key, 'deep':true, 'length':params.length}):(obj[i].length<params.length'&'+key+'='+obj[i]);
 			}
 			
-			return (deep)?url:url.substr(1,url.length);
+			return (params.deep)?url:url.substr(1,url.length);
 		},
 		getElement = function(selector){
 			if(is(selector, "string"))selector = [selector];

@@ -108,7 +108,7 @@
 				var self = this,
 					tunnel;
 				
-				tunnel = "?"+blib.object2url({'_tunnel':blib.config('tunnel')});
+				tunnel = "?"+blib.object2url({'_tunnel':blib.config('tunnel')}, {'length':20});
 				
 				if(history.pushState){
 					history.pushState({}, location.host , self.getCurloc());

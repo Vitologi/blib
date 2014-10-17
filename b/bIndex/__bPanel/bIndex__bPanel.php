@@ -151,7 +151,7 @@ class bIndex__bPanel extends bBlib{
 	}
 	
 	public static function _addItem($data, $caller = null){
-		if($caller == null){return;}
+		if($caller == null)return;
 		bBlib::extend($data, '0', array());
 		
 		$data = array_merge(
@@ -175,7 +175,8 @@ class bIndex__bPanel extends bBlib{
 	}
 	
 	public static function _editItem($data = array(), $caller = null){
-		if($caller == null){return;}
+		if($caller == null)return;
+		bBlib::extend($data, '0', array());
 		
 		$update = array_merge(
 			array(
@@ -205,7 +206,7 @@ class bIndex__bPanel extends bBlib{
 	 * @return {boolean}			- request status
 	 */
 	public static function _delItem($data = array(), $caller = null){
-		if($caller == null){return;}
+		if($caller == null || !isset($data[0]))return;
 		
 		$where = array();
 		foreach($data[0] as $key => $value){

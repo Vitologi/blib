@@ -78,7 +78,7 @@ abstract class bBlib{
 	/** SETTERS */
 	private static function inputGlobals(){
 		self::$global['_request'] = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET;
-		self::$global['_tunnel'] = isset(self::$global['_request']['_tunnel'])?self::$global['_request']['_tunnel']:array();
+		self::$global['_tunnel'] = isset(self::$global['_request']['_tunnel'])?(array)self::$global['_request']['_tunnel']:array();
 		unset(self::$global['_request']['_tunnel']);
 	}
 	
@@ -104,7 +104,9 @@ abstract class bBlib{
 	}
 	
 	final protected function &getTunnel(){
-		return self::$global['_tunnel'][get_class($this)];
+		$block = get_class($this);
+		self::extend(self::$global['_tunnel'], $block, array());
+		return self::$global['_tunnel'][$block];
 	}
 	
 	final protected function setParent($name, $data = array()){

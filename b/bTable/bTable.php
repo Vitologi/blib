@@ -77,7 +77,8 @@ class bTable extends bBlib{
 	
 	public function setMeta($data){
 		$tunnel = $this->getTunnel();
-		$tunnelPage = ($tunnel['page'])?$tunnel['page']:array();
+		bBlib::extend($tunnel, 'page', array());
+		$tunnelPage = $tunnel['page'];
 		$page = array_merge(array('number'=>0, 'rows'=>20, 'count'=>0, 'paginator'=>10), $data['page'], $tunnelPage);
 		
 		$Q = $this->query;

@@ -231,7 +231,7 @@ class bDatabase extends bBlib{
 				$into = '';
 				$values = '';
 				
-				if(is_array($columns[0])){
+				if(isset($columns[0]) && is_array($columns[0])){
 					$into = $columns[0];
 					$intoLen = count($into);
 					$len = count($columns);

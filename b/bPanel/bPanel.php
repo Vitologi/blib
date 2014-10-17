@@ -6,9 +6,9 @@ class bPanel extends bBlib{
 	private static $blocks = null;
 	private $template = '{}';
 	private $module = array();
-	private $controller = "bPanel";
-	private $layout = "show";
-	private $view = "error";
+	private $controller = "";
+	private $layout = "";
+	private $view = "";
 	
 	//getters & setters
 	final public function setTemplate($value){$this->template = $value;}	
@@ -28,31 +28,22 @@ class bPanel extends bBlib{
 	}
 	
 	protected function input($data, $caller){
-		$this->data = $data;
 		$this->caller = $caller;
+		
+		$default = array(
+			"controller"=>"bPanel",
+			"layout"=>"show",
+			"view"=>"error"
+		);
 		$tunnel = ($caller)?$caller->getTunnel():$this->getTunnel();
-
-		if(isset($this->data['controller'])){
-			$this->controller = $this->data['controller'];
-		}elseif(isset($tunnel['controller'])){
-			$this->controller = $tunnel['controller'];
-		}
+		$this->data = bBlib::extend($default, $tunnel, $data);
 		
-		if(isset($this->data['layout'])){
-			$this->layout = $this->data['layout'];
-		}elseif(isset($tunnel['layout'])){
-			$this->layout = $tunnel['layout'];
-		}
-		
-		if(isset($this->data['view'])){
-			$this->view = $this->data['view'];
-		}elseif(isset($tunnel['view'])){
-			$this->view = $tunnel['view'];
-		}
+		$this->controller = $this->data['controller'];
+		$this->layout = $this->data['layout'];
+		$this->view = $this->data['view'];
 		
 		if(bPanel::$blocks == null)$this->scanBlocks(); //filling blocks stack
 		$this->setTemplate($this->_getTemplateByName('template')); //default template
-		
 	}
 	
 	public function output(){

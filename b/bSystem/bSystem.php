@@ -15,17 +15,17 @@ class bSystem extends bBlib{
 		
 	}
 	
-	public function _getBlockName($data, $caller){
+	public static function _getBlockName($data, $caller){
 		return get_class($caller);
 	}
 	
-	public function _getBlockPath($data, $caller){
+	public static function _getBlockPath($data, $caller){
 		$block = get_class($caller);
 		$path = sprintf('%1$s/%2$s',$block{0},$block);
 		return $path;
 	}
 	
-	public function _getMinion($name, bBlib $caller){
+	public static function _getMinion($name, bBlib $caller){
 		
 		$block = $caller->_getBlockName();
 		$path = $caller->_getBlockPath();

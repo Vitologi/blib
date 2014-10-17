@@ -9,21 +9,34 @@ class bIndex extends bBlib{
 	}
 	
 	protected function input($data, $caller){
-		$this->data = $this->hook('getData', array($data));
+		//block`s config
+		$this->cache = 0;
 		$this->defaultPage = 1;
-		if(!$this->data['pageId']){$this->local['data']['pageId'] = $this->defaultPage;}
-		$this->ajax = $data['ajax'];
-		$this->template = $data['template'];
 		$this->skeleton = "bIndex__skeleton_default";
-		$this->cache = 0;		
+		
+		//page`s config
+		$default = array(
+			"cache"			=> $this->cache,
+			"skeleton"		=> $this->skeleton,
+			"ajax"			=> false,
+			"template"		=> array(),
+			"pageId"		=> $this->defaultPage,
+			"locked"		=> false,
+			"'{keywords}'"	=> "",
+			"'{description}'"=> "",
+			"'{title}'"		=> ""			
+		);
+		$data = $this->hook('getData', array($data));
+		$config = $this->_getConfig(isset($data['pageId'])?$data['pageId']:$this->defaultPage);
+
+		$this->data = bBlib::extend($default, $data, $config);
+
 	}
 
 	
 	public function output(){
-		
-		$config = $this->_getConfig($this->data['pageId']);
-		
-		if($config['locked']){
+
+		if($this->data['locked']){
 			$this->setParent('bRbac', $this->data);
 			if(!$this->_checkAccess('unlock',$this->data['pageId']))return;
 		}
@@ -37,25 +50,25 @@ class bIndex extends bBlib{
 			)
 		);
 		
-		$result = $this->_query($Q);
+		if(!$result = $this->_query($Q)){throw new Exception('Can`t get chousen page ('.$this->data['pageId'].').');}
 		$row = $result->fetch();
 		
 		
-		$data["'{keywords}'"] = $config["'{keywords}'"];
-		$data["'{description}'"] = $config["'{description}'"];
-		$data["'{title}'"] = $config["'{title}'"];
+		$data["'{keywords}'"] = $this->data["'{keywords}'"];
+		$data["'{description}'"] = $this->data["'{description}'"];
+		$data["'{title}'"] = $this->data["'{title}'"];
 		$template = json_decode($row['template'], true);
 		
-		$data["'{template}'"] = $this->_getTemplateDiff($this->template, $template);
+		$data["'{template}'"] = $this->_getTemplateDiff($this->data['template'], $template);
 		
-		if($this->ajax){
+		if($this->data['ajax']){
 			header('Content-Type: application/json; charset=UTF-8');
 			$temp = json_decode($data["'{template}'"], true);
 			$temp['ajax'] = true;
 			echo json_encode($temp);
 			exit;
 		}else{
-			$skeleton = file_get_contents($this->path($this->skeleton,'tpl'));
+			$skeleton = file_get_contents($this->path($this->data['skeleton'],'tpl'));
 			echo str_replace(array_keys($data), array_values($data), $skeleton);
 		}
 

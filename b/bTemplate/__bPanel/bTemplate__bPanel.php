@@ -7,12 +7,12 @@ class bTemplate__bPanel extends bBlib{
 		$this->version = '1.0.0';
 	}
 	
-	public function _controller($data = array(), $caller = null){
+	public static function _controller($data = array(), $caller = null){
 		$block = $caller;
 		$pannel = $caller->bPanel;
 		$tunnel = $block->getTunnel();
-		$items = $tunnel['items'];
-		$item = $items[0];
+		$items = bBlib::extend($tunnel,'items',array());
+		$item = bBlib::extend($items,'0',null);
 		
 		
 		$pannel->setModule('"{1}"', $pannel->showBlocks());
@@ -90,9 +90,9 @@ class bTemplate__bPanel extends bBlib{
 	
 	
 	
-	public function _showItem($data = array(), $caller = null){
-		if($caller == null){return;}
-		$data = $data[0];
+	public static function _showItem($data = array(), $caller = null){
+		if($caller == null)return;
+		$data = bBlib::extend($data,'0');
 	
 		$config = array(
 			'name'	=> 'templateForm',
@@ -128,8 +128,8 @@ class bTemplate__bPanel extends bBlib{
 		return $form;
 	}
 	
-	public function _showList($data = array(), $caller = null){
-		if($caller == null){return;}
+	public static function _showList($data = array(), $caller = null){
+		if($caller == null)return;
 		
 		
 		$caller->setParent('bTable', array(
@@ -156,8 +156,10 @@ class bTemplate__bPanel extends bBlib{
 		return $table;
 	}
 	
-	public function _addItem($data = array(), $caller = null){
-		if($caller == null){return;}
+	public static function _addItem($data = array(), $caller = null){
+		if($caller == null)return;
+		bBlib::extend($data, '0', array());
+		
 		$data = array_merge(
 			array(
 				'name'=>'noname',
@@ -182,8 +184,9 @@ class bTemplate__bPanel extends bBlib{
 		return $caller->_query($Q);
 	}
 	
-	public function _editItem($data = array(), $caller = null){
-		if($caller == null){return;}
+	public static function _editItem($data = array(), $caller = null){
+		if($caller == null)return;
+		bBlib::extend($data, '0', array());
 		
 		$update = array_merge(
 			array(
@@ -218,8 +221,8 @@ class bTemplate__bPanel extends bBlib{
 	 * @param {number}[] $data[0] 	- id
 	 * @return {boolean}			- request status
 	 */
-	public function _delItem($data = array(), $caller = null){
-		if($caller == null){return;}
+	public static function _delItem($data = array(), $caller = null){
+		if($caller == null || !isset($data[0]))return;
 		
 		$where = array();
 		foreach($data[0] as $key => $value){

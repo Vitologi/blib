@@ -69,8 +69,8 @@ class bTemplate extends bBlib{
 	
 	private function templateDiff($old, $new, $deep = false) {
 		
-		$oldKey = (string)$old[0];
-		$newKey = (string)$new[0];
+		$oldKey = isset($old[0])?(string)$old[0]:null;
+		$newKey = isset($new[0])?(string)$new[0]:null;
 		$difference = array($newKey);
 		
 		if($oldKey != $newKey)$old = array();
@@ -78,14 +78,15 @@ class bTemplate extends bBlib{
 		
 		foreach($new as $key => $value) {
 			if( is_array($value)  && $key != 0) {
+				if(!isset($old[$key]))$old[$key] = null;
 				$temp = $this->templateDiff($old[$key], $value, true);
 				if(count($temp))$difference[$key] = $temp;
 			}
 			unset($old[$key]);
 		}
 		
-		$block = $this->local['block'][$newKey];
-		$isDynamic = ($block)?$block->local['bTemplate__dynamic']:false;
+		$block = isset($this->local['block'][$newKey])?$this->local['block'][$newKey]:null;
+		$isDynamic = ($block && isset($block->local['bTemplate__dynamic']))?$block->local['bTemplate__dynamic']:false;
 		
 		foreach($old as $key => $value) {
 			$difference[$key] = array(null);
@@ -140,7 +141,7 @@ class bTemplate extends bBlib{
 			$deep = $list[0];
 			$template = '{"block":"bTemplate", "content":['.$this->stack[$list[0]].'] ,"template":'.json_encode($list,JSON_FORCE_OBJECT).' }';
 		}else{
-			$template = $this->stack[$list[0]];
+			$template = isset($this->stack[$list[0]])?$this->stack[$list[0]]:'';
 		}
 		
 		
@@ -174,23 +175,29 @@ class bTemplate extends bBlib{
 		return $this->local['bDatabase']->install;
 	}
 	
-	public function _getTemplate($data, $caller = null){
-		if($caller !== null){return $caller->local['bTemplate']->_getTemplate($data[0]);};
+	private function getTemplate($data){
 		if(!is_array($data)){$data = array($data);}
 		$this->addTempStack($data);
 		return $this->glueTempStack($data);
 	}
 	
-	public function _getTemplateDiff($data, $caller = null){
-		if($caller !== null){return $caller->local['bTemplate']->_getTemplateDiff($data);};
-		if(!is_array($data[0])){$data[0] = array($data[0]);}
-		if(!is_array($data[1])){$data[1] = array($data[1]);}
-		$this->addTempStack($data[1]);
-		$diff = $this->templateDiff($data[0],$data[1]);
-		return $this->glueTempDiff($diff);
+	public static function _getTemplate($data, $caller = null){
+		if($caller == null)return array();
+		return $caller->local['bTemplate']->getTemplate($data[0]);
 	}
 	
-	public function _getTemplateByName($data, $caller = null){ //0_0
+	public static function _getTemplateDiff($data, $caller = null){
+		if($caller === null)return false;
+		$self = $caller->local['bTemplate'];
+		
+		if(!is_array($data[0])){$data[0] = array($data[0]);}
+		if(!is_array($data[1])){$data[1] = array($data[1]);}
+		$self->addTempStack($data[1]);
+		$diff = $self->templateDiff($data[0],$data[1]);
+		return $self->glueTempDiff($diff);
+	}
+	
+	public static function _getTemplateByName($data, $caller = null){ //0_0
 		if($caller == null)return false;
 		
 		$Q = array(

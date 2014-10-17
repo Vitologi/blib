@@ -1,5 +1,6 @@
 <?php
-	if(!$_GET['blib']){$_GET['blib']='bIndex';}
+	error_reporting(-1);
+	if(!array_key_exists('blib', $_GET)){$_GET['blib']='bIndex';}
 	//$vremiya_starta = microtime(true);
  
 	require_once("b/bBlib/bBlib.php");

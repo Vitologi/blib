@@ -47,6 +47,7 @@ class bForm extends bBlib{
 	}
 	
 	public function setMeta($data){
+		bBlib::extend($data,'query');
 		
 		if($data['query']){
 			$result = $this->caller->_query($data['query']);
@@ -54,7 +55,7 @@ class bForm extends bBlib{
 		}
 		
 	
-		$select = ($data['select']?$data['select']:array());
+		$select = (isset($data['select'])?$data['select']:array());
 		$temp = array();
 		foreach($select as $key => $value){
 			$result = $this->caller->_query($value);
@@ -73,9 +74,9 @@ class bForm extends bBlib{
 		return array('block'=>__class__, 'mods'=>$this->mods, 'name'=>$this->name, 'meta'=>$this->getMeta(), 'content'=>$this->getContent());
 	}
 
-	public function _getForm($data = array(), $caller = null){
-		if($caller)return $caller->bForm->getForm($data);
-		return $this->getForm();
+	public static function _getForm($data = array(), $caller = null){
+		if($caller == null)return false;
+		return $caller->bForm->getForm($data);
 	}
 	
 }

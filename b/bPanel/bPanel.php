@@ -6,9 +6,9 @@ class bPanel extends bBlib{
 	private static $blocks = null;
 	private $template = '{}';
 	private $module = array();
-	private $controller = "bPanel";
-	private $layout = "show";
-	private $view = "error";
+	private $controller = "";
+	private $layout = "";
+	private $view = "";
 	
 	//getters & setters
 	final public function setTemplate($value){$this->template = $value;}	
@@ -28,42 +28,40 @@ class bPanel extends bBlib{
 	}
 	
 	protected function input($data, $caller){
-		$this->data = $data;
 		$this->caller = $caller;
+		
+		$default = array(
+			"controller"=>"bPanel",
+			"layout"=>"show",
+			"view"=>"error"
+		);
 		$tunnel = ($caller)?$caller->getTunnel():$this->getTunnel();
-
-		if($this->data['controller']){
-			$this->controller = $this->data['controller'];
-		}elseif($tunnel['controller']){
-			$this->controller = $tunnel['controller'];
-		}
+		$this->data = bBlib::extend($default, $tunnel, $data);
 		
-		if($this->data['layout']){
-			$this->layout = $this->data['layout'];
-		}elseif($tunnel['layout']){
-			$this->layout = $tunnel['layout'];
-		}
-		
-		if($this->data['view']){
-			$this->view = $this->data['view'];
-		}elseif($tunnel['view']){
-			$this->view = $tunnel['view'];
-		}
+		$this->controller = $this->data['controller'];
+		$this->layout = $this->data['layout'];
+		$this->view = $this->data['view'];
 		
 		if(bPanel::$blocks == null)$this->scanBlocks(); //filling blocks stack
 		$this->setTemplate($this->_getTemplateByName('template')); //default template
-		
 	}
 	
 	public function output(){
 		if($this->caller)return array('bPanel'=>$this);
 
-		$block = ($this->controller == "bPanel")?$this:$this->getOverride($this->controller);
-		$block->_controller();
-		$temp = $block->_assembly();
+		if($this->controller == "bPanel"){
+			$this->controller();
+			$temp = $this->assembly();
+		}else{
+			$block = $this->getOverride($this->controller);
+			$block->_controller();
+			$temp = $block->_assembly();
+		}
+		
 		$answer = array('block'=>'bPanel', 'mods'=>array("style"=>"default"), "content"=>array($temp));
 
-		if($this->data['blib']=='bPanel'){
+		
+		if(isset($this->data['blib']) && $this->data['blib']=='bPanel'){
 			header('Content-Type: application/json; charset=UTF-8');
 			echo json_encode($answer);
 			exit;
@@ -107,42 +105,41 @@ class bPanel extends bBlib{
 
 	
 	private function assembly(){
-		
 		if(is_array($this->template))$this->template = json_encode($this->template);
-		
 		foreach($this->module as $key =>$value){
 			if(is_array($value))$this->module[$key] = json_encode($value);
 		}		
 		return json_decode(str_replace(array_keys($this->module), array_values($this->module), $this->template),true);
 	}
 	
+	private function controller($data = array()){
 
-	
-	/** COMPILING ADMIN PANEL */
-	public function _assembly($data = array(), $caller = null){
-		if($caller == null)return $this->assembly();
-		return $caller->local['bPanel']->_assembly();
-	}
-	
-	public function _controller($data = array(), $caller = null){
-		$block = ($caller == null)?$this:$caller;
-		$pannel = ($caller == null)?$this:$caller->local['bPanel'];
-		
-		switch($pannel->getLayout()){
+		switch($this->getLayout()){
 			case "show":
 			default:
 				
-				switch($pannel->getView()){
+				switch($this->getView()){
 					case "error":
 					default:
-						$pannel->setModule('"{1}"', $pannel->showBlocks());
-						$pannel->setModule('"{2}"', $pannel->showError('tools'));
-						$pannel->setModule('"{3}"', $pannel->showError('operation'));
-						$pannel->setModule('"{4}"', $pannel->showError('content'));
+						$this->setModule('"{1}"', $this->showBlocks());
+						$this->setModule('"{2}"', $this->showError('tools'));
+						$this->setModule('"{3}"', $this->showError('operation'));
+						$this->setModule('"{4}"', $this->showError('content'));
 						break;
 				}
 				break;
 		}
+	}
+	
+	/** COMPILING ADMIN PANEL */
+	public static function _assembly($data = array(), $caller = null){
+		if($caller == null)return false;
+		return $caller->local['bPanel']->assembly();
+	}
+	
+	public static function _controller($data = array(), $caller = null){
+		if($caller == null)return false;
+		return $caller->local['bPanel']->controller($data);
 	}
 	
 	

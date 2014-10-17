@@ -7,7 +7,7 @@ class bInclude__bPanel extends bBlib{
 		$this->version = '1.0.0';
 	}
 	
-	public function _controller($data = array(), $caller = null){
+	public static function _controller($data = array(), $caller = null){
 		$block = $caller;
 		$pannel = $caller->bPanel;
 		$tunnel = $block->getTunnel();		
@@ -58,12 +58,12 @@ class bInclude__bPanel extends bBlib{
 	
 	
 	
-	public function _disableCache($data = array(), $caller = null){
+	public static function _disableCache($data = array(), $caller = null){
 		if($caller == null){return;}
 		return $caller->_setConfig(get_class($caller), array('disableCache'=>true), array('group'=>'blib', 'correct'=>true));
 	}
 	
-	public function _enableCache($data = array(), $caller = null){
+	public static function _enableCache($data = array(), $caller = null){
 		if($caller == null){return;}
 		return $caller->_setConfig(get_class($caller), array('disableCache'=>false), array('group'=>'blib', 'correct'=>true));
 	}

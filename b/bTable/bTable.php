@@ -25,7 +25,7 @@ class bTable extends bBlib{
 			$this->_setSession($this->name, $data);
 			
 		/** ajax */
-		}else if($data['name']){
+		}else if(isset($data['name'])){
 			
 			$this->name = $data['name'];
 			$data = $this->_getSession($this->name);
@@ -77,7 +77,8 @@ class bTable extends bBlib{
 	
 	public function setMeta($data){
 		$tunnel = $this->getTunnel();
-		$tunnelPage = ($tunnel['page'])?$tunnel['page']:array();
+		bBlib::extend($tunnel, 'page', array());
+		$tunnelPage = $tunnel['page'];
 		$page = array_merge(array('number'=>0, 'rows'=>20, 'count'=>0, 'paginator'=>10), $data['page'], $tunnelPage);
 		
 		$Q = $this->query;
@@ -106,9 +107,9 @@ class bTable extends bBlib{
 		return array('block'=>__class__, 'tunnel'=>$this->blockTunnel, 'name'=>$this->name, 'meta'=>$this->getMeta(), 'content'=>$result->fetchAll(PDO::FETCH_ASSOC));
 	}
 
-	public function _getTable($data = array(), $caller = null){
-		if($caller)return $caller->bTable->getTable($data);
-		return $this->getTable();
+	public static function _getTable($data = array(), $caller = null){
+		if($caller == null)return;
+		return $caller->bTable->getTable($data);
 	}
 	
 }

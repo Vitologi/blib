@@ -4,6 +4,8 @@
 	overflow: hidden;}
 	.bSlider__wrapper{}
 	.bSlider__slide{}
+	.bSlider__paginator{}
+	.bSlider__page{}
 	
 	.bSlider_type_horizontal{}
 	.bSlider_type_horizontal .bSlider__wrapper{
@@ -16,4 +18,22 @@
 		 transition: margin-left 1s ease-out 0.5s;}
 	.bSlider_type_horizontal .bSlider__slide{
 		float: left;}
-	
+	.bSlider_type_horizontal .bSlider__paginator{
+		clear: both;
+		display:block;
+		margin-top:50px;}
+	.bSlider_type_horizontal .bSlider__page{
+		display: inline-block;
+		margin: 10px;
+		width: 100px;
+		max-width: 10%;
+		cursor: pointer;
+		height: 20px;
+		background-color: rgb(228, 228, 228);
+		-webkit-transition: background-color 1s ease;
+		 -moz-transition: background-color 1s ease;
+		 -o-transition: background-color 1s ease;
+		 transition: background-color 1s ease;}
+	.bSlider_type_horizontal .bSlider__page:hover,
+	.bSlider_type_horizontal .bSlider__page_active{
+		background-color: rgb(167, 167, 167);}

@@ -213,6 +213,7 @@ abstract class bBlib{
 		$folder =  opendir($path);
 		while($file = readdir($folder)){
 			if(preg_match('/\w*.(\w+).dev$/', $file, $matches)){
+				if(!isset($stack[$matches[1]]))$stack[$matches[1]]='';
 				$stack[$matches[1]] .= file_get_contents($path.$file);
 				continue;
 			}

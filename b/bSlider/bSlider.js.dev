@@ -30,13 +30,14 @@
 				this.children.bSlider__paginator[0].show(id);
 			},
 			'onmouseover':function(){
-				console.log('over');
 				this.over = true;
 			},
 			'onmouseout':function(){
-				console.log('out');
 				this.over = false;
-			}
+			},
+			'_onRemove':[function(){
+				window.clearInterval(this.interval);
+			}]
 		}
 	);
 	

@@ -4,19 +4,13 @@ defined('_BLIB') or die;
 class bDatabase extends bBlib{	
 	
 	private static $structures = array();
-	private static $pdo = null;
-	private static $db = array(
-		'host'=>'localhost',
-		'user'=>'root',
-		'password'=>'',
-		'database'=>'test'
-	);
+	private static $connections = null;
+	private $db = null;
+	private $block;
 	
 	private static function setStructure($block){
 		if(array_key_exists($block, bDatabase::$structures))return;
-		
 		$path = bBlib::path($block.'__'.__class__.'_install','php');
-		
 		$install = (file_exists($path))?require_once($path):null;
 
 		if($install !== null){
@@ -44,21 +38,36 @@ class bDatabase extends bBlib{
 		);		
 	}	
 	
-	
-	private $block;
-	public function getBlock(){return $this->block;}
+	private static function getDb($connect = 'default'){
+		
+		//connection check
+		if(!self::$connections){
+			self::$connections = require_once(bBlib::path(__class__.'__connect','php'));
+		}
+		
+		//connect config check
+		if(!isset(self::$connections[$connect])){
+			throw new Exception('Data base connection '.$connect.' is not find.');
+		}
+		
+		//create pdo check
+		if(!isset(self::$connections[$connect]['pdo'])){
+			$default = array('host'=>'', 'database'=>'', 'user'=>'', 'password'=>'');
+			$config = self::$connections[$connect];
+			
+			$db = bBlib::extend($default, $config);
+			$dsn = sprintf('mysql:host=%1$s;dbname=%2$s', $db['host'], $db['database']);
+			$pdo = new PDO($dsn, $db['user'], $db['password'], array(PDO::ATTR_PERSISTENT => true));
+			$pdo->query("SET NAMES utf8");
+			self::$connections[$connect]['pdo'] = $pdo;
+		}
+
+		return self::$connections[$connect]['pdo'];
+	}
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
-
-		if(!bDatabase::$pdo){
-			$db = bDatabase::$db;
-			$dsn = sprintf('mysql:host=%1$s;dbname=%2$s', $db['host'], $db['database']);
-			bDatabase::$pdo = new PDO($dsn, $db['user'], $db['password'], array(PDO::ATTR_PERSISTENT => true));
-			bDatabase::$pdo->query("SET NAMES utf8");
-		}
-			
-		$this->pdo = bDatabase::$pdo;
+		$this->db = self::getDb('default');
 	}
 
 	protected function input($data, $caller){
@@ -71,9 +80,6 @@ class bDatabase extends bBlib{
 	public function output(){
 		if($this->block)return array('bDatabase' => $this);
 	}
-
-	
-	
 	
 	private function parseFields($data){
 		$temp = '';
@@ -174,14 +180,20 @@ class bDatabase extends bBlib{
 		return ($temp!='')?substr($temp, 0, -3):$temp;		
 	}
 	
+	private function connect($connectName = 'default'){
+		$this->db = self::getDb($connectName);
+	}
+	
 	private function query($Q){//0_0 PRIVATE
 
 		$debug = isset($Q[1]);
 		$Q = $Q[0];
 		
+		$db = $this->db;
+		
 		//for native sql queries
 		if(is_string($Q)){
-			return $this->pdo->query($Q);
+			return $db->query($Q);
 		}
 		
 		//if isn't serialise queries
@@ -240,7 +252,7 @@ class bDatabase extends bBlib{
 						$full = array_pad($columns[$i], $intoLen, null);
 						
 						for($j=0; $j<$intoLen; $j++){
-							$full[$j] = ($full[$j] !== null)?$this->pdo->quote($full[$j]):'null';
+							$full[$j] = ($full[$j] !== null)?$db->quote($full[$j]):'null';
 						}
 						
 						$values .= sprintf(' (%1$s) ,', implode(',',$full));
@@ -252,7 +264,7 @@ class bDatabase extends bBlib{
 
 					foreach($columns as $columnName => $columnValue){
 						$into .= sprintf(' `%1$s` ,', $columnName);
-						$values .= sprintf(' %1$s ,', $this->pdo->quote($columnValue));
+						$values .= sprintf(' %1$s ,', $db->quote($columnValue));
 					}
 					
 					$into = sprintf('(%1$s)', substr($into, 0, -1));
@@ -277,14 +289,14 @@ class bDatabase extends bBlib{
 				
 				if(isset($columns[0]) && is_array($columns[0])){
 					foreach($columns as $value){
-						$value[1] = ($value[1] && mb_strtoupper($value[1])!=='NULL')?$this->pdo->quote($value[1]):'NULL';
+						$value[1] = ($value[1] && mb_strtoupper($value[1])!=='NULL')?$db->quote($value[1]):'NULL';
 						$value[2] = (isset($value[2]) && $value[2])?$value[2]:'=';
 						$value[3] = (isset($value[3]) && $value[3])?' OR ':' AND';
 						$where .= sprintf(' `%1$s`.`%2$s` %3$s %4$s %5$s', $table, $value[0], $value[2], $value[1], $value[3]);
 					}
 				}else{			
 					foreach($columns as $column => $value){
-						$value = ($value && mb_strtoupper($value)!=='NULL')?$this->pdo->quote($value):'NULL';
+						$value = ($value && mb_strtoupper($value)!=='NULL')?$db->quote($value):'NULL';
 						$where .= sprintf(' `%1$s`.`%2$s` = %3$s AND', $table, $column, $value);
 					}
 				}
@@ -320,7 +332,7 @@ class bDatabase extends bBlib{
 			foreach($query as $table => $columns){
 				
 				foreach($columns as $columnName => $columnValue){
-					$set .= sprintf(' `%1$s`.`%2$s` = %3$s,', $table, $columnName, $this->pdo->quote($columnValue));
+					$set .= sprintf(' `%1$s`.`%2$s` = %3$s,', $table, $columnName, $db->quote($columnValue));
 				}
 				
 				$update .= sprintf(' `%1$s`,', $table);
@@ -348,7 +360,7 @@ class bDatabase extends bBlib{
 		if(array_key_exists('select', $Q) && count($Q['select'])){
 			
 			if($temp!=''){
-				if(!$this->pdo->query($temp)){throw new Exception('Wrong sql syntax.'.$temp);}
+				if(!$db->query($temp)){throw new Exception('Wrong sql syntax.'.$temp);}
 				$temp='';
 			}
 			
@@ -382,9 +394,11 @@ class bDatabase extends bBlib{
 		}
 		
 
-		return ($debug)?$temp:$this->pdo->query($temp);			
+		return ($debug)?$temp:$db->query($temp);			
 
 	}
+	
+	public function getBlock(){return $this->block;}
 	
 	//methods for child blocks
 	public static function _install($data, $caller = null){
@@ -406,7 +420,8 @@ class bDatabase extends bBlib{
 	}
 	
 	public static function _lastInsertId($data, $caller = null){
-		return bDatabase::$pdo->lastInsertId();
+		$bDatabase = $caller->local['bDatabase'];
+		return ($bDatabase->connect)?$bDatabase->connect->lastInsertId():$bDatabase->pdo->lastInsertId();
 	}
 	
 	public static function _getStructure($data, $caller = null){
@@ -417,6 +432,13 @@ class bDatabase extends bBlib{
 	public static function _query($Q, $caller = null){
 		if($caller === null)return;
 		return $caller->bDatabase->query($Q);
+	}
+	
+	public static function _connect($Q, $caller = null){
+		if($caller === null)return;
+		$connectName = (isset($Q[0]) && is_string($Q[0]))?$Q[0]:'default';
+		$caller->bDatabase->connect($connectName);
+		return $caller;
 	}
 	
 }

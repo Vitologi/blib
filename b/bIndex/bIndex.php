@@ -5,14 +5,23 @@ class bIndex extends bBlib{
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
-		$this->parents = array(/* 'bRbac' */ 'bSystem', 'bDatabase', 'bConfig', 'bCssreset', 'bTemplate');
+		$this->parents = array(/* 'bRewrite', 'bRbac' */ 'bSystem', 'bDatabase', 'bConfig', 'bCssreset', 'bTemplate');
 	}
 	
 	protected function input($data, $caller){
 		//block`s config
+		$this->rewrite = true;
 		$this->cache = 0;
 		$this->defaultPage = 1;
 		$this->skeleton = "bIndex__skeleton_default";
+		
+		
+		if($this->rewrite){
+			$this->setParent('bRewrite', $data);
+		}
+		
+		
+		
 		
 		//page`s config
 		$default = array(
@@ -20,7 +29,7 @@ class bIndex extends bBlib{
 			"skeleton"		=> $this->skeleton,
 			"ajax"			=> false,
 			"template"		=> array(),
-			"pageId"		=> $this->defaultPage,
+			"pageId"		=> ($this->pageId?$this->pageId:$this->defaultPage),
 			"locked"		=> false,
 			"'{keywords}'"	=> "",
 			"'{description}'"=> "",

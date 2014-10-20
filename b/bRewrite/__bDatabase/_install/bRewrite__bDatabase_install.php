@@ -2,7 +2,7 @@
 defined('_BLIB') or die();
 return array(
 	'create'	=> array(
-		'bindex_rewrite' => array(
+		'brewrite' => array(
 			'fields'	=> array(
 				'id'		=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'Rewrite compliance'),
 				'url'	=> array('type'=> 'text', 'null'=>'NOT NULL', 'comment'=>'rewrite url'),

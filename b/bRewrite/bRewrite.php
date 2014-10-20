@@ -1,23 +1,27 @@
 <?php
 defined('_BLIB') or die;
 
-class bIndex_rewrite extends bBlib{	
+class bRewrite extends bBlib{	
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
 		$this->parents = array('bSystem', 'bDatabase');
 	}
-
-	public function getData($data, $caller = null){
+	
+	protected function input($data, $caller){
 		
+	}
+
+	
+	public function output(){
 		$url = parse_url($_SERVER['REQUEST_URI']);
 		
 		$Q = array(
 			'select' => array(
-				'bindex_rewrite' => array('data')
+				'brewrite' => array('data')
 			),
 			'where' => array(
-				'bindex_rewrite' => array(
+				'brewrite' => array(
 					'url' =>  $url['path']
 				)
 			)
@@ -27,10 +31,8 @@ class bIndex_rewrite extends bBlib{
 		$row = $result->fetch();
 		$rewrite = (array)json_decode($row['data'], true);
 
-		return array(
-			'output'=>array_merge($data['input'][0], $rewrite)
-		);
+		$this->rewrite = $rewrite;
+		return $this->rewrite;
 	}
-	
 
 }

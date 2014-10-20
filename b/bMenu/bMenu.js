@@ -100,6 +100,11 @@
 					if(concurents[key]===self)continue;
 					concurents[key].reset();
 				}
+			},
+			'resetAll':function(){
+				var block = this.block,
+					items = block.children.bMenu__item;
+				for(key in items)items[key].reset();
 			}
 		}
 	);
@@ -131,6 +136,7 @@
 						'success':function(data){
 							self.setLocation();
 							blib('body').html(blib.build(data));
+							self.parent.resetAll();							
 							self.animate();
 							self.rollUp();
 							self.rollUpOther();

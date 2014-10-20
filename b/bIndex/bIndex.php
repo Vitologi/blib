@@ -79,9 +79,9 @@ class bIndex extends bBlib{
 	}
 	
 	public function _install($data = array(), $caller = null){
-		if($caller !== null){return $caller->local['bDatabase']->install;}
+		if($caller !== null){return bDatabase::_install($data, $caller);};
 		$this->_setConfig('bIndex', $this->_getDefaultConfig(), array('group'=>'blib'));
 		$this->_setConfig('uncategorised', $this->_getDefaultConfig('item'));
-		return $this->local['bDatabase']->install;
+		return bDatabase::_install($data, $this);;
 	}
 }

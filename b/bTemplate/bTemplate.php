@@ -170,9 +170,9 @@ class bTemplate extends bBlib{
 	
 	
 	public function _install($data = array(), $caller = null){
-		if($caller !== null){return $caller->local['bDatabase']->install;}
+		if($caller !== null){return bDatabase::_install($data, $caller);};
 		$this->_setConfig('bTemplate', $this->_getDefaultConfig('block'), array('group'=>'blib', 'correct'=>false));
-		return $this->local['bDatabase']->install;
+		return bDatabase::_install($data, $this);;
 	}
 	
 	private function getTemplate($data){

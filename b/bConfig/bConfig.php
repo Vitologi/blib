@@ -186,7 +186,8 @@ class bConfig extends bBlib{
 	public static function _setConfig($data, $caller = null){
 		if($caller == null)return false;
 		$data[1] = (array)$data[1];
-		if(!$data[2]['group']){$data[2]['group'] = get_class($caller);}
+		if(!isset($data[2])){$data[2] = array();}
+		if(!isset($data[2]['group'])){$data[2]['group'] = get_class($caller);}
 		return $caller->local['bConfig']->setConfig($data[0], $data[1], $data[2]);
 	}
 	

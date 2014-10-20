@@ -85,7 +85,15 @@ class bDatabase extends bBlib{
 		$temp = '';
 		
 		foreach($data as $key => $value){
-			
+			$default = array(
+				'type'=> 'INT(10)',
+				'null'=> 'NULL',
+				'extra'=>'',
+				'comment'=>'',
+				'default'=>null
+			);
+			$value = bBlib::extend($default, $value);
+				
 			$type = is_string($value['type'])?$value['type']:'INT(10)';
 			$null = is_string($value['null'])?$value['null']:'NULL';
 			$extra = is_string($value['extra'])?$value['extra']:'';
@@ -98,7 +106,7 @@ class bDatabase extends bBlib{
 				if($upper === 'NULL' or $upper === 'CURRENT_TIMESTAMP' or $upper === 'FALSE'){
 					$default = sprintf(' DEFAULT %1$s', $upper);
 				}else{
-					$default = sprintf(' DEFAULT %1$s', $this->pdo->quote($value['default']));
+					$default = sprintf(' DEFAULT %1$s', $this->db->quote($value['default']));
 				}
 			}else{
 				$default ='';
@@ -197,7 +205,7 @@ class bDatabase extends bBlib{
 		}
 		
 		//if isn't serialise queries
-		if(!is_array($Q)){ throw new Exception('Trying execute wrong sql query.');}
+		if(!is_array($Q)){throw new Exception('Trying execute wrong sql query.');}
 		
 		$temp = '';
 		
@@ -210,6 +218,15 @@ class bDatabase extends bBlib{
 		if(array_key_exists('create', $Q) && count($Q['create'])){
 			
 			foreach($Q['create'] as $key => $value){
+				$default = array(
+					'fields'=> array(),
+					'foreign'=>array(),
+					'engine'=>'MyISAM',
+					'primary'=>array(),
+					'charset'=>'utf8',
+					'collate'=>'utf8_general_ci'
+				);
+				$value = bBlib::extend($default, $value);
 				
 				$tableName = $key;
 				$foreing = (is_array($value['foreign']) && (strtolower($value['engine'])=='innodb'))?$this->parseForeign($value['foreign'], $value['fields']):'';
@@ -420,8 +437,8 @@ class bDatabase extends bBlib{
 	}
 	
 	public static function _lastInsertId($data, $caller = null){
-		$bDatabase = $caller->local['bDatabase'];
-		return ($bDatabase->connect)?$bDatabase->connect->lastInsertId():$bDatabase->pdo->lastInsertId();
+		$db = $caller->local['bDatabase']->db;
+		return $db->lastInsertId();
 	}
 	
 	public static function _getStructure($data, $caller = null){

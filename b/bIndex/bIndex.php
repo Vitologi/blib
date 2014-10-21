@@ -42,11 +42,8 @@ class bIndex extends bBlib{
 
 	
 	public function output(){
-
-		if($this->data['locked']){
-			$this->setParent('bRbac', $this->data);
-			if(!$this->_checkAccess('unlock',$this->data['pageId']))return;
-		}
+		
+		if(!$this->hook('checkAccess', array($this->data)))return;
 		
 		$Q = array(
 			'select'	=> array(
@@ -84,6 +81,16 @@ class bIndex extends bBlib{
 	protected function getData($data){
 		return $data;
 	}
+	
+	protected function checkAccess($data){
+		if($data['locked']){
+			$this->setParent('bRbac', $data);
+			if(!$this->_checkAccess('unlock',$data['pageId']))return false;
+		}
+		return true;
+	}
+	
+	
 	
 	public function _install($data = array(), $caller = null){
 		if($caller !== null){return bDatabase::_install($data, $caller);};

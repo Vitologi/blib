@@ -222,7 +222,7 @@ class bDatabase extends bBlib{
 					'fields'=> array(),
 					'foreign'=>array(),
 					'engine'=>'MyISAM',
-					'primary'=>array(),
+					'primary'=>null,
 					'charset'=>'utf8',
 					'collate'=>'utf8_general_ci'
 				);

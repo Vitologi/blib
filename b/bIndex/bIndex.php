@@ -14,7 +14,8 @@ class bIndex extends bBlib{
 		if($this->rewrite)$this->setParent('bRewrite', $data);
 		
 		$this->cache = 0;
-		$this->pageId = 1;
+		$this->defaultPage = 1;
+		$this->pageId = $this->defaultPage;
 		$this->skeleton = "bIndex__skeleton_default";
 		
 		//input data

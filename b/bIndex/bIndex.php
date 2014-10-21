@@ -11,17 +11,15 @@ class bIndex extends bBlib{
 	protected function input($data, $caller){
 		//block`s config
 		$this->rewrite = true;
+		if($this->rewrite)$this->setParent('bRewrite', $data);
+		
 		$this->cache = 0;
-		$this->defaultPage = 1;
+		$this->pageId = 1;
 		$this->skeleton = "bIndex__skeleton_default";
 		
-		
-		if($this->rewrite){
-			$this->setParent('bRewrite', $data);
-		}
-		
-		
-		
+		//input data
+		$data = $this->hook('getData', array($data));
+		$this->local['pageId'] = isset($data['pageId'])?$data['pageId']:$this->pageId;
 		
 		//page`s config
 		$default = array(
@@ -29,15 +27,14 @@ class bIndex extends bBlib{
 			"skeleton"		=> $this->skeleton,
 			"ajax"			=> false,
 			"template"		=> array(),
-			"pageId"		=> ($this->pageId?$this->pageId:$this->defaultPage),
+			"pageId"		=> $this->pageId,
 			"locked"		=> false,
 			"'{keywords}'"	=> "",
 			"'{description}'"=> "",
 			"'{title}'"		=> ""			
 		);
-		$data = $this->hook('getData', array($data));
-		$config = $this->_getConfig(isset($data['pageId'])?$data['pageId']:$this->defaultPage);
-
+		
+		$config = $this->_getConfig($this->pageId);
 		$this->data = bBlib::extend($default, $data, $config);
 
 	}

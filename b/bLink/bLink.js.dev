@@ -20,6 +20,7 @@
 			this.before = data.before || [];
 			this.after = data.after || [];
 			this.invisible = data.invisible || false;
+			this.go = data.go || false;
 			
 			
 			this.template.attrs.href = this.link;
@@ -28,6 +29,9 @@
 				{'elem':'error'},
 				{'tag':'span', 'content':data.content}				
 			];
+			
+			if(this.go)this.onclick.call(this, {});
+			
 		},
 		{
 			'tag':'a'
@@ -132,9 +136,12 @@
 	blib.build.define(
 		{'block':'bLink', 'elem':'location'},
 		function(data){
-			var tunnel = blib.config('tunnel')||{},
+			var parent = this._static('bLink'),
+				tunnel = blib.config('tunnel')||{},
 				content = data.content,
 				key, item;
+			
+			if(data.link)parent.setCurloc(data.link);
 			
 			for(key in content){
 				item = content[key];
@@ -143,7 +150,7 @@
 
 			blib.tunnel(tunnel);
 			
-			this._static('bLink').setLocation();
+			parent.setLocation();
 			this.template = false;
 		}
 	);

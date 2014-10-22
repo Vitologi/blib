@@ -24,9 +24,11 @@ class bUser extends bBlib{
 
 		//for system
 		if($this->caller)return array('bUser'=>$bUser);
-
+	
 		//for template
-		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'content'=>$bUser->getLogin());
+		bBlib::extend($this->local['data'], 'mods', array());
+		bBlib::extend($this->local['data'], 'meta', array());
+		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'meta'=>$this->data['meta'], 'content'=>$bUser->getLogin());
 
 	}
 	

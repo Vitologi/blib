@@ -17,6 +17,13 @@ class bSession extends bBlib{
 	
 	protected function input($data, $caller){
 		$this->sessionType = false;
+		
+		//defaults
+		$this->expire = 0;
+		$this->path = '/';
+		$this->domen = '';
+		$this->secure = false;
+		$this->httponly = false;
 	}
 	
 	
@@ -27,15 +34,7 @@ class bSession extends bBlib{
 		switch($this->sessionType){
 			case "database":
 				
-				//defaults
-				$this->expire = 0;
-				$this->path = '/';
-				$this->domen = '';
-				$this->secure = false;
-				$this->httponly = false;
-				
-				
-				if(isset($_COOKIE) && $_COOKIE['bSession']){
+				if(isset($_COOKIE) && isset($_COOKIE['bSession'])){
 					$Q = array(
 						'select'=>array(
 							'bsession'=>array('value')
@@ -78,6 +77,8 @@ class bSession extends bBlib{
 						if(!ini_set('session.save_path', $this->storePath)){
 							throw new Exception('Canot set php session save path');
 						};
+						
+						ini_set ('session.cookie_lifetime', $this->expire);
 					}
 					
 					if(!session_start()){throw new Exception('Cannot use php session.');}; 
@@ -150,9 +151,62 @@ class bSession extends bBlib{
 		}
 	}
 	
-	public static function _clearSession(){
+	public static function _clearSession($data, bBlib $caller = null){
+		$bSession = $caller->local['bSession'];
 		bSession::$data = null;
-		session_destroy();
+		bSession::$singleton = null;
+		
+		switch($bSession->sessionType){
+			case "database":
+				unset($_COOKIE[__CLASS__]);
+				break;
+			
+			default:
+				unset($_COOKIE[session_name()]);
+				session_destroy();
+				session_start();
+				break;
+			
+		}
+		
+		
+	}
+	
+	public static function _updateSession($data, bBlib $caller = null){
+		$bSession = $caller->local['bSession'];
+		bBlib::extend($data, '0', array());
+		$bSession->local = bBlib::extend($bSession->local, $data[0]);
+		
+		switch($bSession->sessionType){
+			case "database":
+			
+				$expire = ($bSession->expire)?(time()+$bSession->expire):0;
+				setcookie('bSession', $bSession->id, $expire, $bSession->path, $bSession->domen, $bSession->secure, $bSession->httponly);
+				break;
+			
+			default:
+				
+				$session = $_SESSION;
+				unset($_COOKIE[session_name()]);
+				session_destroy();
+				
+				
+				if(!ini_set('session.save_path', $bSession->storePath)){
+					throw new Exception('Canot set php session save path');
+				};
+				
+				ini_set ('session.cookie_lifetime', $bSession->expire);
+				
+				if(!session_start()){throw new Exception('Cannot use php session.');}; 
+
+				$_SESSION = $session;
+				bSession::$data = $_SESSION[__class__];
+				bSession::$singleton = $bSession;
+				break;
+			
+		}
+		
+		
 	}
 	
 }

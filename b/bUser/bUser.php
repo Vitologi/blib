@@ -15,6 +15,7 @@ class bUser extends bBlib{
 	protected function input($data, $caller){
 		$this->data = $data;
 		$this->caller = $caller;
+		$this->expire = 604800;
 	}
 	
 	public function output(){
@@ -33,6 +34,7 @@ class bUser extends bBlib{
 		if(!bUser::$singleton){
 			$login = bBlib::extend(bBlib::$global['_request'], 'login', null);
 			$password = bBlib::extend(bBlib::$global['_request'], 'password', null);
+			$save = bBlib::extend(bBlib::$global['_request'], 'save', null);
 
 			//autentication
 			if($login){
@@ -53,6 +55,8 @@ class bUser extends bBlib{
 					$this->login = $login;
 					$this->id = $row['id'];
 					$this->config = $this->_getConfig($row['bconfig_id']);
+					
+					if($save == 'on')$this->_updateSession(array('expire'=>$this->expire));
 					
 					$this->_setSession('id', $this->id);
 					$this->_setSession('login', $this->login);
@@ -90,5 +94,6 @@ class bUser extends bBlib{
 		$this->_setSession();
 		unset(bBlib::$global['_request']['logout']);
 		bUser::$singleton = null;
+		$this->_clearSession();
 	}
 }

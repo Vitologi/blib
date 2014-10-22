@@ -7,6 +7,7 @@
 			
 			this.login = data.content || false;
 			
+			
 			if(this.login){
 				content = [
 					{"content":"Вы авторизованы как: "+this.login},
@@ -16,17 +17,25 @@
 				content = [
 					{"elem":"login"},
 					{"elem":"password"},
-					{"elem":"submit"}
+					{"content":[
+						{'tag':'label', 'attrs':{'style':'display:inline-block;'}, "content":[
+							{"elem":"save"},
+							{"tag":"span", "content":"запомнить"}
+						]},
+						{"elem":"submit"}
+					]}
 				];
 			}
 			
 			
 			this.template = data;
+			if(!('attrs' in this.template))this.template.attrs = {};
+			this.template.attrs.action = location.href;
 			this.template.content = content;
 
 		},
 		{
-			'tag':'form', 'attrs':{'method':'POST', 'action':'/', 'encoding':'application/x-www-form-urlencoded'}
+			'tag':'form', 'attrs':{'method':'POST', 'encoding':'application/x-www-form-urlencoded'}
 		}
 	);
 	
@@ -47,6 +56,16 @@
 		},
 		{
 			'tag':'input', 'attrs':{'type':'password', 'name':'password', 'placeholder':'Пароль'}
+		}
+	);
+	
+	blib.build.define(
+		{'block':'bUser', 'elem':'save'},
+		function(data){
+			
+		},
+		{
+			'tag':'input', 'attrs':{'type':'checkbox', 'name':'save'}
 		}
 	);
 	

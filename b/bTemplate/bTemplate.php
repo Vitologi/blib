@@ -164,7 +164,8 @@ class bTemplate extends bBlib{
 			}
 		}
 		
-		return str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
+		$temp = str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
+		return preg_replace('/"{(\d+)}"/', '{}', $temp);
 	}
 	
 	

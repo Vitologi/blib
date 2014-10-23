@@ -221,10 +221,11 @@
 				key = (params.prefix)?params.prefix+'['+i+']':i;
 				if(is(obj[i],['array','object'])){
 					url += object2url(obj[i],{'prefix':key, 'deep':true, 'length':params.length});
-				}else if(!params.length || obj[i].length < params.length){
+				}else if(params.length && is(obj[i], 'string') && obj[i].length > params.length){
+					/* false */
+				}else{
 					url += '&'+key+'='+obj[i];
 				}
-				//url += (is(obj[i],['array','object']))?object2url(obj[i],{'prefix':key, 'deep':true, 'length':params.length}):(obj[i].length<params.length'&'+key+'='+obj[i]);
 			}
 			
 			return (params.deep)?url:url.substr(1,url.length);
@@ -444,20 +445,20 @@
 				url			= param['url'] || "/",
 				headers		= param['headers'] || ["X-Requested-With","XMLHttpRequest"],
 				head 		= getElement(['head'])[0],
-				jsonpElement, temp, key, i, j, len, fileName;
+				jsonpElement, temp, key, i, j, len, fileName, xhr, successRequest;
 			
 			if(config['tunnel']['_files']){
 				files = config['tunnel']['_files'];
 				config['tunnel']['_files'] = null;
 			}
 			data['_tunnel'] = config['tunnel'];
-			config['tunnel'] = {};
 			
 			//exception for jsonp method
 			if(type==='JSONP'){
 				temp = "jsonp"+salt++;
 				
 				Blib.ajax[temp] = function(){
+					config['tunnel'] = {};
 					success.apply(null, arguments);
 					delete Blib.ajax[temp];
 				}
@@ -504,8 +505,6 @@
 				data = object2url(data);
 			}
 			
-
-			var xhr;
 			if (window.XMLHttpRequest) xhr = new XMLHttpRequest();
 			else if (window.ActiveXObject) {
 				try {
@@ -519,10 +518,18 @@
 
 			xhr.onreadystatechange = function(){
 				if (xhr.readyState === 4 && xhr.status === 200) {
+					successRequest = true;
 					try{
 						temp = (dataType==="json")?JSON.parse(xhr.responseText):xhr.responseText;
-					}catch(e){Blib.exception("Cannot parse sending ajax-data.", e);}
-					success(temp);
+					}catch(e){
+						successRequest = false;
+						Blib.exception("Cannot parse sending ajax-data.", e);
+					}
+					
+					if(successRequest){
+						config['tunnel'] = {};
+						success(temp);						
+					}
 				}
 			}
 			

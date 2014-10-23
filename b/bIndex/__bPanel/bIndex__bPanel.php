@@ -19,6 +19,7 @@ class bIndex__bPanel extends bBlib{
 		$defaultLocation = array(
 			'block'=>'bLink',
 			'elem'=>'location',
+			'visible'=>true,
 			'content'=> array(
 				'bPanel' => array('controller'=>'bIndex'),
 				'bIndex' => array('layout'=>'show', 'view'=>'list')

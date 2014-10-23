@@ -22,10 +22,8 @@
 					'mods':{'style':'button', 'position':'vertical'},
 					'ajax':true,
 					'tunnel':tunnel,
-					'content':key,
-					'before':[function(){
-						this.data = {'template':blib('.bTemplate')[0].blib.template.template};
-					}]
+					'visible':true,
+					'content':key
 				});
 			}
 			
@@ -53,10 +51,8 @@
 				'ajax':ajax,
 				'uphold':uphold,
 				'tunnel':tunnel,
-				'content':data.content,
-				'before':[function(){
-					this.data = {'template':blib('.bTemplate')[0].blib.template.template};
-				}]
+				'visible':true,
+				'content':data.content
 			}];
 		}
 	);

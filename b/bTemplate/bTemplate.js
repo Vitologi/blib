@@ -7,12 +7,14 @@ blib.build.define(
 		if(!singleton || (singleton.template.template['0'] !== data.template['0'])){
 			if(singleton)singleton._removeChildren();
 			this.template = data;
-			this.constructor.prototype.singleton = this;			
+			this.constructor.prototype.singleton = this;
+			blib.tunnel({'bTemplate':data.template});
 		}else{
 			singleton.chunk = {};
 			singleton.setChunk(data);
 			singleton.compare(singleton.template.template, data.template);
 			this.template = false;
+			blib.tunnel({'bTemplate':singleton.template.template});
 		}
 		
 	},

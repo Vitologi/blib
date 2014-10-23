@@ -19,6 +19,7 @@ class bMenu__bPanel extends bBlib{
 		$defaultLocation = array(
 			'block'=>'bLink',
 			'elem'=>'location',
+			'visible'=>true,
 			'content'=> array(
 				'bPanel' => array('controller'=>'bMenu'),
 				'bMenu' => array('layout'=>'show', 'view'=>'list')

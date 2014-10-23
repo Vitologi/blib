@@ -1,7 +1,10 @@
 (function(){
 	
 	var config = {
-			'curloc':window.location.pathname
+			'curloc':window.location.pathname,
+			'dontShow':{
+				'bTemplate':true
+			}
 		},
 		storage = {};
 	
@@ -19,7 +22,7 @@
 			this.uphold = data.uphold || [];
 			this.before = data.before || [];
 			this.after = data.after || [];
-			this.invisible = data.invisible || false;
+			this.visible = data.visible || false;
 			this.go = data.go || false;
 			
 			
@@ -87,11 +90,8 @@
 				
 				blib.tunnel(self.tunnel);
 				
-										
-				if(!self.invisible){
-					self.setCurloc(self.link);
-					self.setLocation();
-				}
+				self.setCurloc(self.link);
+				self.setLocation();
 				
 				blib.ajax({
 					url:self.link,
@@ -108,11 +108,19 @@
 				});
 
 			},
-			'setLocation':function(){
+			'dontShow':{
+				'bTemplate':true
+			},
+			'setLocation':function(params){
 				var self = this,
-					tunnel;
+					dontShow = config.dontShow,
+					key, temp, tunnel;
 				
-				tunnel = "?"+blib.object2url({'_tunnel':blib.config('tunnel')}, {'length':20});
+				if((params && params.visible) || self.visible){
+					temp = blib.config('tunnel');
+					for(key in dontShow)delete temp[key];
+					tunnel = "?"+blib.object2url({'_tunnel':temp}, {'length':20});
+				}
 				
 				if(history.pushState){
 					history.pushState({}, location.host , self.getCurloc());
@@ -141,6 +149,8 @@
 				content = data.content,
 				key, item;
 			
+			this.visible = data.visible || false;
+			
 			if(data.link)parent.setCurloc(data.link);
 			
 			for(key in content){
@@ -150,7 +160,7 @@
 
 			blib.tunnel(tunnel);
 			
-			parent.setLocation();
+			parent.setLocation({'visible':this.visible});
 			this.template = false;
 		}
 	);

@@ -119,19 +119,17 @@
 		false,
 		{
 			'onclick':function(e){
-				var self = this,
-					template;
+				var self = this;
 					
 				if(!self.link || blib.is(self.link,"null")){
 					e.preventDefault ? e.preventDefault() : e.returnValue = false;
 					self.animate();
 					return false;
 				}else{
-					template = blib('.bTemplate')[0].blib.template.template;
 					
 					blib.ajax({
 						url:self.link,
-						data:{'ajax':true, 'template':template},
+						data:{'ajax':true},
 						dataType:'json',
 						'success':function(data){
 							self.setLocation();

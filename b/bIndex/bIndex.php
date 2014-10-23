@@ -27,7 +27,6 @@ class bIndex extends bBlib{
 			"cache"			=> $this->cache,
 			"skeleton"		=> $this->skeleton,
 			"ajax"			=> false,
-			"template"		=> array(),
 			"pageId"		=> $this->pageId,
 			"locked"		=> false,
 			"'{keywords}'"	=> "",
@@ -62,8 +61,7 @@ class bIndex extends bBlib{
 		$data["'{description}'"] = $this->data["'{description}'"];
 		$data["'{title}'"] = $this->data["'{title}'"];
 		$template = json_decode($row['template'], true);
-		
-		$data["'{template}'"] = $this->_getTemplateDiff($this->data['template'], $template);
+		$data["'{template}'"] = $this->_getTemplateDiff(false, $template);
 		
 		if($this->data['ajax']){
 			header('Content-Type: application/json; charset=UTF-8');

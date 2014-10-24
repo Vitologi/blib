@@ -10,7 +10,10 @@
 			
 			if(this.login){
 				content = [
-					{"content":"Вы авторизованы как: "+this.login},
+					{"content":[
+						{"tag":"span", "content":"Вы авторизованы как: "},
+						{"elem":"name", "tag":"span", "content":this.login}
+					]},
 					{"elem":"logout"}
 				];
 			}else{

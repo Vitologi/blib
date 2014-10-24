@@ -23,8 +23,7 @@ class bRbac extends bBlib{
 	public function output(){
 		
 		$oldId = $this->_getSession('userId');
-		$newId = $this->user->getId();
-
+		$newId = $this->user->id;
 		if($oldId != null && ($oldId == $newId) && bRbac::$singleton == null){
 			$this->operations = $this->_getSession('operations');
 			$this->parseOperation($this->operations);

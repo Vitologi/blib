@@ -3,6 +3,8 @@
 	.bUser__password{}
 	.bUser__submit{}
 	.bUser__logout{}
+	.bUser__name{}
+	.bUser__save{}
 	
 	.bUser_style_default{
 		margin:6px;

@@ -4,8 +4,10 @@ defined('_BLIB') or die;
 class bUser extends bBlib{	
 	
 	private static $singleton;
-	private $id;
-	private $login;
+	
+	protected function getSingleton(){return bUser::$singleton;}
+	protected function setSingleton($value){bUser::$singleton = $value;}
+	
 	
 	protected function inputSelf(){
 		$this->version = '1.0.0';
@@ -20,19 +22,18 @@ class bUser extends bBlib{
 	
 	public function output(){
 		if(array_key_exists('logout', $this->_request))$this->logout();
-		$bUser = $this->getSingleton();
+		$bUser = $this->hook('createSingleton',array());
 
 		//for system
 		if($this->caller)return array('bUser'=>$bUser);
 	
 		//for template
-		bBlib::extend($this->local['data'], 'mods', array());
-		bBlib::extend($this->local['data'], 'meta', array());
-		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'meta'=>$this->data['meta'], 'content'=>$bUser->getLogin());
+		$this->local['data'] = bBlib::extend($this->local['data'], array('mods'=>array(), 'attrs'=>array(), 'meta'=>array()));
+		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'attrs'=>$this->data['attrs'], 'meta'=>$this->data['meta'], 'content'=>$bUser->login);
 
 	}
 	
-	private function getSingleton(){
+	protected function createSingleton(){
 		if(!bUser::$singleton){
 			$login = bBlib::extend(bBlib::$global['_request'], 'login', null);
 			$password = bBlib::extend(bBlib::$global['_request'], 'password', null);
@@ -83,15 +84,7 @@ class bUser extends bBlib{
 		
 		return bUser::$singleton;
 	}
-	
-	protected function getLogin(){
-		return $this->login;
-	}
-	
-	public function getId(){
-		return $this->id;
-	}
-	
+
 	protected function logout(){
 		$this->_setSession();
 		unset(bBlib::$global['_request']['logout']);

@@ -897,7 +897,7 @@
 				return (name in config.block)?config.block[name].prototype:baseProto;
 			},
 			'_onRemove':[],
-			'_onSetMode':{/* 'js':{'init':function(){alert('block inited');}} */ },
+			'_onSetMode':{ /* 'init':function(){console.log('block inited');} */ },
 			'_setTemplate':function(tmpl, reset){
 				if(reset){ this.template = tmpl;}
 				extend(true, this.template, tmpl);
@@ -1001,7 +1001,7 @@
 				if(!this.template.mods)this.template.mods = {};
 				this.template.mods[mode] = value;
 				
-				if(is(handler, 'function')){
+				if(value && is(handler, 'function')){
 					handler.call(this);
 				};
 			},
@@ -1240,19 +1240,7 @@
 			//оформляем классом
 			if(currentClass){result.className = currentClass};
 			
-			//устанавливаем модификаторы
-			for (key in data.mods) {
-				if (data.mods.hasOwnProperty(key)) {
-					obj._setMode(key, data.mods[key]);
-				}
-			}
 			
-			//задаем атрибуты
-			for (key in data.attrs) {
-				if (data.attrs.hasOwnProperty(key)) {
-					obj._attr(key, data.attrs[key]);
-				}
-			}
 			
 			//проверяем есть ли вложенность и рекурсивно обрабатываем если есть
 			switch(is(data['content'])){
@@ -1272,7 +1260,21 @@
 					}catch(e){Blib.exception("Can`t set content("+data['content']+") for "+(currentClass||"default")+" element.")}
 				break;
 			}
-
+			
+			//устанавливаем модификаторы
+			for (key in data.mods) {
+				if (data.mods.hasOwnProperty(key)) {
+					obj._setMode(key, data.mods[key]);
+				}
+			}
+			
+			//задаем атрибуты
+			for (key in data.attrs) {
+				if (data.attrs.hasOwnProperty(key)) {
+					obj._attr(key, data.attrs[key]);
+				}
+			}
+			
 			//если есть контейнер то добавляем в него
 			if(container){
 				Blib(data['container']).html(result);

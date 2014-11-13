@@ -25,7 +25,7 @@
 			this.visible = data.visible || false;
 			this.go = data.go || false;
 			
-			
+			this.template.attrs = data.attrs || {};
 			this.template.attrs.href = this.link;
 			this.template.mods = data.mods || {};
 			this.template.content = [

@@ -15,26 +15,26 @@ class bIndex extends bBlib{
 		
 		$this->cache = 0;
 		$this->defaultPage = 1;
-		$this->pageId = $this->defaultPage;
+		$this->pageNo = $this->defaultPage;
 		$this->skeleton = "bIndex__skeleton_default";
 		
 		//input data
 		$data = $this->hook('getData', array($data));
-		$this->local['pageId'] = isset($data['pageId'])?$data['pageId']:$this->pageId;
+		$this->local['pageNo'] = isset($data['pageNo'])?$data['pageNo']:$this->pageNo;
 		
 		//page`s config
 		$default = array(
 			"cache"			=> $this->cache,
 			"skeleton"		=> $this->skeleton,
 			"ajax"			=> false,
-			"pageId"		=> $this->pageId,
+			"pageNo"		=> $this->pageNo,
 			"locked"		=> false,
 			"'{keywords}'"	=> "",
 			"'{description}'"=> "",
 			"'{title}'"		=> ""			
 		);
 		
-		$config = $this->_getConfig($this->pageId);
+		$config = $this->_getConfig($this->pageNo);
 		$this->data = bBlib::extend($default, $data, $config);
 
 	}
@@ -49,11 +49,11 @@ class bIndex extends bBlib{
 				'bindex' => array('template', 'bcategory_id')
 			),
 			'where' => array(
-				'bindex' => array('id'=>$this->data['pageId'])
+				'bindex' => array('id'=>$this->data['pageNo'])
 			)
 		);
 		
-		if(!$result = $this->_query($Q)){throw new Exception('Can`t get chousen page ('.$this->data['pageId'].').');}
+		if(!$result = $this->_query($Q)){throw new Exception('Can`t get chousen page ('.$this->data['pageNo'].').');}
 		$row = $result->fetch();
 		
 		
@@ -83,7 +83,7 @@ class bIndex extends bBlib{
 	protected function checkAccess($data){
 		if($data['locked']){
 			$this->setParent('bRbac', $data);
-			if(!$this->_checkAccess('unlock',$data['pageId']))return false;
+			if(!$this->_checkAccess('unlock',$data['pageNo']))return false;
 		}
 		return true;
 	}

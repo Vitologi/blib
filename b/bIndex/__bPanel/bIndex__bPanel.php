@@ -131,7 +131,7 @@ class bIndex__bPanel extends bBlib{
 		
 		$caller->setParent('bTable', array(
 			'name'	=> 'indexTable',
-			'query'	=> array('select'=>array('bIndex'=>array('id', 'template', 'bcategory_id'))),
+			'query'	=> array('select'=>array('bIndex'=>array('id', 'template', 'bcategory_id')/*, 'bRewrite'=>array('id', 'template', 'bcategory_id')*/)),
 			'meta'	=> array(
 				'processor'	=> false,
 				'position'=>array('id', 'template', 'bcategory_id'),

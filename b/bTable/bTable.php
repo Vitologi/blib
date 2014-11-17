@@ -59,9 +59,14 @@ class bTable extends bBlib{
 		$page = $this->meta['page'];
 		$number = $page['number'];
 		$rows = $page['rows'];
+		$limit = " LIMIT ".($number*$rows)." , ".$rows;
 		
 		$Q = $this->query;
-		$Q['sql']= " LIMIT ".($number*$rows)." , ".$rows;
+		if(is_string($Q)){
+			$Q .= $limit;
+		}else{
+			$Q['sql'] = $limit;
+		}
 		return $Q;
 	}
 	

@@ -128,19 +128,19 @@ class bIndex__bPanel extends bBlib{
 	public static function _showList($data = array(), $caller = null){
 		if($caller == null){return;}
 		
-		
 		$caller->setParent('bTable', array(
 			'name'	=> 'indexTable',
-			'query'	=> array('select'=>array('bIndex'=>array('id', 'template', 'bcategory_id')/*, 'bRewrite'=>array('id', 'template', 'bcategory_id')*/)),
+			'query'	=> "SELECT  `bindex`.`id`, `bindex`.`template`, `bindex`.`bcategory_id`, `brewrite`.`url` FROM  `bindex` LEFT JOIN `brewrite` ON `brewrite`.`bindex_id` = `bindex`.`id`",
 			'meta'	=> array(
 				'processor'	=> false,
-				'position'=>array('id', 'template', 'bcategory_id'),
+				'position'=>array('id', 'template', 'bcategory_id', 'url'),
 				'keys'	=> array('id'),
 				'page'	=> array('rows'=>5),
 				'fields'	=> array(
 					'id'	=> array('title'=>'Ключевое поле', 'note'=>'Подле для хранения ключа таблицы', 'type'=>'text', 'mods'=>array('align'=>'center')),
 					'template'	=> array('title'=>'Шаблон', 'note'=>'Компановка шаблонов в страницу', 'type'=>'text'),
-					'bcategory_id'	=> array('title'=>'Категория', 'note'=>'Название категории к которой принадлежит страница', 'type'=>'text', 'mods'=>array('align'=>'center'))
+					'bcategory_id'	=> array('title'=>'Категория', 'note'=>'Название категории к которой принадлежит страница', 'type'=>'text', 'mods'=>array('align'=>'center')),
+					'url'	=> array('title'=>'Ссылка', 'note'=>'Ссылка на страницу', 'type'=>'text', 'mods'=>array('align'=>'center'))
 				)
 			)
 		));

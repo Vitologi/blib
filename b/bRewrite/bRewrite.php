@@ -18,7 +18,7 @@ class bRewrite extends bBlib{
 		
 		$Q = array(
 			'select' => array(
-				'brewrite' => array('pageno')
+				'brewrite' => array('bindex_id')
 			),
 			'where' => array(
 				'brewrite' => array(
@@ -28,9 +28,9 @@ class bRewrite extends bBlib{
 		);
 		
 		$result = $this->_query($Q);
-		$row = $result->fetch();
+		$row = ($result)?$result->fetch():array();
 
-		return isset($row['pageno'])?array('pageNo'=>$row['pageno']):array();
+		return isset($row['bindex_id'])?array('pageNo'=>$row['bindex_id']):array();
 	}
 
 }

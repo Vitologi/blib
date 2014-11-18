@@ -1,18 +1,26 @@
 (function(){
 	
+	var actions = {
+		'val':function(){
+			return this.dom.value;
+		}
+	}
+	
+	
 	blib.build.define(
 		{'block':'bUser'},
 		function(data){
-			var content;
+			var content,
+				_this = this;
 			
-			this.login = data.content || false;
+			_this.login = data.content || false;
 			
 			
-			if(this.login){
+			if(_this.login){
 				content = [
 					{"content":[
 						{"tag":"span", "content":"Вы авторизованы как: "},
-						{"elem":"name", "tag":"span", "content":this.login}
+						{"elem":"name", "tag":"span", "content":_this.login}
 					]},
 					{"elem":"logout"}
 				];
@@ -31,14 +39,51 @@
 			}
 			
 			
-			this.template = data;
-			if(!('attrs' in this.template))this.template.attrs = {};
-			this.template.attrs.action = location.href;
-			this.template.content = content;
+			
+			_this.template = data;
+			if(!blib.is(_this.template.attrs,'object'))_this.template.attrs = {};
+			_this.template.attrs.action = location.href;
+			_this.template.content = content;
 
 		},
 		{
 			'tag':'form', 'attrs':{'method':'POST', 'encoding':'application/x-www-form-urlencoded'}
+		},
+		{
+			'submit':function(){
+				var _this = this,
+					url = _this.template.attrs.action,
+					data = ( _this.login)?{'logout':true}:{
+						'login': _this.getLogin(),
+						'password': _this.getPassword()
+					},
+					temp;
+				
+				if(!_this.login && (temp = _this.getSave())) data.save = temp;
+				data.ajax = true;
+				
+				blib.ajax({
+					'url':url,
+					'data':data,
+					'dataType':'json',
+					'success':function(data){
+						console.log(data);
+						blib.build(data);
+					}
+				});
+			},
+			'getLogin':function(){
+				var _this = this;
+				return _this.children.bUser__login[0].val();
+			},
+			'getPassword':function(){
+				var _this = this;
+				return _this.children.bUser__password[0].val();
+			},
+			'getSave':function(){
+				var _this = this;
+				return _this.children.bUser__save[0].val();
+			}
 		}
 	);
 	
@@ -49,7 +94,8 @@
 		},
 		{
 			'tag':'input', 'attrs':{'type':'text', 'name':'login', 'placeholder':'Логин'}
-		}
+		},
+		actions
 	);
 
 	blib.build.define(
@@ -59,7 +105,8 @@
 		},
 		{
 			'tag':'input', 'attrs':{'type':'password', 'name':'password', 'placeholder':'Пароль'}
-		}
+		},
+		actions
 	);
 	
 	blib.build.define(
@@ -69,6 +116,11 @@
 		},
 		{
 			'tag':'input', 'attrs':{'type':'checkbox', 'name':'save'}
+		},
+		{
+			'val':function(){
+				return (this.dom.checked?this.dom.value:undefined);
+			}
 		}
 	);
 	
@@ -79,6 +131,12 @@
 		},
 		{
 			'tag':'input', 'attrs':{'type':'submit'}
+		},
+		{
+			'onclick':function(e){
+				e.preventDefault ? e.preventDefault() : e.returnValue = false;
+				this.block.submit();
+			}
 		}
 	);
 	
@@ -98,7 +156,7 @@
 		{
 			'onclick':function(e){
 				e.preventDefault ? e.preventDefault() : e.returnValue = false;
-				this.block.dom.submit();
+				this.block.submit();
 			}
 		}
 	);

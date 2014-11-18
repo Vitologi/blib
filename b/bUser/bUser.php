@@ -12,6 +12,7 @@ class bUser extends bBlib{
 	protected function inputSelf(){
 		$this->version = '1.0.0';
 		$this->parents = array('bSystem', 'bDatabase', 'bConfig', 'bSession');
+		$this->bTemplate__dynamic = true;
 	}
 	
 	protected function input($data, $caller){

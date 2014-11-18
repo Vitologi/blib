@@ -147,7 +147,7 @@
 			}
 
 			// Handle case when target is a string or something (possible in deep copy)
-			if ( !is(target, ['object','array']) && !is(target, 'function') ) {
+			if ( !is(target, ['object','array','function'])) {
 				target = {};
 			}
 
@@ -445,13 +445,16 @@
 				url			= param['url'] || "/",
 				headers		= param['headers'] || ["X-Requested-With","XMLHttpRequest"],
 				head 		= getElement(['head'])[0],
+				tunnel 		= !data.blib,
 				jsonpElement, temp, key, i, j, len, fileName, xhr, successRequest;
 			
-			if(config['tunnel']['_files']){
-				files = config['tunnel']['_files'];
-				config['tunnel']['_files'] = null;
+			if(tunnel){
+				if(config['tunnel']['_files']){
+					files = config['tunnel']['_files'];
+					config['tunnel']['_files'] = null;
+				}
+				data['_tunnel'] = config['tunnel'];
 			}
-			data['_tunnel'] = config['tunnel'];
 			
 			//exception for jsonp method
 			if(type==='JSONP'){
@@ -527,7 +530,7 @@
 					}
 					
 					if(successRequest){
-						config['tunnel'] = {};
+						if(tunnel)config['tunnel'] = {};
 						success(temp);						
 					}
 				}
@@ -889,10 +892,6 @@
 			'tree':{}
 		},
 		baseProto = {
-			'template':{
-				'attrs':{},
-				'mods':{}
-			},
 			'_static':function(name){
 				return (name in config.block)?config.block[name].prototype:baseProto;
 			},
@@ -1304,35 +1303,36 @@
 	
 		//заносим блок/елемент в коллекцию
 		define = function(name, factory, template, action){
-			if(!is(factory, 'function') && !is(name.block, 'string'))return;
+			var point = (name.elem)?name.block+'.'+name.elem:name.block;
 			
-			extend(true, factory.prototype, {'template':name}, baseProto);
+			if(!is(factory, 'function') && !is(name.block, 'string'))return;
+
+			extend(true, factory.prototype, {'template':name}, baseProto);	
 			if(is(template, 'object')){factory.prototype._setTemplate(template)};
 			if(is(action, 'object')){factory.prototype._setAction(action)};
 			
-			if(name.elem){ name.block = name.block+'.'+name.elem; }
-
-			return navigate(config.block, name.block, factory);
+			return navigate(config.block, point, factory);
 		};
 		
 		//переопределяем блок/елемент в коллекцию
 		redefine = function(name, factory, template, action){
-			if(!is(factory, 'function') && !is(name.block, 'string'))return;
-			if(name.elem){ name.block = name.block+'.'+name.elem; }
-			
-			var oldFactory = navigate(config.block, name.block),
-				newFactory = function(data){
-					extend(true, factory.prototype, new oldFactory(data));
+			if(!is(factory, 'function') || !is(name.block, 'string'))return;
+						
+			var point = (name.elem)?name.block+'.'+name.elem:name.block,
+				newProto = factory.prototype,
+				oldFactory = navigate(config.block, point),
+				newFactory = function(data){					
+					factory.prototype = extend(true, {}, newProto, new oldFactory(clone(data)));
 					if(is(template, 'object')){factory.prototype._setTemplate(template)};
 					if(is(action, 'object')){factory.prototype._setAction(action)};
-					return new factory(data);
+					return new factory(clone(data));
 				};
 
 			for(key in oldFactory){
 				newFactory[key] = oldFactory[key];
 			}
 			
-			return navigate(config.block, name.block, newFactory);
+			return navigate(config.block, point, newFactory);
 			
 		};
 	

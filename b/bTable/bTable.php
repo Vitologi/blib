@@ -26,11 +26,12 @@ class bTable extends bBlib{
 			
 		/** ajax */
 		}else if(isset($data['name'])){
-			
+			$page = $data['page'];
 			$this->name = $data['name'];
 			$data = $this->_getSession($this->name);
 			$this->caller = new $data['caller'](array());
 			
+			$data['meta']['page'] = $page;
 			$this->setQuery($data['query']);
 			$this->setMeta($data['meta']);
 			$this->blockTunnel = $data['caller'];
@@ -60,7 +61,6 @@ class bTable extends bBlib{
 		$number = $page['number'];
 		$rows = $page['rows'];
 		$limit = " LIMIT ".($number*$rows)." , ".$rows;
-		
 		$Q = $this->query;
 		if(is_string($Q)){
 			$Q .= $limit;

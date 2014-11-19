@@ -260,10 +260,8 @@
 				
 				block.page.number = this.id;
 				
-				blib
-				.tunnel({'bTable':{'page':block.page}})
-				.ajax({
-					'data':{'blib':'bTable','name':name},
+				blib.ajax({
+					'data':{'blib':'bTable','name':name, 'page':block.page},
 					'dataType':'json',
 					'success':function(data){
 						body.rebuilding(data);

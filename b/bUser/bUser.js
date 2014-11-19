@@ -67,7 +67,6 @@
 					'data':data,
 					'dataType':'json',
 					'success':function(data){
-						console.log(data);
 						blib.build(data);
 					}
 				});

@@ -139,7 +139,8 @@ class bTemplate extends bBlib{
 		
 		if(!$deep){
 			$deep = $list[0];
-			$template = '{"block":"bTemplate", "content":['.$this->stack[$list[0]].'] ,"template":'.json_encode($list,JSON_FORCE_OBJECT).' }';
+			$content = isset($this->stack[$deep])?$this->stack[$deep]:'';
+			$template = '{"block":"bTemplate", "content":['.$content.'] ,"template":'.json_encode($list,JSON_FORCE_OBJECT).' }';
 		}else{
 			$template = isset($this->stack[$list[0]])?$this->stack[$list[0]]:'';
 		}
@@ -193,7 +194,7 @@ class bTemplate extends bBlib{
 		
 		if(!is_array($data[0])){
 			$tunnel =  (array) $self->getTunnel();	
-			$data[0] = isset($tunnel['template'])?$tunnel['template']:false;
+			$data[0] = isset($tunnel['template'])?$tunnel['template']:array();
 		}
 		if(!is_array($data[1])){$data[1] = array($data[1]);}
 		$self->addTempStack($data[1]);

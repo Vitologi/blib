@@ -177,7 +177,7 @@
 						key = keys[j];
 						if(item[key] == this.content[key])count++;						
 					}
-					if(keyLen ==count)delete items[i];
+					if(keyLen ==count)items.splice(i,1);
 				}
 				
 				tunnel[block.tunnel]['items'] = items;

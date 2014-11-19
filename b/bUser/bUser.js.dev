@@ -10,40 +10,13 @@
 	blib.build.define(
 		{'block':'bUser'},
 		function(data){
-			var content,
-				_this = this;
+			var _this = this;
 			
 			_this.login = data.content || false;
-			
-			
-			if(_this.login){
-				content = [
-					{"content":[
-						{"tag":"span", "content":"Вы авторизованы как: "},
-						{"elem":"name", "tag":"span", "content":_this.login}
-					]},
-					{"elem":"logout"}
-				];
-			}else{
-				content = [
-					{"elem":"login"},
-					{"elem":"password"},
-					{"content":[
-						{'tag':'label', 'attrs':{'style':'display:inline-block;'}, "content":[
-							{"elem":"save"},
-							{"tag":"span", "content":"запомнить"}
-						]},
-						{"elem":"submit"}
-					]}
-				];
-			}
-			
-			
-			
 			_this.template = data;
 			if(!blib.is(_this.template.attrs,'object'))_this.template.attrs = {};
 			_this.template.attrs.action = location.href;
-			_this.template.content = content;
+			_this.template.content = _this.getContent(_this.login);
 
 		},
 		{
@@ -82,6 +55,32 @@
 			'getSave':function(){
 				var _this = this;
 				return _this.children.bUser__save[0].val();
+			},
+			'getContent':function(login){
+				var content;
+				
+				if(login){
+					content = [
+						{"content":[
+							{"tag":"span", "content":"Вы авторизованы как: "},
+							{"elem":"name", "tag":"span", "content":login}
+						]},
+						{"elem":"logout"}
+					];
+				}else{
+					content = [
+						{"elem":"login"},
+						{"elem":"password"},
+						{"content":[
+							{'tag':'label', 'attrs':{'style':'display:inline-block;'}, "content":[
+								{"elem":"save"},
+								{"tag":"span", "content":"запомнить"}
+							]},
+							{"elem":"submit"}
+						]}
+					];
+				}
+				return content;
 			}
 		}
 	);

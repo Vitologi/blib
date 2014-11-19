@@ -191,7 +191,10 @@ class bTemplate extends bBlib{
 		if($caller === null)return false;
 		$self = $caller->local['bTemplate'];
 		
-		if(!is_array($data[0]))$data[0] = (array) $self->getTunnel();		
+		if(!is_array($data[0])){
+			$tunnel =  (array) $self->getTunnel();	
+			$data[0] = isset($tunnel['template'])?$tunnel['template']:false;
+		}
 		if(!is_array($data[1])){$data[1] = array($data[1]);}
 		$self->addTempStack($data[1]);
 		$diff = $self->templateDiff($data[0],$data[1]);

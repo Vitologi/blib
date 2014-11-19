@@ -196,7 +196,7 @@ abstract class bBlib{
 		
 		$files = array();
 		$files = bBlib::compileGlue($block, $files);
-		$list = ($_list[$block]?$_list[$block]:array());
+		$list = (isset($_list[$block])?$_list[$block]:array());
 		
 		foreach($list as $value){
 			$files = bBlib::compileGlue($value, $files);

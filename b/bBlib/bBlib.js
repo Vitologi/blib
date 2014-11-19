@@ -891,6 +891,7 @@
 			'block': {},
 			'tree':{}
 		},
+		defaultBlock = function(){},
 		baseProto = {
 			'_static':function(name){
 				return (name in config.block)?config.block[name].prototype:baseProto;
@@ -1100,17 +1101,28 @@
 				}
 				
 				return result;
-			}
-		},
-		defaultBlock = function(){};
+			},
+			'constructor':defaultBlock
+		};
 
 	defaultBlock.prototype = baseProto;
-
+	
 	
 	Blib.config("bBuild", config);
 	Blib.config("_private.bBuild", true);	
 	
-	var /** применение отложенных заданий*/
+	var /** колбэки после получения ответа и перестройки дерева */
+		readyFunctions = [],
+		ready = function(obj){
+			if(is(obj, 'function')){return readyFunctions.push(obj);}
+			
+			for(var len = readyFunctions.length, i=0; i<len; i++){
+				readyFunctions[i](obj);
+			}
+			
+		},
+		
+		/** применение отложенных заданий*/
 		deferredTask = {},
 		applyDeferredTask = function(){
 			var set=false;
@@ -1128,6 +1140,7 @@
 			}
 			if(set){applyDeferredTask()};
 			deferredTask={};
+			ready();
 		},
 		
 		/** сборка серверного ответа  */
@@ -1168,7 +1181,7 @@
 					
 					factory.prototype.block = block;
 					factory.prototype.parent = parent;
-					obj = new factory(data);
+					obj = new factory(clone(data));
 					delete factory.prototype.block;
 					delete factory.prototype.parent;
 					
@@ -1178,7 +1191,6 @@
 					
 			}else{
 				obj = new defaultBlock();
-				obj.constructor = defaultBlock;
 				temp = (data['elem']?{'block':blockName, 'elem':data['elem']}:(data['block']?{'block':blockName}:{}));
 				obj.template = temp;		
 			
@@ -1289,17 +1301,6 @@
 	
 			
 		},
-		
-		/** колбэки после получения ответа и перестройки дерева */
-		readyFunctions = [],
-		ready = function(obj){
-			if(is(obj, 'function')){return readyFunctions.push(obj);}
-			
-			for(var len = readyFunctions.length, i=0; i<len; i++){
-				readyFunctions[i](obj);
-			}
-			
-		},
 	
 		//заносим блок/елемент в коллекцию
 		define = function(name, factory, template, action){
@@ -1307,7 +1308,7 @@
 			
 			if(!is(factory, 'function') && !is(name.block, 'string'))return;
 
-			extend(true, factory.prototype, {'template':name}, baseProto);	
+			extend(true, factory.prototype, {'template':name}, baseProto, {'constructor':factory});	
 			if(is(template, 'object')){factory.prototype._setTemplate(template)};
 			if(is(action, 'object')){factory.prototype._setAction(action)};
 			
@@ -1319,10 +1320,9 @@
 			if(!is(factory, 'function') || !is(name.block, 'string'))return;
 						
 			var point = (name.elem)?name.block+'.'+name.elem:name.block,
-				newProto = factory.prototype,
 				oldFactory = navigate(config.block, point),
-				newFactory = function(data){					
-					factory.prototype = extend(true, {}, newProto, new oldFactory(clone(data)));
+				newFactory = function(data){
+					extend(true, factory.prototype, oldFactory.prototype, {'constructor':factory});
 					if(is(template, 'object')){factory.prototype._setTemplate(template)};
 					if(is(action, 'object')){factory.prototype._setAction(action)};
 					return new factory(clone(data));

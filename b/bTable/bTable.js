@@ -20,6 +20,8 @@
 			temp.push(this.getBody());
 			temp.push(this.getFooter());
 			
+			this.template = {};
+			
 			this.template.mods = data.mods;
 			this.template.content = temp;
 			
@@ -162,8 +164,8 @@
 			'uncheckItem':function(){
 				var block = this.block,
 					keys = block.keys,
+					tunnel = blib.config('tunnel'),
 					items = blib.config('tunnel.'+block.tunnel+'.items')||[],
-					tunnel = {},
 					item, i, j, key, keyLen = 0, count;
 					
 				for(i in keys)keyLen++;
@@ -178,7 +180,7 @@
 					if(keyLen ==count)delete items[i];
 				}
 				
-				tunnel[block.tunnel] = {'items':items};
+				tunnel[block.tunnel]['items'] = items;
 				blib.tunnel(tunnel,true);
 				block.checkRow(false);
 			}

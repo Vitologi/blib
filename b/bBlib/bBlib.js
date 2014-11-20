@@ -889,7 +889,7 @@
 		//local config
 		config = {
 			'block': {},
-			'tree':{}
+			'isBuilding':0
 		},
 		defaultBlock = function(){},
 		baseProto = {
@@ -1113,11 +1113,13 @@
 	
 	var /** колбэки после получения ответа и перестройки дерева */
 		readyFunctions = [],
-		ready = function(obj){
-			if(is(obj, 'function')){return readyFunctions.push(obj);}
+		ready = function(callback, once){
+			if(is(callback, 'function')){return readyFunctions.push({'callback':callback, 'once':once});}
+			if(config.isBuilding)return window.setTimeout(ready, 1000);
 			
 			for(var len = readyFunctions.length, i=0; i<len; i++){
-				readyFunctions[i](obj);
+				readyFunctions[i]['callback']();
+				if(readyFunctions[i]['once'])readyFunctions.splice(i,1);
 			}
 			
 		},
@@ -1140,12 +1142,12 @@
 			}
 			if(set){applyDeferredTask()};
 			deferredTask={};
-			ready();
 		},
 		
 		/** сборка серверного ответа  */
 		build = function(data, params){
 			if(!data){return;}
+			config.isBuilding++;
 			
 			params = extend({'blockName':false, 'parent':false, 'blocks':[], 'deep':0}, params);
 			
@@ -1185,7 +1187,11 @@
 					delete factory.prototype.block;
 					delete factory.prototype.parent;
 					
-					if(!obj.template)return;
+					if(!obj.template){
+						config.isBuilding--;
+						ready();
+						return;
+					}
 					obj.template = extend(true, {}, obj.constructor.prototype.template, obj.template);
 					data = clone(obj.template);
 					
@@ -1286,19 +1292,23 @@
 				}
 			}
 			
+			config.isBuilding--;
+			
 			//если есть контейнер то добавляем в него
 			if(container){
 				Blib(data['container']).html(result);
 				applyDeferredTask();
 			}else if(data['container']){
 				deferredTask[data['container']]=result;
-				return false;
 			}else{
-				if(!deep){applyDeferredTask();}
+				if(!deep){
+					applyDeferredTask();
+					ready();
+				}
 				return (!deep)?result:{'dom':result, 'obj':obj};
 			}
 			
-	
+			ready();
 			
 		},
 	

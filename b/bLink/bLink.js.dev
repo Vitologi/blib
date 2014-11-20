@@ -25,6 +25,7 @@
 			this.visible = data.visible || false;
 			this.go = data.go || false;
 			
+			this.template = {};
 			this.template.attrs = data.attrs || {};
 			this.template.attrs.href = this.link;
 			this.template.mods = data.mods || {};
@@ -33,13 +34,17 @@
 				{'tag':'span', 'content':data.content}				
 			];
 			
-			if(this.go)this.onclick.call(this, {});
+			if(this.go)this.rendered();
 			
 		},
 		{
 			'tag':'a'
 		},
 		{	
+			'rendered':function(){
+				var _this = this;
+				blib.build.ready(function(){_this.onclick.call(_this, {});}, true);
+			},
 			'_getStatus':function(){
 				var self = this,
 					uphold = self.uphold,

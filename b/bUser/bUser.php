@@ -5,7 +5,7 @@ class bUser extends bBlib{
 	
 	private static $singleton;
 	
-	protected function getSingleton(){return bUser::$singleton;}
+	public function getSingleton(){return bUser::$singleton;}
 	protected function setSingleton($value){bUser::$singleton = $value;}
 	
 	

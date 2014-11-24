@@ -1009,7 +1009,7 @@
 				if(clear)this._removeChildren();
 				
 				var blocks = [],
-					curentParent = this.parent;
+					curentParent = this;
 				
 				while(curentParent){
 					if(curentParent.template.block && !curentParent.template.elem){

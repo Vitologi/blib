@@ -4,7 +4,8 @@
 		{"block":"bAnnounces"},
 		function(data){
 			var _this = this,
-				meta = blib.extend({'count':0, 'limit':8, 'rows':4, 'height':25, 'rotationDelay':5000}, data.meta);			
+				meta = blib.extend({'count':0, 'limit':8, 'rows':4, 'height':25, 'rotationDelay':5000}, data.meta),
+				mods = blib.extend({'init':true}, data.mods);			
 			
 			_this.count = meta.count;
 			_this.limit = meta.limit;
@@ -14,8 +15,9 @@
 			_this.rotationDelay = meta.rotationDelay;
 			_this.announceLoadInterval = false;
 			
+			
 			_this.template = {
-				'mods':{'init':true},
+				'mods':mods,
 				'attrs':{'style':'height:'+(meta.rows*meta.height)+'px;'},
 				'content':[
 					{'elem':'pushpin'},
@@ -287,4 +289,32 @@
 		}
 	);
 	
+})();
+(function(){
+		
+	blib.build.redefine(
+		{"block":"bAnnounces", "elem":"item"},
+		function(data){
+			var _this = this,
+				block = _this.block,
+				meta = data.meta;
+			console.log(_this);
+			_this.id = meta.id;
+			_this.date = meta.date;
+			_this.title = meta.title;
+			_this.content = data.content;
+			
+			_this.isRead = block.getRead(_this.id);
+			
+			_this.template = {
+				'attrs':{'style':'height:'+(block.height-5)+'px;'},
+				'content':[
+					{"block":"bAnnounces", "elem":"itemIcon", "mods":{"envelope":!_this.isRead}},
+					{"block":"bAnnounces", "elem":"itemDate", "content":_this.date.substr(0,10)},					
+					{"block":"bAnnounces", "elem":"itemContent", "content":_this.content.substr(0,40)+'...'}
+				]
+			};
+		}
+	);
+
 })();

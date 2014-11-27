@@ -47,9 +47,11 @@
 		margin: 5px;
 		cursor: pointer;
 		font-size: 10px;
-		color:#cccccc;}
+		color:white;}
+		.bAnnounces:hover > .bAnnounces__pushpin{
+			color:#cccccc;}
 		.bAnnounces__pushpin:hover{
-			color:black;}
+			color:black !important;}
 	.bAnnounces__popup{
 		position: fixed;
 		z-index:10;
@@ -123,4 +125,5 @@
 			float: left;
 			background-image: url("data:image/gif;base64,R0lGODlhEAAQANUxAHxkVnR0wOz29Pv9/fH49/f7+sPKyXx+fbu9vcKsPuv18+ns7P3+/fj8+vH39ufz8nh4webz8uj08v7//un085eEX7mnfbq64JSBf7q9vMG4vGpqav7+/qGLQaCKVvX6+b+/v3h4vnlnccOlS/n8++z19HZ3d6qUau329J+DSnd3wG1vb3x+fnBwcOn08r7Hx////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAADEALAAAAAAQABAAAAaCwJhwlEh1EpWEyCNsxgIQCMCCuZw0lZYzFnoBFl9AA8DROlUv10KBcjQYDHMT7aor3KSJXIiWHP4ZHwx6WwFpdQIEBQMwe08vDyySLAgwjVtoERQuiYuXZy8Sk5SWjoZ1nIqMppCUnauYL5oKJQYgKytbMSoGvSsbJrm6QrjCw8fIQQA7");}
 		.bAnnounces__popupContent{
-			padding: 7px 10px;}
+			padding: 7px 10px;
+			text-align: justify;}

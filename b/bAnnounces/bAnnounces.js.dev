@@ -170,6 +170,7 @@
 			_this.isRead = block.getRead(_this.id);
 			
 			_this.template = {
+				'attrs':{'style':'height:'+(block.height-5)+'px;'},
 				'content':[
 					{"block":"bAnnounces", "elem":"itemIcon", "mods":{"envelope":!_this.isRead}},
 					{"block":"bAnnounces", "elem":"itemDate", "content":_this.date},					

@@ -1330,19 +1330,17 @@
 			if(!is(factory, 'function') || !is(name.block, 'string'))return;
 						
 			var point = (name.elem)?name.block+'.'+name.elem:name.block,
-				oldFactory = navigate(config.block, point),
-				newFactory = function(data){
-					extend(true, factory.prototype, oldFactory.prototype, {'constructor':factory});
-					if(is(template, 'object')){factory.prototype._setTemplate(template)};
-					if(is(action, 'object')){factory.prototype._setAction(action)};
-					return new factory(clone(data));
-				};
+				oldFactory = navigate(config.block, point);
+			
+			extend(true, factory.prototype, oldFactory.prototype, {'constructor':factory});
+			if(is(template, 'object')){factory.prototype._setTemplate(template)};
+			if(is(action, 'object')){factory.prototype._setAction(action)};
 
 			for(key in oldFactory){
-				newFactory[key] = oldFactory[key];
+				factory[key] = oldFactory[key];
 			}
 			
-			return navigate(config.block, point, newFactory);
+			return navigate(config.block, point, factory);
 			
 		};
 	

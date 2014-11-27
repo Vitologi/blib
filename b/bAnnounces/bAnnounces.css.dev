@@ -48,7 +48,7 @@
 		margin: 5px;
 		cursor: pointer;
 		font-size: 10px;
-		color:white;}
+		color:transparent;}
 		.bAnnounces:hover > .bAnnounces__pushpin{
 			color:#cccccc;}
 		.bAnnounces__pushpin:hover{

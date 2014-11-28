@@ -439,6 +439,7 @@
 		return function(param){
 			var dataType	= param['dataType'] || "text",
 				success		= param['success'] || function(){},
+				error		= param['error'] || function(){},
 				data		= param['data'] || {},
 				files		= param['files'] || null,
 				type		= param['type'] || "POST",
@@ -532,6 +533,8 @@
 					if(successRequest){
 						if(tunnel)config['tunnel'] = {};
 						success(temp);						
+					}else{
+						error(temp);
 					}
 				}
 			}

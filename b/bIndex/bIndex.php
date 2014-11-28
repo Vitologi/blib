@@ -42,7 +42,7 @@ class bIndex extends bBlib{
 	
 	public function output(){
 		
-		if(!$this->hook('checkAccess', array($this->data)))return;
+		if(!$this->hook('checkAccess', array($this->data)))die(json_encode(array("container"=>"body", "content"=>"not access")));
 		
 		$Q = array(
 			'select'	=> array(

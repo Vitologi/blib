@@ -657,6 +657,53 @@
 })( window );
 
 /**
+ * Blib.localize library. Allows save many foreign words.
+ * 
+ */
+(function( Blib ){
+	
+	/** PRIVATE VARIABLE AND METHODS */
+	var is = Blib.is,
+		navigate = Blib.navigate,
+		extend = Blib.extend,
+		//local config
+		config = {
+			'language':'ru',
+			'data':{}
+		};
+	
+	//save config into global config and protect them
+	Blib.config("bLocalize", config);
+	Blib.config("_private.bLocalize", true);
+	
+	Blib.localize =  function(obj){
+		var temp, lang, block,
+			params = {
+				'language': config.language,
+				'block': false
+			};
+		
+		if(is(obj, 'string')){
+			return (temp = navigate(config.data, config.language+'.'+obj))?temp:obj;
+		}else if(is(obj, 'object')){
+			extend(params, obj);
+			lang = params.language;
+			delete params.language;
+			block = params.block?('.'+params.block):'';
+			delete params.block;
+			
+			return navigate(config.data, lang+block, extend(navigate(config.data, lang+block), params));
+		}
+	}
+	
+	Blib.localize.language = function(lan){
+		if(is(lan, 'string'))config.language = lan;
+		return Blib;
+	}
+	
+})( window.blib );
+
+/**
  * Blib.include library. Allows get all script or style file in one. And store in local cache.
  * 
  */
@@ -889,6 +936,7 @@
 		navigate = Blib.navigate,
 		extend = Blib.extend,
 		merge = Blib.merge,
+		localize = Blib.localize,
 		//local config
 		config = {
 			'block': {},
@@ -1276,7 +1324,7 @@
 				break;
 				case "string":
 					try{
-						result.innerHTML = data['content'];
+						result.innerHTML = localize(data['content']);
 					}catch(e){Blib.exception("Can`t set content("+data['content']+") for "+(currentClass||"default")+" element.")}
 				break;
 			}

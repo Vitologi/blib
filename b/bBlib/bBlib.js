@@ -676,23 +676,25 @@
 	Blib.config("bLocalize", config);
 	Blib.config("_private.bLocalize", true);
 	
-	Blib.localize =  function(obj){
-		var temp, lang, block,
-			params = {
+	Blib.localize =  function(obj, newParams){
+		var params = {
 				'language': config.language,
 				'block': false
-			};
+			},
+			temp, lang, block, point;
+		
+		extend(params, newParams);
+		lang = params.language;
+		block = params.block?('.'+params.block):'',
+		point = lang+block;
+		
+		if(!(lang in config.data))config.data[lang]={};
 		
 		if(is(obj, 'string')){
-			return (temp = navigate(config.data, config.language+'.'+obj))?temp:obj;
+			return (temp = navigate(config.data, point+'.'+obj))?temp:obj;
 		}else if(is(obj, 'object')){
-			extend(params, obj);
-			lang = params.language;
-			delete params.language;
-			block = params.block?('.'+params.block):'';
-			delete params.block;
-			
-			return navigate(config.data, lang+block, extend(navigate(config.data, lang+block), params));
+			navigate(config.data, point, extend(true, navigate(config.data, point), obj));
+			return Blib;
 		}
 	}
 	

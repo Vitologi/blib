@@ -239,6 +239,7 @@
 			
 			for(var len=selector.length, i=0; i<len; i++){
 				if(selector[i].cloneNode){ elements.push(selector[i]);}
+                if(selector[i].dom){ elements.push(selector[i].dom);}
 				if(typeof(selector[i])!='string'){continue;}
 				var element=selector[i],
 					point = element.substr(0,1),
@@ -322,6 +323,19 @@
 	Blib.merge = merge;
 	Blib.object2url = object2url;
 	
+    /**
+     * Translate block's name into it path on server
+     * 
+     * @param {string} name 		- block's name
+     * @param {string} extension 	- block's extension like css, js, html
+     * @return {string} 			- url
+     */
+	Blib.path = function(name, extension){
+        if(!is(name, 'string'))return;
+        extension = is(extension, 'string')?name + '.' + extension:'';
+        return name.substr(0,1)+"/"+name.replace(/(_+)/gi, '/$&')+"/"+extension ;
+    };
+    
 	/**
 	 * Method for work with blib configuration
 	 * 
@@ -714,6 +728,7 @@
 	
 	/** PRIVATE VARIABLE AND METHODS */
 	var is = Blib.is,
+        path = Blib.path,
 		//local config
 		config = {
 			'head': document.getElementsByTagName('head')[0],
@@ -726,15 +741,15 @@
 		 * 
 		 * @param {string} name 		- block's name
 		 * @param {string} extension 	- block's extension like css, js, html
-		 * @param {string} name 		- alternative block's folder
+		 * @param {string} path 		- alternative block's folder
 		 * @return {string} 			- url
 		 */
-		block2url = function(name, extension, path){
+		block2url = function(name, extension, diferentPath){
 			var server = Blib.config('system.server')||window.location.protocol+"//"+window.location.host;
-			if(is(path,"string")) return server+path+name+"."+extension;
-			return server+"/"+name.substr(0,1)+"/"+name+"/"+name+"."+extension;
+			if(is(diferentPath,"string")) return server+diferentPath+name+"."+extension;
+            return server+"/"+path(name, extension);
 		},
-		
+        
 		wait = 0,
 		handlers = [],
 		tick,
@@ -814,7 +829,7 @@
 						
 						domElement  = document.createElement('script');
 						domElement.type="text/javascript";
-						domElement.src = block2url('bInclude__decrement', 'js', '/b/bInclude/__decrement/');
+						domElement.src = block2url('bInclude__decrement', 'js');
 						domElement.async = false;					
 						config.head.appendChild(domElement);
 						
@@ -923,8 +938,7 @@
 			
 		},delay || 100);
 	}
-	
-	
+		
 })( window.blib );
 
 /**

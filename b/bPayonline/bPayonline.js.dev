@@ -1,0 +1,190 @@
+(function(){
+	
+    // Локализация кодов ошибок
+    blib.localize({
+        'bPayonline':{
+            'error':{
+                '0':"Данные платежа получены",
+                '1':"Не указана сумма платежа",
+                '2':"Недопустимый формат сумма платежа",
+                '3':"Недопустимая (менее минимально допустимой) сумма платежа",
+                '4':"Недопустимая (превышающая максимально допустимую) сумма платежа",
+                '5':"Недопустимая валюта платежа",
+                '6':"Не указан код платежа"
+            },
+            '__submit':'Оплатить',
+            '__amount':'Введите сумму платежа'
+        }
+    });
+    
+    // Основной блок взаимодействия с серверным апи
+	blib.build.define(
+		{'block':'bPayonline'},
+		function(data){
+            var _this       = this;
+            
+            _this.url       = false;    // адрес куда будет осуществлен переход для оплаты
+            _this.paysystem = false;    // элемент, выбранной пользователем, платежной системы
+            _this.detail    = false;    // элемент для отображения информации от выбранной системы
+            _this.message   = false;    // элемент для отображения информации от сервера
+            _this.amount    = false;    // поле ввода суммы платежа
+            
+            data.mods.init = true;
+			_this.template  = data;
+		},
+        false,
+        {   
+            '_onSetMode':{
+                'init':function(){
+                    var _this = this;
+                    _this.callback();
+                }
+            },
+            'setUrl':function(url){
+                var _this = this;
+                _this.url = url;
+            },
+            'setDetail':function(data){
+                var _this = this;
+                if(_this.detail)return _this.detail.setDetail(data);
+            },
+            'setMessage':function(data){
+                var _this = this;
+                if(_this.message)return _this.message.setMessage(data);
+                alert(data);
+            },
+            'getAmount':function(){
+                var _this = this;
+                return (_this.amount)?_this.amount.getAmount():0;
+            },
+            'getSecureData':function(){
+                var _this = this,
+                    paysystem = _this.paysystem,
+                    amount = _this.getAmount();
+                
+                blib.ajax({
+                    'dataType':'json',
+                    'data':{'blib':'bPayonline', 'action':'getSecureData', 'amount':amount},
+                    'success':function(data){
+                        _this.setMessage(blib.localize('bPayonline.error.'+data.status.code));
+                        if(data.status.code)return;
+                        _this.redirectToPayonline(data);
+                    }
+                });
+            },
+            'createInput':function(name, value){
+                return {'tag':'input', 'attrs':{'type':'hidden', 'name':name, 'value':value}};
+            },
+            'redirectToPayonline':function(data){
+                var _this = this,
+                    url = _this.url || data.url,
+                    i, form, temp;
+                
+                form = {
+                    'tag':'form',
+                    'attrs':{
+                        'method':'POST',
+                        'action':url,
+                        'target':'_blank'
+                    },
+                    'content':[]
+                };
+                
+                for(i in data){
+                    form.content.push(_this.createInput(i, data[i]));
+                }
+                
+                temp = blib.build(form);
+                temp.submit();
+            },
+            'callback':function(){}
+        }
+	);
+	
+    // Элемент отображения сообщений сервера
+    blib.build.define(
+		{'block':'bPayonline', 'elem':'message'},
+		function(data){
+            var _this = this;
+            _this.block.message = _this;
+			_this.template = {};
+		},
+        false,
+        {
+            'setMessage':function(data){
+                var _this = this;
+                if(!blib.is(data, 'object'))data = {'content':data};
+                _this._removeChildren();
+                _this._append(data);
+            }
+        }
+	);
+    
+    // Элемент отображения вспомогательной информации
+    blib.build.define(
+		{'block':'bPayonline', 'elem':'detail'},
+		function(data){
+            var _this = this;
+            
+            _this.block.detail = _this;
+			_this.template = {};
+		},
+        false,
+        {
+            'setDetail':function(data){
+                var _this = this;
+                if(!blib.is(data, 'object'))data = {'content':data};
+                _this._removeChildren();
+                _this._append(data);
+            },
+            'getDetail':function(){
+                var _this = this;
+                return _this.dom.innerHTML;
+            }
+        }
+	);
+    
+    // Поле ввода суммы
+    blib.build.define(
+		{'block':'bPayonline', 'elem':'amount'},
+		function(data){
+            var _this = this;
+            _this.block.amount = _this;
+			_this.template = {};
+		},
+        {'tag':'input', 'attrs':{'type':'text', 'placeholder':blib.localize('bPayonline.__amount')}},
+        {
+            'onkeyup':function(){
+                var _this = this,
+                    block = _this.block,
+                    amount = _this.getAmount();
+                
+                // проверка на корректность введенных данных
+            },
+            'getAmount':function(){
+                var _this = this;
+                return _this.dom.value;
+            }
+        }
+	);
+    
+    // Кнопка отправки
+    blib.build.define(
+		{'block':'bPayonline', 'elem':'submit'},
+		function(data){
+            var _this = this;
+			_this.template = {};
+		},
+        {'tag':'input', 'attrs':{'type':'button', 'value':blib.localize('bPayonline.__submit')}},
+        {
+            'onclick':function(){
+                var _this = this,
+                    block = _this.block;
+                
+                block.getSecureData();
+            }
+        }
+	);
+    
+    
+})(window);

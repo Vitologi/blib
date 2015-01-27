@@ -1,248 +1,127 @@
 <?php 
 
 abstract class bBlib{
-	
-	/** GLOBAL DATA */
-	protected static $global = array(
-		'_version'	=> "0.0.2",
-		'_request'	=> array(),
-		'_tunnel'	=> array(),
-		'hook'		=> array(
-			'list'		=> array(),
-			'handlers'	=> array()
-		)
-	);
-	
-	/** LOCAL DATA */
-	protected $local = array(
-		
-	);
-	
-	/** INTERCEPTION METHODS */
-	final public function __construct(Array $data = array(), bBlib $caller = null){
-		
-		$this->inputSelf();
-		
-		if(array_key_exists('parents', $this->local)){
-			$parents = is_array($this->local['parents'])?$this->local['parents']:array();
-			foreach($parents as $value){
-				$this->setParent($value, $data);
-			}
-		}
-		
-		$this->input($data, $caller);
-	}
-	
-	//increases the access time (local by 11 times)(global by 5 times) (1kk iteration test) need use $this->local['name'] or bBlib::$global['name'] for ignore it
-	function __get($property){
-		if($property{0}==="_"){
-			return isset(self::$global[$property])?self::$global[$property]:null;
-		}
-		return isset($this->local[$property])?$this->local[$property]:null;
-	}
-	
-	function __set($property, $value){
-		return($property{0}==="_")?(isset(self::$global[$property]) or self::$global[$property] = $value):(isset($this->local[$property]) or $this->local[$property] = $value);
-	}
-	
-	function __isset($property){
-		return ($property{0}==="_")?isset(self::$global[$property]):isset($this->local[$property]);
-	}
-	
-	//increases the access time by 6 times(1kk iteration test) need overload methods in child class for ignore it
-	function __call($method, $args){
-		$parents = is_array($this->local['parents'])?$this->local['parents']:array();
-		foreach($parents as $value){
-			if (!method_exists($value, $method)) continue;
-			return call_user_func_array(array($value, $method), array($args, $this));
-		}
-	} 
-	
-	private static function autoload(){
-		
-		function _autoload($class){
-			$path = bBlib::path($class, 'php');
-			if(!file_exists($path)){throw new Exception('Called class '.$class.' is missing.');}
-			require_once($path);
-		}
-		
-		if (version_compare(PHP_VERSION, '5.3.0') >= 0) {
-			spl_autoload_register('_autoload');
-		}else {
-			function __autoload($class) {
-				_autoload($class);
-			}
-		}
-	}
-	
-	/** SETTERS */
-	private static function inputGlobals(){
-		self::$global['_request'] = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET;
-		self::$global['_tunnel'] = isset(self::$global['_request']['_tunnel'])?(array)self::$global['_request']['_tunnel']:array();
-		unset(self::$global['_request']['_tunnel']);
-	}
-	
-	abstract protected function inputSelf();
-	
-	final protected function inputSystem($data){
-		foreach($data as $key => $value){
-			if(isset($this->local[$key]))continue;
-			$this->local[$key] = $value;
-		}
-	}
-	
-	protected function input($data, $caller){}
-	
-	/** GETTERS */
-	public function output(){}
-
-	/** INTERFACES */
-	final public static function path($name = null, $ext = null){
-		$name = ($name)?$name:get_class($this);
-		if($ext){$ext = $name.'.'.$ext;}
-		return $name{0}.'/'.preg_replace('/(_+)/i', '/${1}', $name).'/'.$ext;		
-	}
-	
-	final protected function &getTunnel(){
-		$block = get_class($this);
-		self::extend(self::$global['_tunnel'], $block, array());
-		return self::$global['_tunnel'][$block];
-	}
-	
-	final protected function setParent($name, $data = array()){
-		if(!isset($this->local['parents']) || !is_array($this->local['parents']))$this->local['parents']=array();
-		if(!in_array($name, $this->local['parents']))$this->local['parents'][] = $name;
-		$parent = new $name($data, $this);
-		$this->inputSystem((array)$parent->output());
-	}
-	
-	final public function call($name, $args){
-		return call_user_func_array(array($this, $name), (array)$args);
-	}
-
-	final protected function hook($method, $input = array()){
-		$output = array();
-		$block = get_class($this);
-		$_hook = bBlib::$global['hook'];
-		
-		if(!$_list = $_hook['list']){
-			$path = bBlib::path('bBlib__hook', 'ini');
-			if(file_exists($path)){
-				$_list = json_decode(file_get_contents($path), true);
-			}
-		}
-		
-		$returnFlag = false;
-		if(isset($_list[$block])){
-				
-			$list = $_list[$block];
-			$answer = array();
-			
-			if(isset($_hook['handlers'][$block])){
-				$handlers = $_hook['handlers'][$block];
-			}else{
-				$handlers = array();
-				foreach($list as $value){
-					$handlers[$value] = new $value(array(), $this);
-				}
-				$_hook['handlers'][$block] = $handlers;
-			}
-			
-			foreach($handlers as $value){
-				if(!method_exists($value, $method)){continue;}
-				$answer = (array)$value->$method(array('input'=> $input, 'output'=> $output), $this);
-
-				if(isset($answer['input'])){
-					$input = $answer['input'];
-				}
-				if(isset($answer['output'])){
-					$output = $answer['output'];
-					$returnFlag = true;
-				}
-			}
-		}
-		
-		if(!$returnFlag && method_exists($this, $method)){
-			$output = call_user_func_array(array($this, $method), (array)$input);
-		}
-		
-		return $output;
-	}
-	
-	final public static function gate() {
-		try{
-			define("_BLIB", true);
-			self::autoload();
-			self::inputGlobals();
-			
-			if($blib = self::$global['_request']['blib']){
-				$block = new $blib(self::$global['_request']);
-				$block->output();
-			}
-		}catch(Exception $e){
-			echo sprintf('(%1$s) [%2$s] - %3$s ', $e->getFile(), $e->getLine(), $e->getMessage());
-		}
+    
+    const VERSION           = "0.0.2";  // Engine version
+    protected $_parent      = null;     // Block - creator
+    protected $_traits      = array();  // Blocks list for multiple inheritance
+    protected $_instances   = array();  // Implemented objects
+    protected $_vars        = array();  // Local variables
+    protected static $_VARS = array();  // Global variables
+    
+    // Object factory
+    static public function create() {
+        return new static(func_get_args());
     }
-	
-	final public static function compile($block){
-
-		$_hook = bBlib::$global['hook'];
-		
-		if(!$_list = $_hook['list']){
-			$path = bBlib::path('bBlib__hook', 'ini');
-			if(!file_exists($path)){return;}
-			$_list = json_decode(file_get_contents($path), true);
-		}
-		
-		$files = array();
-		$files = bBlib::compileGlue($block, $files);
-		$list = (isset($_list[$block])?$_list[$block]:array());
-		
-		foreach($list as $value){
-			$files = bBlib::compileGlue($value, $files);
-		}
-
-		foreach($files as $key => $value){
-			file_put_contents(bBlib::path($block, $key), $value);
-		}
-
-	}
-	
-	final private static function compileGlue($name, $stack){
-		$path = bBlib::path($name);
-		$folder =  opendir($path);
-		while($file = readdir($folder)){
-			if(preg_match('/\w*.(\w+).dev$/', $file, $matches)){
-				if(!isset($stack[$matches[1]]))$stack[$matches[1]]='';
-				$stack[$matches[1]] .= file_get_contents($path.$file);
-				continue;
-			}
-			
-			if(is_dir($path.$file) && substr($file, 0,2) === '__'){
-				$stack = bBlib::compileGlue($name.$file, $stack);
-			};
-		}
-		
-		return $stack;
-	}
-	
-	//for set default value work slowler in 4 times than      $X = isset($X)?$X:$Y;
-	final public static function extend(&$target){
-		if(func_num_args()<2)return;
-		$arguments = func_get_args();
-		$property = is_string($arguments[1])?$arguments[1]:null;
-		
-		if( $property === null ){
-			return call_user_func_array('array_replace_recursive', $arguments);
-		}
-		if(!isset($target[$property])){
-			$default = isset($arguments[2])?$arguments[2]:null;
-			$target[$property] = $default;
-		}
-		
-		return $target[$property];
-		
-	}
-	
-	
+    
+    /** BASE INPUT/OUTPUT METHODS */
+    abstract protected function inputSelf();
+    protected function input(){}
+    public function output(){}
+    
+    
+    /** INTERFACES */
+    // Method for set caller
+    final public function setParent(bBlib $block = null){
+        $this->_parent = $block;
+        return $this;
+    }
+    
+    // Method for extend current functional
+    final protected function setTrait($name, $data){
+        if(!is_array($this->_traits))$this->_traits = array();
+        if(!in_array($name, $this->_traits))$this->_traits[] = $name;
+        
+        $result = $name::create($data)->setParent($this)->output();
+        
+        if($result instanceof bBlib){
+            $this->_instances[get_class($result)] = $result;
+        }else{
+            foreach((array)$result as $key => $value){
+                if(isset($this->_vars[$key]))continue;
+                $this->_vars[$key] = $value;
+            }
+        }
+        
+        return $this;
+    }
+    
+    // Generate path to block in BEM notation
+    final public static function path($name = null, $ext = null){
+        $name = ($name)?$name:get_class($this);
+        if($ext){$ext = $name.'.'.$ext;}
+        return $name{0}.'/'.preg_replace('/(_+)/i', '/${1}', $name).'/'.$ext;
+    }
+    
+    // Start application point
+    final public static function init($block = null) {
+        try{
+            define("_BLIB", true);
+            self::autoload();
+            if(!is_string($block))return;
+            $block::create()->output();
+        }catch(Exception $e){
+            echo sprintf('(%1$s) [%2$s] - %3$s ', $e->getFile(), $e->getLine(), $e->getMessage());
+        }
+    }
+    
+    
+    /** INTERCEPTION METHODS */
+    final private function __clone(){}  // Protect from cloning
+    final private function __sleep(){}  // Protect from serialize
+    final private function __wakeup(){} // Protect from unserialize
+    final private function __construct(){
+        $data = (func_num_args()===1)?func_get_arg(0):func_get_args();
+        
+        $this->inputSelf($data);
+        $traits = is_array($this->_traits)?$this->_traits:array();
+        foreach($traits as $value)$this->setTrait($value, $data);
+        $this->input($data);
+    
+    }
+    
+    // Devide scope on local & global
+    function __get($key){
+        if($key{0}==="_"){
+            return isset(self::$_VARS[$key])?self::$_VARS[$key]:null;
+        }
+        return isset($this->_vars[$key])?$this->_vars[$key]:null;
+    }
+    
+    function __set($key, $value){
+        return($key{0}==="_")?(isset(self::$_VARS[$key]) or self::$_VARS[$key] = $value):(isset($this->_vars[$key]) or $this->_vars[$key] = $value);
+    }
+    
+    function __isset($key){
+        return ($key{0}==="_")?isset(self::$_VARS[$key]):isset($this->_vars[$key]);
+    }
+    
+    // Call method from trait blocks
+    function __call($method, $args){
+        if(!is_array($this->_traits))$this->_traits = array();
+        
+        foreach($this->_traits as $value){
+            if (!method_exists($value, $method)) continue;
+            return call_user_func_array(array($value, $method), array($args, $this));
+        }
+    } 
+    
+    // Autoload class
+    private static function autoload(){
+        
+        function _autoload($class){
+            $path = bBlib::path($class, 'php');
+            if(!file_exists($path)){throw new Exception('Called class '.$class.' is missing.');}
+            require_once($path);
+        }
+        
+        if (version_compare(PHP_VERSION, '5.3.0') >= 0) {
+            spl_autoload_register('_autoload');
+        }else {
+            function __autoload($class) {
+                _autoload($class);
+            }
+        }
+    }
+    
 }

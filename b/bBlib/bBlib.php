@@ -15,12 +15,16 @@ abstract class bBlib{
     }
     
     /** BASE INPUT/OUTPUT METHODS */
-    abstract protected function inputSelf();
     protected function input(){}
     public function output(){}
     
     
     /** INTERFACES */
+    // Method for get instances
+    final public function getInstance($name = ''){
+        return (isset($this->_instances[$name])?$this->_instances[$name]:null);
+    }
+    
     // Method for set caller
     final public function setParent(bBlib $block = null){
         $this->_parent = $block;
@@ -73,11 +77,9 @@ abstract class bBlib{
     final private function __construct(){
         $data = (func_num_args()===1)?func_get_arg(0):func_get_args();
         
-        $this->inputSelf($data);
         $traits = is_array($this->_traits)?$this->_traits:array();
         foreach($traits as $value)$this->setTrait($value, $data);
         $this->input($data);
-    
     }
     
     // Devide scope on local & global

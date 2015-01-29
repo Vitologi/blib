@@ -59,7 +59,7 @@ class bTemplate extends bBlib{
 			if($row['owner'] && $this->block !== $row['owner'])continue;
 			
 			if($row['blib']){ 
-				$this->local['block'][$row['id']] = new $row['blib'](json_decode($row['template'],true));
+				$this->local['block'][$row['id']] = $row['blib']::create(json_decode($row['template'],true));
 			}else{
 				$this->local['stack'][$row['id']] = $row['template'];
 			}

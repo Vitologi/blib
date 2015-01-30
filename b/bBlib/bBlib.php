@@ -39,7 +39,7 @@ abstract class bBlib{
         $result = $name::create($data)->setParent($this)->output();
         
         if($result instanceof bBlib){
-            $this->_instances[get_class($result)] = $result;
+            $this->_instances[$name] = $result;
         }else{
             foreach((array)$result as $key => $value){
                 if(isset($this->_vars[$key]))continue;

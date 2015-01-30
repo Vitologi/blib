@@ -43,7 +43,7 @@ class bDecorator extends bBlib{
 	}
     
     final public function setList($list){
-       file_put_contents(bBlib::path('bDecorator', 'ini'), json_decode($list));
+       file_put_contents(bBlib::path('bDecorator', 'ini'), json_encode($list));
 	}
     
 }

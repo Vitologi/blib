@@ -104,7 +104,8 @@ abstract class bBlib{
         
         foreach($this->_traits as $value){
             if (!method_exists($value, $method)) continue;
-            return call_user_func_array(array($value, $method), array($args, $this));
+            $args[] = $this;
+            return call_user_func_array(array($value, $method), $args);
         }
     } 
     

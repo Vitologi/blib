@@ -1,194 +1,108 @@
 <?php
 defined('_BLIB') or die;
 
-class bConfig extends bBlib{	
-	
-	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-		$this->parents = array('bSystem', 'bDatabase');
-		
+class bConfig extends bBlib{
+
+	private static $_instance        = null;					// Singleton instance
+	private        $_config          = array();					// All configuration stack
+	private        $_strategy        = array('bConfig__local');	// Used strategy get/set config
+	private        $_defaultStrategy = 'bConfig__local';		// Default strategy
+	protected      $_traits          = array('bSystem', 'bConfig__local'/** some other element-components */);
+
+
+	// Overload object factory for Singleton
+	static public function create() {
+		if (self::$_instance === null)self::$_instance = parent::create(func_get_args());
+		return self::$_instance;
 	}
-	
-	protected function input($data, $caller){
-		$this->caller = get_class($caller);
+
+	public function input(){
+		$components = $this->getConfig("strategy",__CLASS__);
+		foreach($components as $key => $component){
+			$this->setTrait($component);
+			$this->_strategy[] = $component;
+		}
+
 	}
-	
-	
+
 	public function output(){
-		if($this->caller){
-			$config = $this->getConfig($this->caller, array('group'=>'blib'));
-			$config['bConfig']=$this;
-			return $config;
-		}
+		return $this;
 	}
-	
-	/** 
-	* Private method for get configuration
-	*
-	* @param {string} $name - name of configuration
-	* @param {mixed}[] $param - other parameters
-	*   {string} group - change config group (default 'blib')
-	*   {bollean} deep - get config concat with parents value (default true)
-	* @return {array} - associative array with configuration
-	*/
-	private function getConfig($name, $param){
-		$param = (array) $param + array('group'=>'blib', 'deep'=>true);
-		$used = array();
-		$config = array();
-		$default = null;
-		
-		do{
-			$Q = array(
-				'select' => array(
-					'bconfig'=>array('id', 'value', 'bconfig_id')
-				),
-				'where' => array(
-					'bconfig'=>array('group'=>$param['group'], 'name'=>$name)
-				)
-			);
-			
-			if($default){
-				$Q['where']['bconfig']=array('id'=>$default);
-				$default = null;
-			}
-			
-			if($result = $this->_query($Q)){
-				$row = $result->fetch();
-				$config = (array)$config + (array)json_decode($row['value'],true);
-				if($param['deep'] && !in_array($row['bconfig_id'], $used)){
-					$used[] = $default = $row['bconfig_id'];
-				}
-			}
-	
-		}while($default);
-		return $config;
-	}
-	
-	/** 
-	* Private method for set configuration
-	*
-	* @param {string} $name - name of configuration
-	* @param {array} $value - configuration array
-	* @param {mixed}[] $param - other parameters
-	*   {string} group - change config group (default 'blib')
-	*   {bollean} correct - set on old configuration values (default true)
-	*   {number} parent - change parent config
-	* @return {number} - id updated or new item
-	*/
-	private function setConfig($name, Array $value, $param){
-		$param = (array) $param + array('group'=>'blib', 'correct'=>false);
 
-		$value = is_array($value)?$value:array();
-		
-		$Q = array(
-			'select' => array('bconfig'=>array('id', 'value', 'bconfig_id')),
-			'where' => array('bconfig'=>array('group'=>$param['group'], 'name'=>$name))
-		);
-		
-		$result = $this->_query($Q);
-				
-		if($result->rowCount()){
-			$row = $result->fetch();
-			
-			if($param['correct']){
-				$value = $value + (array) json_decode($row['value'], true);
-			}
-			
-			$value = json_encode($value);
-				
-			$Q = array(
-				'update' => array('bconfig'=>array('value'=>$value)),
-				'where' => array('bconfig'=>array('id'=>$row['id']))
-			);
-			
-			if(isset($param['parent'])){$Q['update']['bconfig']['bconfig_id'] = $param['parent'];}
-			if(!$this->_query($Q)){	throw new Exception('Can`t rewrite config');}
-			return $row['id'];
-			
-			
-		}else{
-			
-			$value = json_encode($value);
-				
-			$Q = array(
-				'insert' => array(
-					'bconfig'=>array(
-						'group'=>$param['group'],
-						'name'=>$name,
-						'value'=>$value
-					)
-				)
-			);
-			
-			if(isset($param['parent'])){$Q['insert']['bconfig']['bconfig_id'] = $param['parent'];}
-			if(!$this->_query($Q)){throw new Exception('Can`t rewrite config');}
-			return $this->_lastInsertId();
-		}
-		
-		
-	}
-	
-	/** 
-	* Method for get default config value
-	* @param {array} $data - arguments
-	*   {string} 0 - name of config item/block/other
-	*   {bool} 1 - reduced or not
-	* @return {array} - configuration
-	*/
-	public static function _getDefaultConfig($data, $caller = null){
-		if($caller === null){return;}
-		$name = isset($data[0])?$data[0]:'block';
-		$reduced = isset($data[1])?$data[1]:true;
-		$path = bBlib::path(get_class($caller).'__'.__class__.'_'.$name,'php');
-		if(!file_exists($path)){return array();}
-		
-		$config = (array) require($path);
-		
-		if($reduced){
-			$temp = array();
-			foreach($config as  $item){
-				if(!(isset($item['name'])&&isset($item['name'])))continue;
-				$temp[$item['name']]=$item['value'];
-			}
-			$config = $temp;
-			
-		}
-		
-		return $config;
 
+	/**
+	 * Get full configuration data from all included strategy
+	 *
+	 * @param string $key	- config key
+	 * @param string $block	- from what block
+	 * @return null|mixed	- configuration data
+     */
+	private function getConfig($key = '', $block =''){
+
+		if(!array_key_exists($key, $this->_config)){
+
+			$config = array();
+
+			foreach($this->_strategy as $i => $strategy){
+				$config = $config + (array)$this->getInstance($strategy)->getConfig($block);
+			}
+
+			$this->_config[$block] = $config;
+		}
+
+		return isset($this->_config[$block][$key])?$this->_config[$block][$key]:null;
 	}
-	
-	/** 
-	* Method for extend other class
-	* @param {array} $data - arguments
-	*   {string} 0 - config name
-	*   {array} 1 - additional parameters (group, deep)
-	* @param {bBlib} $caller - method initiator
-	* @return {array} - configuration
-	*/
-	public static function _getConfig($data, $caller = null){
-		if($caller == null)return array();
-		if(!isset($data[1]))$data[1] = array();
-		if(!isset($data[1]['group'])){$data[1]['group'] = get_class($caller);}
-		return $caller->local['bConfig']->getConfig($data[0], $data[1]);
+
+	/**
+	 * Set default strategy
+	 *
+	 * @param null|string $strategyName		- what strategy use for default get/set configs
+	 * @return $this						- for chaining
+     */
+	private function setStrategy($strategyName = null){
+		if(!is_string($strategyName) || !in_array($strategyName, $this->_strategy))return $this;
+		$this->_defaultStrategy = $strategyName;
+		return $this;
 	}
-	
-	/** 
-	* Method for extend other class
-	* @param {array} $data - arguments
-	*   {string} 0 - config name
-	*   {array} 1 - config value
-	*   {array} 2 - additional parameters (group, correct, parent)
-	* @param {bBlib} $caller - method initiator
-	* @return {string} - id changed/new configuration
-	*/
-	public static function _setConfig($data, $caller = null){
-		if($caller == null)return false;
-		$data[1] = (array)$data[1];
-		if(!isset($data[2])){$data[2] = array();}
-		if(!isset($data[2]['group'])){$data[2]['group'] = get_class($caller);}
-		return $caller->local['bConfig']->setConfig($data[0], $data[1], $data[2]);
+
+	/**
+	 * Set/update configuration for block
+	 *
+	 * @param string $name		- config key
+	 * @param null|mixed $value	- config value
+	 * @param string $block		- for what block
+	 * @return $this			- for chaining
+     */
+	private function setConfig($name = '', $value = null, $block = ''){
+		$strategy = $this->getInstance($this->_defaultStrategy);
+		$config = $strategy->getConfig($block);
+		$config[$name] = $value;
+		$strategy->setConfig($block, $config);
+		return $this;
+	}
+
+	/**
+	 * Get configuration from child block
+	 *
+	 * @param string $key		- config name
+	 * @param bBlib $caller		- block-initiator
+	 * @return mixed			- configuration
+     */
+	public static function _getConfig($key = '', bBlib $caller){
+		return $caller->getInstance(__CLASS__)->getConfig($key, get_class($caller));
+	}
+
+
+	/**
+	 * Set configuration from child block
+	 *
+	 * @param string $key		- config name
+	 * @param string $value		- config value
+	 * @param bBlib $caller		- block-initiator
+	 * @return void|bool		- set/update configuration and operation result
+     */
+	public static function _setConfig($key = '', $value = '', bBlib $caller){
+		return $caller->getInstance(__CLASS__)->setConfig($key, $value, get_class($caller));
 	}
 	
 	

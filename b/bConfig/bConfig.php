@@ -17,7 +17,9 @@ class bConfig extends bBlib{
 	}
 
 	public function input(){
-		$components = $this->getConfig("strategy",__CLASS__);
+		$config = $this->getConfig(__CLASS__);
+		$components = $config["strategy"];
+
 		foreach($components as $key => $component){
 			$this->setTrait($component);
 			$this->_strategy[] = $component;
@@ -33,24 +35,20 @@ class bConfig extends bBlib{
 	/**
 	 * Get full configuration data from all included strategy
 	 *
-	 * @param string $key	- config key
 	 * @param string $block	- from what block
 	 * @return null|mixed	- configuration data
      */
-	private function getConfig($key = '', $block =''){
+	private function getConfig($block =''){
 
-		if(!array_key_exists($key, $this->_config)){
+		if(array_key_exists($block, $this->_config))return $this->_config[$block];
 
-			$config = array();
+		$config = array();
 
-			foreach($this->_strategy as $i => $strategy){
-				$config = $config + (array)$this->getInstance($strategy)->getConfig($block);
-			}
-
-			$this->_config[$block] = $config;
+		foreach($this->_strategy as $i => $strategy){
+			$config = $config + (array)$this->getInstance($strategy)->getConfig($block);
 		}
 
-		return isset($this->_config[$block][$key])?$this->_config[$block][$key]:null;
+		return $this->_config[$block] = $config;
 	}
 
 	/**
@@ -68,15 +66,14 @@ class bConfig extends bBlib{
 	/**
 	 * Set/update configuration for block
 	 *
-	 * @param string $name		- config key
-	 * @param null|mixed $value	- config value
+	 * @param array $newConfig	- configurations
 	 * @param string $block		- for what block
 	 * @return $this			- for chaining
      */
-	private function setConfig($name = '', $value = null, $block = ''){
+	private function setConfig($newConfig = array(), $block = ''){
 		$strategy = $this->getInstance($this->_defaultStrategy);
 		$config = $strategy->getConfig($block);
-		$config[$name] = $value;
+		$config = array_replace($config, (array)$newConfig);
 		$strategy->setConfig($block, $config);
 		return $this;
 	}
@@ -84,25 +81,23 @@ class bConfig extends bBlib{
 	/**
 	 * Get configuration from child block
 	 *
-	 * @param string $key		- config name
 	 * @param bBlib $caller		- block-initiator
 	 * @return mixed			- configuration
      */
-	public static function _getConfig($key = '', bBlib $caller){
-		return $caller->getInstance(__CLASS__)->getConfig($key, get_class($caller));
+	public static function _getConfig(bBlib $caller){
+		return $caller->getInstance(__CLASS__)->getConfig(get_class($caller));
 	}
 
 
 	/**
 	 * Set configuration from child block
 	 *
-	 * @param string $key		- config name
 	 * @param string $value		- config value
 	 * @param bBlib $caller		- block-initiator
 	 * @return void|bool		- set/update configuration and operation result
      */
-	public static function _setConfig($key = '', $value = '', bBlib $caller){
-		return $caller->getInstance(__CLASS__)->setConfig($key, $value, get_class($caller));
+	public static function _setConfig($value = array(), bBlib $caller){
+		return $caller->getInstance(__CLASS__)->setConfig($value, get_class($caller));
 	}
 	
 	

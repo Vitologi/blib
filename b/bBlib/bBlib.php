@@ -31,7 +31,7 @@ abstract class bBlib{
      * @param string $name      - instance`s name
      * @return null|bBlib       - null or implemented block
      */
-    final public function getInstance($name = ''){
+    final protected function getInstance($name = ''){
         return (isset($this->_instances[$name])?$this->_instances[$name]:null);
     }
     

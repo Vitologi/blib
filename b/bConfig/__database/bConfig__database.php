@@ -3,127 +3,55 @@ defined('_BLIB') or die;
 
 class bConfig__database extends bBlib{
 
-	private   $_config  = array();
-	protected $_traits = array('bSystem', 'bDatabase');
+	protected $_traits  = array('bSystem', 'bDataMapper');
+
+	/**
+	 * @var array	- local config storage
+	 */
+	private $_config = array();
 
 	public function output(){
 		return $this;
 	}
 
 	/**
-	 * Private method for get configuration
+	 * Get config from block`s file named like bBlock__bConfig.php
 	 *
-	 * @param {string} $name - name of configuration
-	 * @param {mixed}[] $param - other parameters
-	 *   {string} group - change config group (default 'blib')
-	 *   {bollean} deep - get config concat with parents value (default true)
-	 * @return {array} - associative array with configuration
+	 * @param string $name		- block`s name
+	 * @return mixed[]			- local configs
+	 * @throws Exception
 	 */
-	public function getConfig($name){
-		if($name === 'bDatabase')return array();
+	public function getConfig($name = ''){
 
-		return array();
-		/*
-		$param = (array) $param + array('group'=>'blib', 'deep'=>true);
-		$used = array();
-		$config = array();
-		$default = null;
+		if(!array_key_exists($name,$this->_config)){
 
-		do{
-			$Q = array(
-				'select' => array(
-					'bconfig'=>array('id', 'value', 'bconfig_id')
-				),
-				'where' => array(
-					'bconfig'=>array('group'=>$param['group'], 'name'=>$name)
-				)
-			);
+			$dataMapper = $this->_getDataMapper();
 
-			if($default){
-				$Q['where']['bconfig']=array('id'=>$default);
-				$default = null;
-			}
 
-			if($result = $this->_query($Q)){
-				$row = $result->fetch();
-				$config = (array)$config + (array)json_decode($row['value'],true);
-				if($param['deep'] && !in_array($row['bconfig_id'], $used)){
-					$used[] = $default = $row['bconfig_id'];
-				}
-			}
 
-		}while($default);
-		return $config;
 
-		*/
+			$this->_config[$name] = json_decode($strConfig, true);
+
+
+		}
+
+		return $this->_config[$name];
 	}
 
 	/**
-	 * Private method for set configuration
+	 * Set config to block`s file named like bBlock__bConfig.php
 	 *
-	 * @param {string} $name - name of configuration
-	 * @param {array} $value - configuration array
-	 * @param {mixed}[] $param - other parameters
-	 *   {string} group - change config group (default 'blib')
-	 *   {bollean} correct - set on old configuration values (default true)
-	 *   {number} parent - change parent config
-	 * @return {number} - id updated or new item
+	 * @param string $name		- block`s name
+	 * @param null $value		- config value
+	 * @throws Exception
 	 */
-	public function setConfig($name, Array $value, $param){
+	public function setConfig($block = '', $value = null){
 
-		return array();
-		/*
-		$param = (array) $param + array('group'=>'blib', 'correct'=>false);
-
-		$value = is_array($value)?$value:array();
-
-		$Q = array(
-			'select' => array('bconfig'=>array('id', 'value', 'bconfig_id')),
-			'where' => array('bconfig'=>array('group'=>$param['group'], 'name'=>$name))
-		);
-
-		$result = $this->_query($Q);
-
-		if($result->rowCount()){
-			$row = $result->fetch();
-
-			if($param['correct']){
-				$value = $value + (array) json_decode($row['value'], true);
-			}
-
-			$value = json_encode($value);
-
-			$Q = array(
-				'update' => array('bconfig'=>array('value'=>$value)),
-				'where' => array('bconfig'=>array('id'=>$row['id']))
-			);
-
-			if(isset($param['parent'])){$Q['update']['bconfig']['bconfig_id'] = $param['parent'];}
-			if(!$this->_query($Q)){	throw new Exception('Can`t rewrite config');}
-			return $row['id'];
-
-
-		}else{
-
-			$value = json_encode($value);
-
-			$Q = array(
-				'insert' => array(
-					'bconfig'=>array(
-						'group'=>$param['group'],
-						'name'=>$name,
-						'value'=>$value
-					)
-				)
-			);
-
-			if(isset($param['parent'])){$Q['insert']['bconfig']['bconfig_id'] = $param['parent'];}
-			if(!$this->_query($Q)){throw new Exception('Can`t rewrite config');}
-			return $this->_lastInsertId();
+		if(!array_key_exists($block,$this->_config)){
+			$this->_config[$block]=array();
 		}
 
-		*/
-
+		$this->_config[$block] = $value;
 	}
 
 }

@@ -16,7 +16,7 @@ class bDecorator extends bBlib{
     }
      
     protected function input(){
-        $this->_list = $this->_getConfig();
+        $this->_list = $this->getInstance('bConfig')->getConfig(__CLASS__);
     }
     
 	public function output(){
@@ -42,7 +42,7 @@ class bDecorator extends bBlib{
 	}
     
     final public function setList($list){
-       $this->_setConfig($list);
+       $this->getInstance('bConfig')->setDefault()->setConfig(__CLASS__, $list);
 	}
     
 }

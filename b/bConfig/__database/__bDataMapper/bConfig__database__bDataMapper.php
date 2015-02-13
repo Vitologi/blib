@@ -6,37 +6,74 @@ defined('_BLIB') or die;
  */
 class bConfig__database__bDataMapper extends bDataMapper__instance{
 
+
     /**
      * Example for get single Item from table
      *
      * @return null|object      - data-object
      */
     public function getItem(){
-        if(func_num_args()===0){
-            return (object)array('id'=>null,'group'=>null, 'name'=>null, 'value'=>null, 'bconfig_id'=>null);
-        }
+        $prototype = (object)array('id'=>null, 'name'=>null, 'value'=>null, 'bconfig_id'=>null);
+		if(func_num_args()===0)return $prototype;
 
+        $name = func_get_arg(0);
 
-        $id = func_get_arg(0);
-        $query = $this->getDatabase()->prepare('SELECT * FROM `bconfig` AS `table` WHERE `table`.`id`=:id');
-        $query->bindParam(':id', $id, PDO::PARAM_INT);
+        $query = $this->getDatabase()->prepare('SELECT * FROM `bconfig` AS `table` WHERE `table`.`name` LIKE  :name');
+        $query->bindParam(':name', $name, PDO::PARAM_STR);
+
         $query->execute();
+        if(!$result = $query->fetch(PDO::FETCH_ASSOC))return $prototype;
 
-        if(!$result = $query->fetch(PDO::FETCH_ASSOC))return null;
-        return (object)$result;
+        $result['value'] = json_decode($result['value'],true);
+
+        return (object) $result;
+    }
+
+    /**
+     * Merge to parent configs
+     *
+     * @param stdClass $obj     - data-object
+     * @return stdClass         - modified data-object
+     */
+    public function mergeItem(stdClass $obj){
+
+
+        if(!$obj->bconfig_id)return $obj;
+        $parent = $obj->bconfig_id;
+
+        do{
+
+            $query = $this->getDatabase()->prepare('SELECT * FROM `bconfig` WHERE `bconfig`.`id`=:parent');
+            $query->bindParam(':parent', $parent, PDO::PARAM_INT);
+            $query->execute();
+            $parent = null;
+
+            if(!$result = $query->fetch(PDO::FETCH_ASSOC))break;
+
+            // try to merge (if throw exception do nothing)
+            try{
+                $temp = json_decode($result['value'],true);
+                if(is_array($temp) and is_array($obj->value)){
+                    $obj->value = array_replace_recursive($temp, $obj->value);
+                }
+            }catch (Exception $e){}
+
+            $parent = $result['bconfig_id'];
+
+        }while($parent);
+
+        return $obj;
+
     }
 
     /**
      * Get list of data (not completed) 0_0
      *
-     * @return null|object      - data-array
+     * @param array $params
+     * @return null|object - data-array
      */
-    public function getList(){
-        $query = $this->getDatabase()->prepare('SELECT * FROM `bdatabase__mapper`');
-        $query->execute();
+    public function getList($params = array()){
 
-        if(!$result = $query->fetchAll(PDO::FETCH_ASSOC))return null;
-        return $result;
     }
 
     /**
@@ -50,14 +87,19 @@ class bConfig__database__bDataMapper extends bDataMapper__instance{
 
         try{
 
+            if(is_array($obj->value))$obj->value=json_encode($obj->value,true);
+
             if(isset($obj->id)){
-                $query = $this->getDatabase()->prepare('UPDATE `bdatabase__mapper` SET `value` = :value WHERE `id` = :id ;');
+                $query = $this->getDatabase()->prepare('UPDATE `bconfig` SET `value` = :value, `bconfig_id` = :bconfig_id WHERE `id` = :id ;');
                 $query->bindParam(':id', $obj->id, PDO::PARAM_INT);
-                $query->bindParam(':value', $obj->value, PDO::PARAM_INT);
+                $query->bindParam(':value', $obj->value);
+                $query->bindParam(':bconfig_id', $obj->bconfig_id, PDO::PARAM_INT);
                 $query->execute();
             }else{
-                $query = $this->getDatabase()->prepare('INSERT INTO `bdatabase__mapper` (`value`) VALUES (:value) ;');
-                $query->bindParam(':value', $obj->value, PDO::PARAM_INT);
+                $query = $this->getDatabase()->prepare('INSERT INTO `bconfig` (`name`,`value`,`bconfig_id`) VALUES (:name,:value,:bconfig_id);');
+                $query->bindParam(':name', $obj->name, PDO::PARAM_STR);
+                $query->bindParam(':value', $obj->value);
+                $query->bindParam(':bconfig_id', $obj->bconfig_id, PDO::PARAM_INT);
                 $query->execute();
                 $obj->id = $this->getDatabase()->lastInsertId();
             }
@@ -78,13 +120,12 @@ class bConfig__database__bDataMapper extends bDataMapper__instance{
     public function install(){
         $query = $this->getDatabase()->prepare("
             CREATE TABLE IF NOT EXISTS `bconfig` (
-              `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Table for store configuration in JSON format',
-              `group` varchar(45) DEFAULT NULL COMMENT 'settings owner',
-              `name` varchar(45) DEFAULT NULL COMMENT 'owner identificator',
+              `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Table for store configuration',
+              `name` varchar(45) DEFAULT NULL COMMENT 'config name',
               `value` text COMMENT 'JSON serialized configurations',
               `bconfig_id` int(10) unsigned DEFAULT NULL COMMENT 'id for default configurations',
               PRIMARY KEY (`id`)
-            ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=8 ;
+            ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
         ");
 
         return $query->execute();
@@ -102,125 +143,3 @@ class bConfig__database__bDataMapper extends bDataMapper__instance{
     }
 
 }
-
-
-
-/**
- * Private method for get configuration
- *
- * @param {string} $name - name of configuration
- * @param {mixed}[] $param - other parameters
- *   {string} group - change config group (default 'blib')
- *   {bollean} deep - get config concat with parents value (default true)
- * @return {array} - associative array with configuration
- *//*
-	public function getConfig($name){
-		if($name === 'bDatabase')return array();
-
-		return array();
-
-		$param = (array) $param + array('group'=>'blib', 'deep'=>true);
-		$used = array();
-		$config = array();
-		$default = null;
-
-		do{
-			$Q = array(
-				'select' => array(
-					'bconfig'=>array('id', 'value', 'bconfig_id')
-				),
-				'where' => array(
-					'bconfig'=>array('group'=>$param['group'], 'name'=>$name)
-				)
-			);
-
-			if($default){
-				$Q['where']['bconfig']=array('id'=>$default);
-				$default = null;
-			}
-
-			if($result = $this->_query($Q)){
-				$row = $result->fetch();
-				$config = (array)$config + (array)json_decode($row['value'],true);
-				if($param['deep'] && !in_array($row['bconfig_id'], $used)){
-					$used[] = $default = $row['bconfig_id'];
-				}
-			}
-
-		}while($default);
-		return $config;
-
-
-	}
-
-*/
-
-/**
- * Private method for set configuration
- *
- * @param {string} $name - name of configuration
- * @param {array} $value - configuration array
- * @param {mixed}[] $param - other parameters
- *   {string} group - change config group (default 'blib')
- *   {bollean} correct - set on old configuration values (default true)
- *   {number} parent - change parent config
- * @return {number} - id updated or new item
- *//*
-	public function setConfig($name, Array $value, $param){
-
-		return array();
-
-		$param = (array) $param + array('group'=>'blib', 'correct'=>false);
-
-		$value = is_array($value)?$value:array();
-
-		$Q = array(
-			'select' => array('bconfig'=>array('id', 'value', 'bconfig_id')),
-			'where' => array('bconfig'=>array('group'=>$param['group'], 'name'=>$name))
-		);
-
-		$result = $this->_query($Q);
-
-		if($result->rowCount()){
-			$row = $result->fetch();
-
-			if($param['correct']){
-				$value = $value + (array) json_decode($row['value'], true);
-			}
-
-			$value = json_encode($value);
-
-			$Q = array(
-				'update' => array('bconfig'=>array('value'=>$value)),
-				'where' => array('bconfig'=>array('id'=>$row['id']))
-			);
-
-			if(isset($param['parent'])){$Q['update']['bconfig']['bconfig_id'] = $param['parent'];}
-			if(!$this->_query($Q)){	throw new Exception('Can`t rewrite config');}
-			return $row['id'];
-
-
-		}else{
-
-			$value = json_encode($value);
-
-			$Q = array(
-				'insert' => array(
-					'bconfig'=>array(
-						'group'=>$param['group'],
-						'name'=>$name,
-						'value'=>$value
-					)
-				)
-			);
-
-			if(isset($param['parent'])){$Q['insert']['bconfig']['bconfig_id'] = $param['parent'];}
-			if(!$this->_query($Q)){throw new Exception('Can`t rewrite config');}
-			return $this->_lastInsertId();
-		}
-
-
-
-	}
-
-	*/

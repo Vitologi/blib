@@ -14,7 +14,7 @@ class bDataMapper extends bBlib{
 	/**
 	 * @var string[] - included traits
 	 */
-	protected $_traits = array('bSystem', 'bConfig');
+	protected $_traits = array('bSystem');
 
 	/**
 	 * @var bDataMapper__instance[] - associative array of mappers

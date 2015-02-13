@@ -9,7 +9,7 @@ class bDataMapper__instance extends bBlib{
     /**
      * @var string[]    - included traits
      */
-    protected $_traits = array('bDatabase', 'bDecorator');
+    protected $_traits = array('bSystem','bDatabase');
 
     /**
      * @var string      - name of default connection to db

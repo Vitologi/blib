@@ -3,11 +3,11 @@ defined('_BLIB') or die;
 
 class bConfig extends bBlib{
 
-	private static $_instance        = null;					// Singleton instance
-	private        $_config          = array();					// All configuration stack
-	private        $_strategy        = array('bConfig__local');	// Used strategy get/set config
-	private        $_defaultStrategy = 'bConfig__local';		// Default strategy
-	protected      $_traits          = array('bSystem', 'bConfig__local'/** some other element-components */);
+	private static $_instance = null;                               // Singleton instance
+	private        $_config   = array();                            // All configuration stack
+	private        $_default  = 'bConfig__local';            		// Default get/set strategy
+	private        $_strategy = array('bConfig__local');            // Used strategy get/set config
+	protected      $_traits   = array('bSystem', 'bConfig__local'); // Some other strategy instance
 
 
 	// Overload object factory for Singleton
@@ -18,7 +18,9 @@ class bConfig extends bBlib{
 
 	public function input(){
 		$config = $this->getConfig(__CLASS__);
-		$components = $config["strategy"];
+		//var_dump($config);
+		$components = isset($config["strategy"])?$config["strategy"]:array();
+		if(isset($config["default"]))$this->setDefault($config["default"]);
 
 		foreach($components as $key => $component){
 			$this->setTrait($component);
@@ -35,69 +37,105 @@ class bConfig extends bBlib{
 	/**
 	 * Get full configuration data from all included strategy
 	 *
-	 * @param string $block	- from what block
-	 * @return null|mixed	- configuration data
-     */
-	private function getConfig($block =''){
-
-		if(array_key_exists($block, $this->_config))return $this->_config[$block];
-
-		$config = array();
-
-		foreach($this->_strategy as $i => $strategy){
-			$config = $config + (array)$this->getInstance($strategy)->getConfig($block);
-		}
-
-		return $this->_config[$block] = $config;
+	 * @param string $strategy 	- name strategy for get/set
+	 * @void    				- set default strategy
+	 * @return $this    		- for chaining
+	 */
+	public function setDefault($strategy ='bConfig__local'){
+		$this->_default = $strategy;
+		return $this;
 	}
 
 	/**
-	 * Set default strategy
+	 * Get full configuration data from all included strategy
 	 *
-	 * @param null|string $strategyName		- what strategy use for default get/set configs
-	 * @return $this						- for chaining
+	 * @param string $selector	- config selector
+	 * @return null|mixed		- configuration data
      */
-	private function setStrategy($strategyName = null){
-		if(!is_string($strategyName) || !in_array($strategyName, $this->_strategy))return $this;
-		$this->_defaultStrategy = $strategyName;
-		return $this;
+	public function getConfig($selector =''){
+
+		if(!$this->_navigate($this->_config, $selector)){
+			$config = null;
+
+			foreach($this->_strategy as $i => $strategy){
+				$temp = $this->getInstance($strategy)->getConfig($selector);
+
+				if($temp === null)continue;
+
+				if(is_array($temp) and is_array($config)){
+					$config = array_replace_recursive($config,$temp);
+				}else{
+					$config = $temp;
+				}
+
+			}
+
+			$this->_config = $this->_navigate($this->_config, $selector, $config);
+		}
+
+		return $this->_navigate($this->_config, $selector);
 	}
 
 	/**
 	 * Set/update configuration for block
 	 *
-	 * @param array $newConfig	- configurations
-	 * @param string $block		- for what block
+	 * @param string $selector	- configuration selector
+	 * @param mixed $value		- configuration
 	 * @return $this			- for chaining
      */
-	private function setConfig($newConfig = array(), $block = ''){
-		$strategy = $this->getInstance($this->_defaultStrategy);
-		$config = $strategy->getConfig($block);
-		$config = array_replace($config, (array)$newConfig);
-		$strategy->setConfig($block, $config);
+	public function setConfig($selector = '', $value = array()){
+		$strategy = $this->getInstance($this->_default);
+		$this->_config = $this->_navigate($this->_config, $selector, $value);
+		$strategy->setConfig($selector, $value);
 		return $this;
 	}
 
 	/**
 	 * Get configuration from child block
 	 *
-	 * @param bBlib $caller		- block-initiator
-	 * @return mixed			- configuration
-     */
-	public static function _getConfig(bBlib $caller){
-		return $caller->getInstance(__CLASS__)->getConfig(get_class($caller));
+	 * @param string|null $selector		- config selector
+	 * @param bBlib $caller 		- block-initiator
+	 * @return mixed 				- configuration
+	 */
+	public static function _getConfig(){
+		if(func_num_args()===2){
+			list($selector, $caller) = func_get_args();
+			$selector = get_class($caller).".".$selector;
+		}else if(func_num_args()===1){
+			$caller = func_get_arg(0);
+			$selector = get_class($caller);
+		}else{
+			throw new Exception('Not correct arguments given.');
+		}
+
+		if(!($caller instanceof bBlib))throw new Exception('Not correct arguments given.');
+
+		return $caller->getInstance(__CLASS__)->getConfig($selector);
 	}
 
 
 	/**
 	 * Set configuration from child block
 	 *
-	 * @param string $value		- config value
-	 * @param bBlib $caller		- block-initiator
-	 * @return void|bool		- set/update configuration and operation result
-     */
-	public static function _setConfig($value = array(), bBlib $caller){
-		return $caller->getInstance(__CLASS__)->setConfig($value, get_class($caller));
+	 * @param string $selector		- config selector
+	 * @param mixed $value 			- config value
+	 * @param bBlib $caller 		- block-initiator
+	 * @return bool|void 			- set/update configuration and operation result
+	 */
+	public static function _setConfig(){
+		if(func_num_args()===3){
+			list($selector, $value, $caller) = func_get_args();
+			$selector = get_class($caller).".".$selector;
+		}else if(func_num_args()===2){
+			list($value, $caller) = func_get_args();
+			$selector = get_class($caller);
+		}else{
+			throw new Exception('Not correct arguments given.');
+		}
+
+		if(!($caller instanceof bBlib))throw new Exception('Not correct arguments given.');
+
+		return $caller->getInstance(__CLASS__)->setConfig($selector, $value);
 	}
 	
 	

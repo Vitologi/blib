@@ -3,7 +3,7 @@ defined('_BLIB') or die;
 
 class bConfig__database extends bBlib{
 
-	protected $_traits  = array('bSystem', 'bDataMapper');
+	protected $_traits  = array('bSystem','bDataMapper');
 
 	/**
 	 * @var array	- local config storage
@@ -17,41 +17,60 @@ class bConfig__database extends bBlib{
 	/**
 	 * Get config from block`s file named like bBlock__bConfig.php
 	 *
-	 * @param string $name		- block`s name
-	 * @return mixed[]			- local configs
-	 * @throws Exception
+	 * @param string $selector		- config selector
+	 * @return mixed[] - local configs
+	 * @internal param string $block - block`s name
 	 */
-	public function getConfig($name = ''){
+	public function getConfig($selector = ''){
 
-		if(!array_key_exists($name,$this->_config)){
+		if($temp = $this->_navigate($this->_config, $selector))return $temp;
 
-			$dataMapper = $this->_getDataMapper();
+		/**
+		 * @var bConfig__database__bDataMapper	- config data mapper
+		 */
+		$dataMapper = $this->_getDataMapper();
 
+		$path = explode('.', $selector);
+		$curentPath ='';
+		for($i=0; $i<count($path); $i++){
+			$curentPath .= $path[$i];
 
+			if(!$this->_navigate($this->_config, $curentPath)) {
+				$config = $dataMapper->mergeItem($dataMapper->getItem($curentPath));
+				$this->_config = $this->_navigate($this->_config, $curentPath, $config->value);
 
+			}
 
-			$this->_config[$name] = json_decode($strConfig, true);
-
-
+			$curentPath .= '.';
 		}
 
-		return $this->_config[$name];
+		return $this->_navigate($this->_config, $selector);
 	}
 
 	/**
 	 * Set config to block`s file named like bBlock__bConfig.php
 	 *
-	 * @param string $name		- block`s name
-	 * @param null $value		- config value
-	 * @throws Exception
+	 * @param string $selector		- config selector
+	 * @param null $value - config value
 	 */
-	public function setConfig($block = '', $value = null){
+	public function setConfig($selector = '', $value = null){
 
-		if(!array_key_exists($block,$this->_config)){
-			$this->_config[$block]=array();
+		/**
+		 * @var bDataMapper__instance	- config data mapper
+		 */
+		$dataMapper = $this->_getDataMapper();
+		$config = $dataMapper->getItem($selector);
+
+		if(is_array($value) and is_array($config->value)){
+			$config->value = array_replace_recursive($config->value,$value);
+		}else{
+			$config->value = $value;
 		}
 
-		$this->_config[$block] = $value;
+		$this->_config = $this->_navigate($this->_config, $selector, $config->value);
+
+		$config->name = $selector;
+		$dataMapper->save($config);
 	}
 
 }

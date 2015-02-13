@@ -9,7 +9,7 @@ class bDatabase extends bBlib{
 	/**
 	 * @var string[] - included traits
 	 */
-	protected $_traits = array('bSystem', 'bConfig', 'bDecorator');
+	protected $_traits = array('bSystem', 'bConfig');
 
 	/**
 	 * @var null|static - singleton instance
@@ -47,7 +47,7 @@ class bDatabase extends bBlib{
 	public function getDataBase($name = 'default'){
 		if(!array_key_exists($name, $this->_db)){
 
-			$config = $this->_getConfig();
+			$config = $this->getInstance('bConfig')->getConfig(__CLASS__);
 			$connections = $config["connections"];
 
 			if(!isset($connections[$name]))throw new Exception('Can`t find connection "'.$name.'" in db configuration');

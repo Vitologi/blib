@@ -1,24 +1,40 @@
 <?php
 defined('_BLIB') or die;
 
+/**
+ * Class bConfig - interface for store some configuration for blocks.
+ * Included patterns:
+ * 		strategy - many types of config storage
+ */
 class bConfig extends bBlib{
 
-	private static $_instance = null;                               // Singleton instance
-	private        $_config   = array();                            // All configuration stack
-	private        $_default  = 'bConfig__local';            		// Default get/set strategy
-	private        $_strategy = array('bConfig__local');            // Used strategy get/set config
-	protected      $_traits   = array('bSystem', 'bConfig__local'); // Some other strategy instance
+	/**
+	 * @var null|static - Singleton instance
+     */
+	private static $_instance = null;
+
+	private   $_config   = array();                            // All configuration stack
+	private   $_default  = 'bConfig__local';                    // Default get/set strategy
+	private   $_strategy = array('bConfig__local');            // Used strategy get/set config
+	protected $_traits   = array('bSystem', 'bConfig__local'); // Some other strategy instance
 
 
-	// Overload object factory for Singleton
+	/**
+	 * Overload object factory for Singleton
+	 *
+	 * @return bConfig|null|static
+     */
 	static public function create() {
 		if (self::$_instance === null)self::$_instance = parent::create(func_get_args());
 		return self::$_instance;
 	}
 
+
+	/**
+	 * Grab config by self, set config store strategy and point default config strategy
+     */
 	public function input(){
 		$config = $this->getConfig(__CLASS__);
-		//var_dump($config);
 		$components = isset($config["strategy"])?$config["strategy"]:array();
 		if(isset($config["default"]))$this->setDefault($config["default"]);
 
@@ -58,7 +74,11 @@ class bConfig extends bBlib{
 			$config = null;
 
 			foreach($this->_strategy as $i => $strategy){
-				$temp = $this->getInstance($strategy)->getConfig($selector);
+
+				/** @var bConfig__local $strategyObject - strategy instance */
+				$strategyObject = $this->getInstance($strategy);
+
+				$temp = $strategyObject->getConfig($selector);
 
 				if($temp === null)continue;
 
@@ -84,23 +104,35 @@ class bConfig extends bBlib{
 	 * @return $this			- for chaining
      */
 	public function setConfig($selector = '', $value = array()){
+
+		/** @var bConfig__local $strategy - Get default strategy */
 		$strategy = $this->getInstance($this->_default);
+
+		// Extend inner configuration storage
 		$this->_config = $this->_navigate($this->_config, $selector, $value);
+
+		// forwards request to the strategy
 		$strategy->setConfig($selector, $value);
+
 		return $this;
 	}
 
 	/**
 	 * Get configuration from child block
 	 *
-	 * @param string|null $selector		- config selector
-	 * @param bBlib $caller 		- block-initiator
-	 * @return mixed 				- configuration
+	 * @return mixed		- configuration
+	 * @throws Exception
 	 */
 	public static function _getConfig(){
 		if(func_num_args()===2){
+
+			/**
+			 * @var string $selector 	- config selector
+			 * @var bBlib $caller		- block-initiator
+			 */
 			list($selector, $caller) = func_get_args();
 			$selector = get_class($caller).".".$selector;
+
 		}else if(func_num_args()===1){
 			$caller = func_get_arg(0);
 			$selector = get_class($caller);
@@ -117,15 +149,20 @@ class bConfig extends bBlib{
 	/**
 	 * Set configuration from child block
 	 *
-	 * @param string $selector		- config selector
-	 * @param mixed $value 			- config value
-	 * @param bBlib $caller 		- block-initiator
-	 * @return bool|void 			- set/update configuration and operation result
+	 * @return bool|void	- set/update configuration and operation result
+	 * @throws Exception
 	 */
 	public static function _setConfig(){
 		if(func_num_args()===3){
+
+			/**
+			 * @var string $selector 	- config selector
+			 * @var mixed $value 		- config value
+			 * @var bBlib $caller		- block-initiator
+			 */
 			list($selector, $value, $caller) = func_get_args();
 			$selector = get_class($caller).".".$selector;
+
 		}else if(func_num_args()===2){
 			list($value, $caller) = func_get_args();
 			$selector = get_class($caller);
@@ -137,6 +174,5 @@ class bConfig extends bBlib{
 
 		return $caller->getInstance(__CLASS__)->setConfig($selector, $value);
 	}
-	
-	
+
 }

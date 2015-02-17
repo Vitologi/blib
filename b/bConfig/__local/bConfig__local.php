@@ -1,13 +1,14 @@
 <?php
 defined('_BLIB') or die;
 
+/**
+ * Class bConfig__local - strategy for store configuration in block's file (also it is default strategy)
+ */
 class bConfig__local extends bBlib{
 
-	protected      $_traits   = array('bSystem');
+	protected $_traits = array('bSystem');
 
-	/**
-	 * @var array	- local config storage
-     */
+	/** @var mixed[]	- local config storage */
 	private $_config = array();
 
 	public function output(){
@@ -17,13 +18,13 @@ class bConfig__local extends bBlib{
 	/**
 	 * Get config from block`s file named like bBlock__bConfig.php
 	 *
-	 * @param string $selector		- config selector
-	 * @return mixed[] - local configs
+	 * @param string $selector 	- config selector
+	 * @return mixed[] 			- local configs
 	 * @throws Exception
-	 * @internal param string $name - block`s name
 	 */
 	public function getConfig($selector = ''){
 
+		/** @var string $name - block`s name */
 		$name = (strpos($selector,'.'))?strstr($selector, '.', true):$selector;
 
 		if(!array_key_exists($name,$this->_config)){
@@ -44,20 +45,26 @@ class bConfig__local extends bBlib{
 	 * Set config to block`s file named like bBlock__bConfig.php
 	 *
 	 * @param string $selector	- config selector
-	 * @param null $value - config value
+	 * @param mixed $value		- config value
 	 * @throws Exception
-	 * @internal param string $name - block`s name
+	 * @void					- store configuration in block's file
 	 */
 	public function setConfig($selector = '', $value = null){
 
+		/** @var string $name - block`s name */
 		$name = (strpos($selector,'.'))?strstr($selector, '.', true):$selector;
 
 		if(!array_key_exists($name,$this->_config)){
 			$this->_config[$name] = array();
 		}
 
+		// Extend local configuration
 		$this->_config = $this->_navigate($this->_config, $selector, $value);
+
+		// Convert it to string
 		$config = json_encode($this->_config[$name], 256);
+
+		// Save it
 		$file = bBlib::path($name.'__bConfig','php');
 		file_put_contents($file,"<?php defined('_BLIB') or die(); return '".$config."';");
 	}

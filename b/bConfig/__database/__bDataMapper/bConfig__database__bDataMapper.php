@@ -2,19 +2,32 @@
 defined('_BLIB') or die;
 
 /**
- * Class bDatabase__mapper - realisation of Data Mapper pattern
+ * Class bConfig__database__bDataMapper - realisation of Data Mapper for configuration block
  */
 class bConfig__database__bDataMapper extends bDataMapper__instance{
 
+    /**
+     * Configuration object
+     *
+     * @typedef array \Configuration {
+     * @type int $id                - config id
+     * @type string $name           - config name
+     * @type mixed $value           - config value
+     * @type int|null $bconfig_id   - parent (for merging)
+     * }
+     */
 
     /**
-     * Example for get single Item from table
+     * Get configuration by name from table
      *
-     * @return null|object      - data-object
+     * @return stdClass      - data-object {Configuration}
      */
     public function getItem(){
+
+        // Empty config object
         $prototype = (object)array('id'=>null, 'name'=>null, 'value'=>null, 'bconfig_id'=>null);
-		if(func_num_args()===0)return $prototype;
+
+        if(func_num_args()===0)return $prototype;
 
         $name = func_get_arg(0);
 

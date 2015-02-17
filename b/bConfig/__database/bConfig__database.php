@@ -1,13 +1,16 @@
 <?php
 defined('_BLIB') or die;
 
+/**
+ * Class bConfig__database 	- strategy for store configuration in database
+ * Included patterns:
+ * 		Data Mapper - interface for interaction to data base
+ */
 class bConfig__database extends bBlib{
 
 	protected $_traits  = array('bSystem','bDataMapper');
 
-	/**
-	 * @var array	- local config storage
-	 */
+	/** @var mixed[]	- local config storage */
 	private $_config = array();
 
 	public function output(){
@@ -17,48 +20,59 @@ class bConfig__database extends bBlib{
 	/**
 	 * Get config from block`s file named like bBlock__bConfig.php
 	 *
-	 * @param string $selector		- config selector
-	 * @return mixed[] - local configs
-	 * @internal param string $block - block`s name
+	 * @param string $selector	- config selector
+	 * @return mixed[]			- local configs
 	 */
 	public function getConfig($selector = ''){
 
+		// Return stored configuration if it already exists
 		if($temp = $this->_navigate($this->_config, $selector))return $temp;
 
-		/**
-		 * @var bConfig__database__bDataMapper	- config data mapper
-		 */
+		/** @var bConfig__database__bDataMapper $dataMapper	- config data mapper */
 		$dataMapper = $this->_getDataMapper();
 
-		$path = explode('.', $selector);
-		$curentPath ='';
-		for($i=0; $i<count($path); $i++){
-			$curentPath .= $path[$i];
 
-			if(!$this->_navigate($this->_config, $curentPath)) {
-				$config = $dataMapper->mergeItem($dataMapper->getItem($curentPath));
-				$this->_config = $this->_navigate($this->_config, $curentPath, $config->value);
+		/** Recursive(string based) grab configuration from database
+		 * For example:
+		 * bBlock.item.subItem
+		 *  - means that cycle get configuration for
+		 * bBlock , bBlock.item , bBlock.item.subItem
+		 *  - store it in local configuration array $_config
+		 *  - and return bBlock.item.subItem config
+		 */
+		$path = explode('.', $selector);
+		$currentPath ='';
+		for($i=0; $i<count($path); $i++){
+			$currentPath .= $path[$i];
+
+			if(!$this->_navigate($this->_config, $currentPath)) {
+
+				// Merge gonfig with parents lines
+				$config = $dataMapper->mergeItem($dataMapper->getItem($currentPath));
+
+				// Concat with local config
+				$this->_config = $this->_navigate($this->_config, $currentPath, $config->value);
 
 			}
 
-			$curentPath .= '.';
+			$currentPath .= '.';
 		}
 
 		return $this->_navigate($this->_config, $selector);
 	}
 
 	/**
-	 * Set config to block`s file named like bBlock__bConfig.php
+	 * Save configurations to database
 	 *
-	 * @param string $selector		- config selector
-	 * @param null $value - config value
+	 * @param string $selector	- config selector
+	 * @param mixed $value 		- config value
+	 * @void 					- save configurations to database
 	 */
 	public function setConfig($selector = '', $value = null){
 
-		/**
-		 * @var bDataMapper__instance	- config data mapper
-		 */
+		/** @var bDataMapper__instance $dataMapper	- config data mapper */
 		$dataMapper = $this->_getDataMapper();
+
 		$config = $dataMapper->getItem($selector);
 
 		if(is_array($value) and is_array($config->value)){

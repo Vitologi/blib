@@ -6,14 +6,10 @@ defined('_BLIB') or die;
  */
 class bDataMapper__instance extends bBlib{
 
-    /**
-     * @var string[]    - included traits
-     */
+    /** @var string[]    - included traits */
     protected $_traits = array('bSystem','bDatabase');
 
-    /**
-     * @var string      - name of default connection to db
-     */
+    /** @var string      - name of default connection to db */
     protected $_connectionName = 'default';
 
     /**

@@ -6,19 +6,13 @@ defined('_BLIB') or die;
  */
 class bDataMapper extends bBlib{
 
-	/**
-	 * @var null|static - singleton instance
-	 */
+	/** @var null|static - singleton instance */
 	private static $_instance = null;
 
-	/**
-	 * @var string[] - included traits
-	 */
+	/** @var string[] - included traits */
 	protected $_traits = array('bSystem');
 
-	/**
-	 * @var bDataMapper__instance[] - associative array of mappers
-	 */
+	/** @var bDataMapper__instance[] - associative array of mappers */
 	private $_mappers = array();
 
 
@@ -33,6 +27,11 @@ class bDataMapper extends bBlib{
 	}
 
 
+	/**
+	 * Extend child class by Data Mapper
+	 *
+	 * @return bDataMapper__instance	- block's Data Mapper or default instance
+     */
 	public function output(){
 		$concreteMapper = get_class($this->_parent).'__'.__CLASS__;
 		return $this->getDataMapper($concreteMapper);
@@ -41,7 +40,7 @@ class bDataMapper extends bBlib{
 	/**
 	 * Mappers factory
 	 *
-	 * @param string|bBlib $name 				- mapper class name
+	 * @param string|bBlib $name 		- mapper class name
 	 * @return bDataMapper__instance 	- mapper instance
 	 */
 	public function getDataMapper($name = ''){
@@ -57,6 +56,12 @@ class bDataMapper extends bBlib{
 		return $this->_mappers[$name] = bDataMapper__instance::create();
 	}
 
+	/**
+	 * Get Data Mapper from child block
+	 *
+	 * @param bBlib $caller					- block-initiator
+	 * @return bDataMapper__instance|null	- block's Data Mapper
+     */
 	public static function _getDataMapper(bBlib $caller){
 		return $caller->getInstance('bDataMapper');
 	}

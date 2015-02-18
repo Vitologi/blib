@@ -47,7 +47,7 @@ class bConfig__database extends bBlib{
 
 			if(!$this->_navigate($this->_config, $currentPath)) {
 
-				// Merge gonfig with parents lines
+				// Merge configurations with parents lines
 				$config = $dataMapper->mergeItem($dataMapper->getItem($currentPath));
 
 				// Concat with local config

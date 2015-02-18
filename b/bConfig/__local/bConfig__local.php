@@ -64,7 +64,11 @@ class bConfig__local extends bBlib{
 		// Convert it to string
 		$config = json_encode($this->_config[$name], 256);
 
-		// Save it
+		// Check folder
+		$path = bBlib::path($name.'__bConfig');
+		if(!is_dir($path))mkdir($path);
+
+		// Save file
 		$file = bBlib::path($name.'__bConfig','php');
 		file_put_contents($file,"<?php defined('_BLIB') or die(); return '".$config."';");
 	}

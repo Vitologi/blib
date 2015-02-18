@@ -43,11 +43,12 @@ class bDatabase extends bBlib{
 	public function getDataBase($name = 'default'){
 		if(!array_key_exists($name, $this->_db)){
 
-			/** @var bConfig $config 	- configuration block instance */
-			$config = $this->getInstance('bConfig');
+			/** @var bConfig $bConfig 	- configuration block instance */
+			$bConfig = $this->getInstance('bConfig');
 
 			// get connections properties
-			$connections = $config->getConfig(__CLASS__)["connections"];
+			$connections = $bConfig->getConfig(__CLASS__);
+			$connections = $connections["connections"];
 
 			if(!isset($connections[$name]))throw new Exception('Can`t find connection "'.$name.'" in db configuration');
 

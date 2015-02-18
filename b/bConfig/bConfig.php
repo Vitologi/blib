@@ -9,13 +9,11 @@ defined('_BLIB') or die;
  */
 class bConfig extends bBlib{
 
-	/**
-	 * @var null|static - Singleton instance
-     */
+	/** @var null|static $_instance - Singleton instance */
 	private static $_instance = null;
 
 	private   $_config   = array();                            // All configuration stack
-	private   $_default  = 'bConfig__local';                    // Default get/set strategy
+	private   $_default  = 'bConfig__local';                   // Default get/set strategy
 	private   $_strategy = array('bConfig__local');            // Used strategy get/set config
 	protected $_traits   = array('bSystem', 'bConfig__local'); // Some other strategy instance
 

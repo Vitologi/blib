@@ -1,10 +1,9 @@
 <?php
 defined('_BLIB') or die;
 
-class bCssreset extends bBlib{	
-	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-	}
-	
+/**
+ * Class bCssreset	- server abstraction
+ */
+class bCssreset extends bBlib{
+
 }

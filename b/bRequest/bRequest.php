@@ -60,6 +60,17 @@ class bRequest extends bBlib{
         return (isset($this->_request[$name])?$this->_request[$name]:null);        
     }
 
+    /**
+     * Set request variable
+     *
+     * @param string $name  - property name
+     * @param null $value   - property value
+     * @return null
+     */
+    public function set($name = '', $value = null){
+        return $this->_request[$name] = $value;
+    }
+
 
     /**
      * Get tunnel data from child block

@@ -1,5 +1,9 @@
 <?php
 
+
+/**
+ * Class bBlib  - base abstract class
+ */
 abstract class bBlib{
 
     const VERSION           = "0.0.2";  // Engine version
@@ -21,7 +25,7 @@ abstract class bBlib{
 
     /** BASE INPUT/OUTPUT METHODS */
     protected function input(){}
-    public function output(){}
+    public function output(){return null;}
 
     
     /** INTERFACES */
@@ -42,7 +46,7 @@ abstract class bBlib{
      * @param bBlib $block      - block which initiated creation
      * @return $this            - for chaining
      */
-    final public function setParent(bBlib $block = null){
+    final protected function setParent(bBlib $block = null){
         $this->_parent = $block;
         return $this;
     }
@@ -51,18 +55,22 @@ abstract class bBlib{
     /**
      * Extend functionality of block by saving instance of extender
      *
-     * @param string $name      - block`s name
-     * @param array $data       - some data
-     * @return $this            - for chaining
+     * @param string|bBlib $name    - block`s name
+     * @param array $data           - some data
+     * @return $this                - for chaining
      */
     final protected function setTrait($name = '', $data = array()){
         if(!is_array($this->_traits))$this->_traits = array();
         if(!in_array($name, $this->_traits))$this->_traits[] = $name;
-        
+
+        // get output from extender block
         $result = $name::create($data)->setParent($this)->output();
-        
+
+        // implement object
         if($result instanceof bBlib){
             $this->_instances[$name] = $result;
+
+        // or set properties
         }else{
             foreach((array)$result as $key => $value){
                 if(isset($this->_vars[$key]))continue;
@@ -76,6 +84,9 @@ abstract class bBlib{
 
     /**
      * Generate path to block in BEM notation
+     * For example:
+     * $path = bBlib::path('bBlock__elem_modifier','php');
+     * $path = 'b/bBlock/__elem/_modifier/bBlock__elem_modifier.php';
      *
      * @param string $name      - block`s name
      * @param string $ext       - extension of file
@@ -114,11 +125,15 @@ abstract class bBlib{
         $data = (func_num_args()===1)?func_get_arg(0):func_get_args();
         
         $traits = is_array($this->_traits)?$this->_traits:array();
+
+        // set instance/data of all included traits
         foreach($traits as $value)$this->setTrait($value, $data);
+
+        // base input handler
         $this->input($data);
     }
     
-    // Devide scope on local & global
+    /** Divide scope on local & global */
     function __get($key){
         if($key{0}==="_"){
             return isset(self::$_VARS[$key])?self::$_VARS[$key]:null;
@@ -133,9 +148,15 @@ abstract class bBlib{
     function __isset($key){
         return ($key{0}==="_")?isset(self::$_VARS[$key]):isset($this->_vars[$key]);
     }
-    
-    // Call method from trait blocks
-    function __call($method, $args){
+
+    /**
+     * Call method from trait blocks
+     *
+     * @param string $method    - method name
+     * @param array $args       - provided arguments
+     * @return mixed            - some result of traits method
+     */
+    function __call($method = '', $args = array()){
         if(!is_array($this->_traits))$this->_traits = array();
         
         foreach($this->_traits as $value){
@@ -143,12 +164,24 @@ abstract class bBlib{
             $args[] = $this;
             return call_user_func_array(array($value, $method), $args);
         }
+
+        return null;
     } 
 
-    // Autoload class
+    /**
+     * Autoload of class
+     *
+     * @void    - set autoloader
+     */
     private static function autoload(){
-        
-        function _autoload($class){
+
+        /**
+         * Dynamically created autoloader
+         *
+         * @param string $class - class name
+         * @throws Exception
+         */
+        function _autoload($class = ''){
             $path = bBlib::path($class, 'php');
             if(!file_exists($path)){throw new Exception('Called class '.$class.' is missing.');}
             require_once($path);

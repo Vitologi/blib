@@ -3,22 +3,18 @@ defined('_BLIB') or die;
 
 /**
  * Class bDatabase - main controller for work with databases
+ * Included patterns:
+ * 		(in next version)strategy - many types database object
  */
 class bDatabase extends bBlib{
 
-	/**
-	 * @var string[] - included traits
-	 */
+	/** @var string[] - included traits */
 	protected $_traits = array('bSystem', 'bConfig');
 
-	/**
-	 * @var null|static - singleton instance
-	 */
+	/** @var null|static - singleton instance */
 	private static $_instance = null;
 
-	/**
-	 * @var PDO[] - associative array of connections
-	 */
+	/** @var PDO[] - associative array of connections */
 	private $_db = array();
 
 
@@ -32,14 +28,13 @@ class bDatabase extends bBlib{
 		return self::$_instance;
 	}
 
-	/**
-	 * @return $this
-     */
 	public function output(){
 		return $this;
 	}
 
 	/**
+	 * Get database object
+	 *
 	 * @param string $name	- config name
 	 * @return null|PDO		- database object
 	 * @throws Exception
@@ -47,8 +42,11 @@ class bDatabase extends bBlib{
 	public function getDataBase($name = 'default'){
 		if(!array_key_exists($name, $this->_db)){
 
-			$config = $this->getInstance('bConfig')->getConfig(__CLASS__);
-			$connections = $config["connections"];
+			/** @var bConfig $config 	- configuration block instance */
+			$config = $this->getInstance('bConfig');
+
+			// get connections properties
+			$connections = $config->getConfig(__CLASS__)["connections"];
 
 			if(!isset($connections[$name]))throw new Exception('Can`t find connection "'.$name.'" in db configuration');
 

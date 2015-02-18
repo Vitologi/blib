@@ -1,20 +1,34 @@
 <?php
 defined('_BLIB') or die;
 
-class bRequest extends bBlib{	
-	
+/**
+ * Class bRequest
+ */
+class bRequest extends bBlib{
+
+    /** @var null|static $_instance - Singleton instance */
     private static $_instance = null;
-    private $_request = array();
-    private $_tunnel = array();
-    
-    
-    // Overload object factory for Singleton
+
+    /** @var array $_request    - request data */
+    private $_request   = array();
+
+    /** @var array $_tunnel     - tunnel data */
+    private $_tunnel    = array();
+
+
+    /**
+     * Overload object factory for Singleton
+     *
+     * @return bRequest|null|static
+     */
     static public function create() {
         if (self::$_instance === null)self::$_instance = parent::create(func_get_args());
         return self::$_instance;
     }
    
-    // 0_0 work on security 
+    /**
+     * Grab request data and tunnel (data send direct to block)
+     */
     protected function input(){
         $this->_request = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET;
 		
@@ -24,26 +38,53 @@ class bRequest extends bBlib{
         }
         
     }
-    
-	public function output(){
+
+    /**
+     * Return instance without parent
+     *
+     * @return bRequest|null
+     */
+    public function output(){
         self::$_instance->_parent = null;
         return self::$_instance;
 	}
 
-    
-    public function get($name){
+
+    /**
+     * Get request variable
+     *
+     * @param string $name  - property name
+     * @return null
+     */
+    public function get($name = ''){
         return (isset($this->_request[$name])?$this->_request[$name]:null);        
     }
-    
-    
-    public static function _getTunnel($data, $caller){
+
+
+    /**
+     * Get tunnel data from child block
+     *
+     * @param $caller
+     * @return mixed
+     * @throws Exception
+     */
+    public static function _getTunnel(bBlib $caller){
         if(!($caller instanceof bBlib)){throw new Exception('Inherited methods need have bBlib caller.');}
 		$block = get_class($caller);
-		return $caller->getInstance('bRequest')->getTunnel($block);
+
+        /** @var bRequest $bRequest - request block's instance */
+        $bRequest = $caller->getInstance('bRequest');
+
+		return $bRequest->getTunnel($block);
     }
-    
-    
-    protected function getTunnel($name){
+
+
+    /**
+     * Protected method for get tunnel data
+     * @param string $name  - block's name
+     * @return mixed        - some data designed for block
+     */
+    protected function getTunnel($name = ''){
         return (isset($this->_tunnel[$name])?$this->_tunnel[$name]:null);
 	}
  

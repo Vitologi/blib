@@ -4,12 +4,12 @@ defined('_BLIB') or die;
 /**
  * Class bExtension
  * Compile dev. files into product version (block.js.dev + elem1.js.dev + elem2.js.dev + mode1.js.dev = block.js)
+ * Included patterns:
+ * 		singleton	- one extension object
  */
 class bExtension extends bBlib{
 
-	/**
-	 * @var null|static		- variable for storage Singleton object
-     */
+	/** @var null|static $_instance - Singleton instance */
 	private static $_instance = null;
 
 	/**
@@ -34,13 +34,19 @@ class bExtension extends bBlib{
 
 	/**
 	 * Glues files abstraction in working files
-	 * @param array $list		- two-dimensional array ( names of dev-files, like ["bBlock"=>["bBlock_mode1"],"bBlock2"=>["bBlock2_mode1","bBlock2_mode2"]] )
-	 * @param bBlib $caller
+	 * Attribute $list can gets from bDecorator::$_list
+	 * It looks like ["bBlock"=>["bBlock_mode1"],"bBlock2"=>["bBlock2_mode1","bBlock2_mode2"]]
+	 *
+	 * @param array $list		- two-dimensional array (names of dev-files)
+	 * @param bBlib $caller		- block-initiator
 	 */
 	public static function _concat($list = array(), bBlib $caller){
 
+		/** @var bExtension $bExtension	- instance */
+		$bExtension = $caller->getInstance(__class__);
+
         foreach($list as $key => $value){
-            $caller->getInstance(__class__)->concat($key, $value);
+			$bExtension->concat($key, $value);
         }
     }
 
@@ -75,15 +81,19 @@ class bExtension extends bBlib{
 	 * @return array			- sorted glues code (like ["js"=>"code1 \n code2", "css"=>"css rule1 \n css rule2"])
      */
 	private function concatCode($name = '', $stack = array()){
-		$path = bBlib::path($name);
-		$folder =  opendir($path);
+		$path 	= bBlib::path($name);
+		$folder = opendir($path);
+
 		while($file = readdir($folder)){
+
+			// glue only .dev files
 			if(preg_match('/\w*.(\w+).dev$/', $file, $matches)){
 				if(!isset($stack[$matches[1]]))$stack[$matches[1]]='';
 				$stack[$matches[1]] .= file_get_contents($path.$file);
 				continue;
 			}
-            
+
+			// climb down if the folder named like element '__...'
             if(is_dir($path.$file) && substr($file, 0,2) === '__'){
 				$stack = $this->concatCode($name.$file, $stack);
 			};
@@ -91,6 +101,5 @@ class bExtension extends bBlib{
 		
 		return $stack;
 	}
-    
-    
+
 }

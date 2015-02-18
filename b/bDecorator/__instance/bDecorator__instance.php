@@ -1,7 +1,11 @@
 <?php
 defined('_BLIB') or die;
 
-class bDecorator__instance extends bBlib{	
+/**
+ * Class bDecorator__instance   - basic template for create concrete decorators
+ * Redirect all request to protected property $_parent, what contain decorated block
+ */
+class bDecorator__instance extends bBlib{
 	
 	function __get($key){
         return $this->_parent->$key;

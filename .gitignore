@@ -6,4 +6,4 @@ b/bSession/__storage/*
 b/bBlib/__hook/*
 !index.html
 b/bIndex/bIndex.css
-b/bDecorator/bDecorator.ini
+b/bDecorator/__bConfig/

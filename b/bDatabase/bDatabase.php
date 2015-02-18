@@ -4,7 +4,8 @@ defined('_BLIB') or die;
 /**
  * Class bDatabase - main controller for work with databases
  * Included patterns:
- * 		(in next version)strategy - many types database object
+ * 		singleton					- one database controller
+ * 		(in next version)strategy 	- many types database object
  */
 class bDatabase extends bBlib{
 

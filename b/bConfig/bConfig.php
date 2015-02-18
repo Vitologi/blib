@@ -4,7 +4,8 @@ defined('_BLIB') or die;
 /**
  * Class bConfig - interface for store some configuration for blocks.
  * Included patterns:
- * 		strategy - many types of config storage
+ * 		singleton	- one configuration controller
+ * 		strategy 	- many types of config storage
  */
 class bConfig extends bBlib{
 

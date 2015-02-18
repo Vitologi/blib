@@ -3,6 +3,8 @@ defined('_BLIB') or die;
 
 /**
  * Class bDatabase__mapper - realisation of Data Mapper pattern
+ * Included patterns:
+ * 		Data Mapper - base template for inheritance
  */
 class bDataMapper__instance extends bBlib{
 
@@ -19,7 +21,11 @@ class bDataMapper__instance extends bBlib{
      * @throws Exception
      */
     final public function getDatabase(){
-        return $this->getInstance('bDatabase')->getDatabase($this->_connectionName);
+
+        /** @var bDatabase $bDatabase   - instance of database controller */
+        $bDatabase = $this->getInstance('bDatabase');
+
+        return $bDatabase->getDatabase($this->_connectionName);
     }
 
     /**
@@ -37,9 +43,11 @@ class bDataMapper__instance extends bBlib{
     /**
      * Example for get single Item from table
      *
-     * @return null|object      - data-object
+     * @return null|stdClass    - data-object
      */
     public function getItem(){
+
+        // empty object
         if(func_num_args()===0){
             return (object)array('id'=>null,'value'=>null);
         }
@@ -57,7 +65,7 @@ class bDataMapper__instance extends bBlib{
     /**
      * Get list of data (not completed) 0_0
      *
-     * @return null|object      - data-array
+     * @return null|array   - data-array
      */
     public function getList(){
         $query = $this->getDatabase()->prepare('SELECT * FROM `bdatabase__mapper`');

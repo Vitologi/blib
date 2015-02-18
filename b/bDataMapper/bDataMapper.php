@@ -1,8 +1,14 @@
 <?php
 defined('_BLIB') or die;
 
+
 /**
- * Class bDatabase - main controller for work with databases
+ * Class bDataMapper	- factory class for set Data Mappers in blocks
+ * Included patterns:
+ * 		singleton		- one factory
+ * 		factory method	- for create needed Data Mapper to block
+ * 		decorator		- decorate base Data Mapper by concrete block's Data Mapper
+ *
  */
 class bDataMapper extends bBlib{
 
@@ -45,14 +51,17 @@ class bDataMapper extends bBlib{
 	 */
 	public function getDataMapper($name = ''){
 
+		// if already have
 		if(array_key_exists($name, $this->_mappers)){
 			return $this->_mappers[$name];
 		}
 
+		// if can create
 		if(class_exists($name)){
 			return $this->_mappers[$name] = $name::create()->setParent(bDataMapper__instance::create());
 		}
 
+		// default Data Mapper
 		return $this->_mappers[$name] = bDataMapper__instance::create();
 	}
 

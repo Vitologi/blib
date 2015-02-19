@@ -7,86 +7,46 @@ defined('_BLIB') or die;
 class bUser__bDataMapper extends bDataMapper__instance{
 
     /**
-     * Configuration object
+     * User object
      *
-     * @typedef array \Configuration {
-     * @type int $id                - config id
-     * @type string $name           - config name
-     * @type mixed $value           - config value
-     * @type int|null $bconfig_id   - parent (for merging)
+     * @typedef array \User {
+     * @type int $id        - user id
+     * @type string $login  - user login
      * }
      */
 
     /**
      * Get configuration by name from table
      *
-     * @return stdClass      - data-object {Configuration}
+     * @param string $login     - user login
+     * @param string $password  - user password
+     * @return stdClass         - data-object {User}
      */
-    public function getItem(){
+    public function getItem($login = '', $password = ''){
 
-        // Empty config object
-        $prototype = (object)array('id'=>null, 'name'=>null, 'value'=>null, 'bconfig_id'=>null);
+        // Empty user object
+        $prototype = (object)array('id'=>null, 'login'=>null, 'password'=>null);
 
-        if(func_num_args()===0)return $prototype;
+        if(!$login || !$password)return $prototype;
 
-        $name = func_get_arg(0);
-
-        $query = $this->getDatabase()->prepare('SELECT * FROM `bconfig` AS `table` WHERE `table`.`name` LIKE  :name');
-        $query->bindParam(':name', $name, PDO::PARAM_STR);
+        $query = $this->getDatabase()->prepare('SELECT `id`, `login` FROM `buser` AS `table` WHERE `table`.`login` = :login AND  `table`.`password` = :password');
+        $query->bindParam(':login', $login, PDO::PARAM_STR);
+        $query->bindParam(':password', md5($password), PDO::PARAM_STR);
 
         $query->execute();
         if(!$result = $query->fetch(PDO::FETCH_ASSOC))return $prototype;
 
-        $result['value'] = json_decode($result['value'],true);
-
         return (object) $result;
     }
 
-    /**
-     * Merge to parent configs
-     *
-     * @param stdClass $obj     - data-object
-     * @return stdClass         - modified data-object
-     */
-    public function mergeItem(stdClass $obj){
-
-
-        if(!$obj->bconfig_id)return $obj;
-        $parent = $obj->bconfig_id;
-
-        do{
-
-            $query = $this->getDatabase()->prepare('SELECT * FROM `bconfig` WHERE `bconfig`.`id`=:parent');
-            $query->bindParam(':parent', $parent, PDO::PARAM_INT);
-            $query->execute();
-            $parent = null;
-
-            if(!$result = $query->fetch(PDO::FETCH_ASSOC))break;
-
-            // try to merge (if throw exception do nothing)
-            try{
-                $temp = json_decode($result['value'],true);
-                if(is_array($temp) and is_array($obj->value)){
-                    $obj->value = array_replace_recursive($temp, $obj->value);
-                }
-            }catch (Exception $e){}
-
-            $parent = $result['bconfig_id'];
-
-        }while($parent);
-
-        return $obj;
-
-    }
 
     /**
      * Get list of data (not completed) 0_0
-     *
      * @param array $params
-     * @return null|object - data-array
+     * @return array
      */
     public function getList($params = array()){
-
+        return array();
     }
 
     /**
@@ -100,21 +60,33 @@ class bUser__bDataMapper extends bDataMapper__instance{
 
         try{
 
-            if(is_array($obj->value))$obj->value=json_encode($obj->value,true);
+            $db = $this->getDatabase();
 
+            // Update user
             if(isset($obj->id)){
-                $query = $this->getDatabase()->prepare('UPDATE `bconfig` SET `value` = :value, `bconfig_id` = :bconfig_id WHERE `id` = :id ;');
+
+                $query = $db->prepare('SELECT `login`,`password` FROM `buser` AS `table` WHERE `table`.`id` = :id');
                 $query->bindParam(':id', $obj->id, PDO::PARAM_INT);
-                $query->bindParam(':value', $obj->value);
-                $query->bindParam(':bconfig_id', $obj->bconfig_id, PDO::PARAM_INT);
                 $query->execute();
+                $oldUser = $query->fetch(PDO::FETCH_ASSOC);
+
+                if($oldUser['password'] !== $obj->password){
+                    $obj->password =  md5($obj->password);
+                }
+
+                $query = $db->prepare('UPDATE `buser` SET `login` = :login, `password` = :password WHERE `id` = :id ;');
+                $query->bindParam(':id', $obj->id, PDO::PARAM_INT);
+                $query->bindParam(':login', $obj->login, PDO::PARAM_STR);
+                $query->bindParam(':password', $obj->password, PDO::PARAM_STR);
+                $query->execute();
+
+            // Insert user
             }else{
-                $query = $this->getDatabase()->prepare('INSERT INTO `bconfig` (`name`,`value`,`bconfig_id`) VALUES (:name,:value,:bconfig_id);');
-                $query->bindParam(':name', $obj->name, PDO::PARAM_STR);
-                $query->bindParam(':value', $obj->value);
-                $query->bindParam(':bconfig_id', $obj->bconfig_id, PDO::PARAM_INT);
+                $query = $db->prepare('INSERT INTO `buser` (`login`,`password`) VALUES (:login, :password);');
+                $query->bindParam(':login', $obj->login, PDO::PARAM_STR);
+                $query->bindParam(':password', md5($obj->password), PDO::PARAM_STR);
                 $query->execute();
-                $obj->id = $this->getDatabase()->lastInsertId();
+                $obj->id = $db->lastInsertId();
             }
 
         }catch (PDOException $e){
@@ -131,14 +103,21 @@ class bUser__bDataMapper extends bDataMapper__instance{
      * @return bool
      */
     public function install(){
+
+        // Create script
         $query = $this->getDatabase()->prepare("
-            CREATE TABLE IF NOT EXISTS `bconfig` (
-              `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Table for store configuration',
-              `name` varchar(45) DEFAULT NULL COMMENT 'config name',
-              `value` text COMMENT 'JSON serialized configurations',
-              `bconfig_id` int(10) unsigned DEFAULT NULL COMMENT 'id for default configurations',
-              PRIMARY KEY (`id`)
+            CREATE TABLE IF NOT EXISTS `buser` (
+                `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Table for store users',
+                `login` varchar(45) NOT NULL COMMENT 'user login',
+                `password` varchar(45) NOT NULL COMMENT 'user password',
+                PRIMARY KEY (`id`)
             ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+        ");
+
+        // Insert first user (admin:admin)
+        $query->prepare("
+            INSERT INTO `buser` (`id`, `login`, `password`) VALUES
+            (1, 'admin', '21232f297a57a5a743894a0e4a801fc3');
         ");
 
         return $query->execute();
@@ -151,39 +130,8 @@ class bUser__bDataMapper extends bDataMapper__instance{
      * @return bool
      */
     public function uninstall(){
-        $query = $this->getDatabase()->prepare("DROP TABLE IF EXISTS `bconfig`;");
+        $query = $this->getDatabase()->prepare("DROP TABLE IF EXISTS `buser`;");
         return $query->execute();
     }
 
 }
-
-
-return array(
-    'create'	=> array(
-        'buser'	=> array(
-            'fields' => array(
-                'id'		=> array('type'=> 'INT(10) UNSIGNED', 'null'=>'NOT NULL', 'extra'=> 'AUTO_INCREMENT', 'comment'=>'Table for store users'),
-                'login'		=> array('type'=> 'VARCHAR(45)', 'null'=>'NOT NULL', 'comment'=>'user login'),
-                'password'	=> array('type'=> 'VARCHAR(45)', 'null'=>'NOT NULL', 'comment'=>'user password'),
-                'bconfig_id' => array('type'=> 'INT(10) UNSIGNED', 'comment'=>'config')
-            ),
-            'primary'	=> array('id'),
-            'foreign'	=> array(
-                'bconfig_id'	=> null
-            )
-        )
-    ),
-    'insert' => array(
-        'buser' => array(
-            array('login', 'password'),
-            array('admin', '21232f297a57a5a743894a0e4a801fc3')
-        )
-    )
-);
-
-
-return array(
-    'drop' => array(
-        'bUser'
-    )
-);

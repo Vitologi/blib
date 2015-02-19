@@ -11,6 +11,7 @@ class bUser extends bBlib{
 	private   $_template          = array();
 	protected $id                 = null;
 	protected $login              = null;
+	protected $config             = null;
 
 
 	/**
@@ -32,12 +33,10 @@ class bUser extends bBlib{
 		$login 		= $bRequest->get('login');
 		$password 	= $bRequest->get('password');
 		$logout 	= $bRequest->get('logout');
-
-		$config 	= $this->_getConfig();
-		$this->_default('expire', $config['expire'], 604800);
+		$save 		= $bRequest->get('save');
 
 		// Authentication
-		$this->_decore()->authentication($login, $password);
+		$this->_decore()->authorize($login, $password, $save);
 
 		// Logout
 		if($logout)$this->logout();
@@ -62,168 +61,52 @@ class bUser extends bBlib{
 	}
 
 
-	public function authentication($login = null, $password = null){
+	protected function authorize($login = null, $password = null, $remember = false){
 
-		/** @var bDataMapper__instance $bDataMapper	- user Data Mapper */
-		$bDataMapper 	= $this->getInstance('bDataMapper');
-
-		/** @var bRequest $bRequest 		- request data */
-		$bRequest 		= $this->getInstance('bRequest');
-		$save 			= $bRequest->get('save');
+		/** @var bDataMapper__instance $bDataMapper - user Data Mapper */
+		$bDataMapper = $this->getInstance('bDataMapper');
+		/** @var bConfig $bConfig - config block */
+		$bConfig	 = $this->getInstance('bConfig');
 
 
+		// Authentication
 		if($login){
 
 			$user = $bDataMapper->getItem($login, $password);
 
 			if($user->id){
-				$this->id = $user->id;
-				$this->login = $user->login;
+
+				$userConfig 	= $bConfig->getConfig(__CLASS__ . '.' . $this->id);
+				$this->id 		= $user->id;
+				$this->login 	= $user->login;
+				$this->config 	= $userConfig;
+
+				if ($remember == 'on') {
+					$sessionExpire = $bConfig->getConfig(__CLASS__ . '.expire');
+					$sessionExpire = ($sessionExpire) ? $sessionExpire : 604800;
+					$this->_updateSession(array('expire' => $sessionExpire));
+				}
+
+				$this->_setSession('id', $this->id);
+				$this->_setSession('login', $this->login);
+				$this->_setSession('config', $this->config);
 
 			}
 
+		// Authentication from session
+		}else{
+			$this->id = $this->_getSession('id');
 
-		}
-
-		if($this->id === null){
-
-			//autentication
-			if($login){
-				$Q = array(
-					'select' => array(
-						'buser' => array('id','bconfig_id')
-					),
-					'where' => array(
-						'buser' => array('login' => $login, 'password' => md5($password))
-					)
-				);
-
-				$result = $this->_query($Q);
-				if($result->rowCount()>1)throw new Exception("Find many users for this authorisation data");
-
-				if($result->rowCount()==1){
-					$row = $result->fetch();
-					$this->login = $login;
-					$this->id = $row['id'];
-					$this->config = $this->_getConfig($row['bconfig_id']);
-
-					if($save == 'on')$this->_updateSession(array('expire'=>$this->expire));
-
-					$this->_setSession('id', $this->id);
-					$this->_setSession('login', $this->login);
-					$this->_setSession('config', $this->config);
-				}
-
-				//autentication from session
+			if($this->id){
+				$this->config = $this->_getSession('config');
+				$this->login = $this->_getSession('login');
 			}else{
-				$this->id = $this->_getSession('id');
-
-				if($this->id){
-					$this->config = $this->_getSession('config');
-					$this->login = $this->_getSession('login');
-				}else{
-					$this->config = null;
-					$this->login = null;
-				}
+				$this->config = null;
+				$this->login = null;
 			}
-
-			bUser::$singleton = $this;
 		}
 
-		return bUser::$singleton;
 	}
-
-
-
-	/*
-	private static $singleton;
-	
-	public function getSingleton(){return bUser::$singleton;}
-	protected function setSingleton($value){bUser::$singleton = $value;}
-
-	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-		$this->parents = array('bSystem', 'bDatabase', 'bConfig', 'bSession');
-		$this->bTemplate__dynamic = true;
-	}
-
-
-	protected function input($data, $caller){
-		$this->data = $data;
-		$this->caller = $caller;
-		$this->expire = 604800;
-	}
-
-
-	public function output(){
-		if(array_key_exists('logout', $this->_request))$this->logout();
-		$bUser = $this->hook('createSingleton',array());
-
-		//for system
-		if($this->caller)return array('bUser'=>$bUser);
-	
-		//for template
-		$this->local['data'] = bBlib::extend($this->local['data'], array('mods'=>array(), 'attrs'=>array(), 'meta'=>array()));
-		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'attrs'=>$this->data['attrs'], 'meta'=>$this->data['meta'], 'content'=>$bUser->login);
-
-	}
-
-
-
-	protected function createSingleton(){
-		if(!bUser::$singleton){
-			$login = bBlib::extend(bBlib::$global['_request'], 'login', null);
-			$password = bBlib::extend(bBlib::$global['_request'], 'password', null);
-			$save = bBlib::extend(bBlib::$global['_request'], 'save', null);
-
-			//autentication
-			if($login){
-				$Q = array(
-					'select' => array(
-						'buser' => array('id','bconfig_id')
-					),
-					'where' => array(
-						'buser' => array('login' => $login, 'password' => md5($password))
-					)
-				);
-				
-				$result = $this->_query($Q);
-				if($result->rowCount()>1)throw new Exception("Find many users for this authorisation data");
-				
-				if($result->rowCount()==1){
-					$row = $result->fetch();
-					$this->login = $login;
-					$this->id = $row['id'];
-					$this->config = $this->_getConfig($row['bconfig_id']);
-					
-					if($save == 'on')$this->_updateSession(array('expire'=>$this->expire));
-					
-					$this->_setSession('id', $this->id);
-					$this->_setSession('login', $this->login);
-					$this->_setSession('config', $this->config);
-				}
-			
-			//autentication from session
-			}else{
-				$this->id = $this->_getSession('id');
-				
-				if($this->id){
-					$this->config = $this->_getSession('config');
-					$this->login = $this->_getSession('login');
-				}else{			
-					$this->config = null;
-					$this->login = null;
-				}
-			}
-
-			bUser::$singleton = $this;
-		}
-		
-		return bUser::$singleton;
-	}
-	*/
-
 
 	/**
 	 * Logout user (clear session data and user info)

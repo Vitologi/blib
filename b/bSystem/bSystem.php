@@ -60,7 +60,7 @@ class bSystem extends bBlib{
             throw new Exception('Wrong function arguments');
         }
 
-        if(!is_array($obj) || !is_string($selector)) return null;
+        if(!is_array($obj) || !is_string($selector)) return $obj;
 
         $temp = &$obj;
         $needle = explode('.',$selector);

@@ -5,6 +5,7 @@ defined('_BLIB') or die;
  * Class bConfig__database 	- strategy for store configuration in database
  * Included patterns:
  * 		Data Mapper - interface for interaction to data base
+ * 		singleton	- one work object
  */
 class bSession__phpsession extends bBlib{
 

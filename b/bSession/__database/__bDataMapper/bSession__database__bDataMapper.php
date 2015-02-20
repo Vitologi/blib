@@ -2,16 +2,16 @@
 defined('_BLIB') or die;
 
 /**
- * Class bConfig__database__bDataMapper - realisation of Data Mapper for configuration block
+ * Class bConfig__database__bDataMapper - realisation of Data Mapper for session block
  */
-class bConfig__database__bDataMapper extends bDataMapper__instance{
+class bSession__database__bDataMapper extends bDataMapper__instance{
 
     /**
-     * Configuration object
+     * Session object
      *
-     * @typedef array \Configuration {
+     * @typedef array \Session {
      * @type int $id                - config id
-     * @type string $name           - config name
+     * @type string $date           - config name
      * @type mixed $value           - config value
      * @type int|null $bconfig_id   - parent (for merging)
      * }

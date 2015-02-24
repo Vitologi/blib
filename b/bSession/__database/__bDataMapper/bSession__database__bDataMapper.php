@@ -2,7 +2,7 @@
 defined('_BLIB') or die;
 
 /**
- * Class bConfig__database__bDataMapper - realisation of Data Mapper for session block
+ * Class bSession__database__bDataMapper - realisation of Data Mapper for session block
  */
 class bSession__database__bDataMapper extends bDataMapper__instance{
 
@@ -10,73 +10,43 @@ class bSession__database__bDataMapper extends bDataMapper__instance{
      * Session object
      *
      * @typedef array \Session {
-     * @type int $id                - config id
-     * @type string $date           - config name
-     * @type mixed $value           - config value
-     * @type int|null $bconfig_id   - parent (for merging)
+     * @type string $id             - session id
+     * @type string $date           - session expire date
+     * @type mixed $value           - session value
      * }
      */
 
     /**
-     * Get configuration by name from table
+     * Get session by id from table
      *
-     * @return stdClass      - data-object {Configuration}
+     * @return stdClass      - data-object {Session}
      */
     public function getItem(){
 
-        // Empty config object
-        $prototype = (object)array('id'=>null, 'name'=>null, 'value'=>null, 'bconfig_id'=>null);
+        // Empty session object
+        $prototype = (object)array('id'=>null, 'date'=>null, 'value'=>null);
 
         if(func_num_args()===0)return $prototype;
 
-        $name = func_get_arg(0);
+        $id = func_get_arg(0);
+        $expire = func_get_arg(1);
 
-        $query = $this->getDatabase()->prepare('SELECT * FROM `bconfig` AS `table` WHERE `table`.`name` LIKE  :name');
-        $query->bindParam(':name', $name, PDO::PARAM_STR);
+        if($expire){
+            $query = $this->getDatabase()->prepare('SELECT * FROM `bsession` AS `table` WHERE `table`.`id` LIKE  :id AND (UNIX_TIMESTAMP()-:expire < UNIX_TIMESTAMP(`table`.`date`))');
+            $query->bindParam(':expire', $expire, PDO::PARAM_INT);
+        }else{
+            $query = $this->getDatabase()->prepare('SELECT * FROM `bsession` AS `table` WHERE `table`.`id` LIKE  :id');
+        }
 
+        $query->bindParam(':id', $id, PDO::PARAM_STR);
         $query->execute();
+
         if(!$result = $query->fetch(PDO::FETCH_ASSOC))return $prototype;
 
+        // Decode to array
         $result['value'] = json_decode($result['value'],true);
 
         return (object) $result;
-    }
-
-    /**
-     * Merge to parent configs
-     *
-     * @param stdClass $obj     - data-object
-     * @return stdClass         - modified data-object
-     */
-    public function mergeItem(stdClass $obj){
-
-
-        if(!$obj->bconfig_id)return $obj;
-        $parent = $obj->bconfig_id;
-
-        do{
-
-            $query = $this->getDatabase()->prepare('SELECT * FROM `bconfig` WHERE `bconfig`.`id`=:parent');
-            $query->bindParam(':parent', $parent, PDO::PARAM_INT);
-            $query->execute();
-            $parent = null;
-
-            if(!$result = $query->fetch(PDO::FETCH_ASSOC))break;
-
-            // try to merge (if throw exception do nothing)
-            try{
-                $temp = json_decode($result['value'],true);
-                if(is_array($temp) and is_array($obj->value)){
-                    $obj->value = array_replace_recursive($temp, $obj->value);
-                }
-            }catch (Exception $e){}
-
-            $parent = $result['bconfig_id'];
-
-        }while($parent);
-
-        return $obj;
-
     }
 
     /**
@@ -100,21 +70,22 @@ class bSession__database__bDataMapper extends bDataMapper__instance{
 
         try{
 
-            if(is_array($obj->value))$obj->value=json_encode($obj->value,true);
+            // Convert to string
+            $value = (is_array($obj->value))?json_encode($obj->value,true):$obj->value;
 
             if(isset($obj->id)){
-                $query = $this->getDatabase()->prepare('UPDATE `bconfig` SET `value` = :value, `bconfig_id` = :bconfig_id WHERE `id` = :id ;');
-                $query->bindParam(':id', $obj->id, PDO::PARAM_INT);
-                $query->bindParam(':value', $obj->value);
-                $query->bindParam(':bconfig_id', $obj->bconfig_id, PDO::PARAM_INT);
+                $query = $this->getDatabase()->prepare('UPDATE `bsession` SET `value` = :value WHERE `id` = :id ;');
+                $query->bindParam(':id', $obj->id, PDO::PARAM_STR);
+                $query->bindParam(':value', $value, PDO::PARAM_STR);
                 $query->execute();
             }else{
-                $query = $this->getDatabase()->prepare('INSERT INTO `bconfig` (`name`,`value`,`bconfig_id`) VALUES (:name,:value,:bconfig_id);');
-                $query->bindParam(':name', $obj->name, PDO::PARAM_STR);
-                $query->bindParam(':value', $obj->value);
-                $query->bindParam(':bconfig_id', $obj->bconfig_id, PDO::PARAM_INT);
+
+                $obj->id = md5(microtime(true).$_SERVER['REMOTE_ADDR']);
+
+                $query = $this->getDatabase()->prepare('INSERT INTO `bsession` (`id`,`value`) VALUES (:id,:value);');
+                $query->bindParam(':id',  $obj->id, PDO::PARAM_STR);
+                $query->bindParam(':value', $value, PDO::PARAM_STR);
                 $query->execute();
-                $obj->id = $this->getDatabase()->lastInsertId();
             }
 
         }catch (PDOException $e){
@@ -126,19 +97,18 @@ class bSession__database__bDataMapper extends bDataMapper__instance{
 
 
     /**
-     * Install empty table in database
+     * Install empty table to database
      *
      * @return bool
      */
     public function install(){
         $query = $this->getDatabase()->prepare("
-            CREATE TABLE IF NOT EXISTS `bconfig` (
-              `id` int(10) unsigned NOT NULL AUTO_INCREMENT COMMENT 'Table for store configuration',
-              `name` varchar(45) DEFAULT NULL COMMENT 'config name',
-              `value` text COMMENT 'JSON serialized configurations',
-              `bconfig_id` int(10) unsigned DEFAULT NULL COMMENT 'id for default configurations',
-              PRIMARY KEY (`id`)
-            ) ENGINE=MyISAM  DEFAULT CHARSET=utf8;
+            CREATE TABLE IF NOT EXISTS `bsession` (
+                `id` char(32) NOT NULL COMMENT 'Table for store session data in JSON format, as key use md5',
+                `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Session date',
+                `value` text COMMENT 'JSON serialized session data',
+                PRIMARY KEY (`id`)
+            ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
         ");
 
         return $query->execute();
@@ -146,12 +116,12 @@ class bSession__database__bDataMapper extends bDataMapper__instance{
 
 
     /**
-     * Uninstall table in database
+     * Uninstall table from database
      *
      * @return bool
      */
     public function uninstall(){
-        $query = $this->getDatabase()->prepare("DROP TABLE IF EXISTS `bconfig`;");
+        $query = $this->getDatabase()->prepare("DROP TABLE IF EXISTS `bsession`;");
         return $query->execute();
     }
 

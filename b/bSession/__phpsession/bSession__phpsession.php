@@ -97,7 +97,7 @@ class bSession__phpsession extends bBlib{
 
 		session_start();
 		$_SESSION = array_replace_recursive($tempStorage, $_SESSION);
-		$this->_data = $_SESSION[__CLASS__];
+		if(isset($_SESSION[__CLASS__]))$this->_data = $_SESSION[__CLASS__];
 
 	}
 

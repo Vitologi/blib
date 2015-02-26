@@ -71,31 +71,36 @@ class bSession__phpsession extends bBlib{
 
 	public function updateSession($expire = null, $storePath=null){
 
-		if( !session_start() ){
-			throw new Exception('Cannot use php session.');
-		}
+        if ($expire !== null) $this->_expire = $expire;
+        if (is_string($storePath))$this->_storePath = $storePath;
 
-		$tempStorage = $_SESSION;
+        if(session_id()){
+            $tempStorage = $_SESSION;
+            unset($_COOKIE[session_name()]);
+            session_destroy();
+        }else{
+            $tempStorage = array();
+        }
 
-		session_destroy();
+        if(
+                ($this->_storePath !== null)
+            &&	(ini_set('session.save_path', $this->_storePath) === false)
+        ){
+            throw new Exception('Can`t set php session save path');
+        }
 
-		if(
-				($storePath !== null)
-			&&	(ini_set('session.save_path', $storePath) === false)
-			&&	($this->_storePath = $storePath)
-		){
-			throw new Exception('Can`t set php session save path');
-		}
+        if(
+                ($this->_expire !== null)
+            &&	(ini_set('session.cookie_lifetime', $this->_expire) === false)
+        ){
+            throw new Exception('Can`t set php session cookie lifetime');
 
-		if(
-				($expire !== null)
-			&&	(ini_set('session.cookie_lifetime', $expire) === false)
-			&&	($this->_expire = $expire)
-		){
-			throw new Exception('Can`t set php session cookie lifetime');
-		}
+        }
 
-		session_start();
+        if(!session_start() ){
+            throw new Exception('Cannot use php session.');
+        }
+
 		$_SESSION = array_replace_recursive($tempStorage, $_SESSION);
 		if(isset($_SESSION[__CLASS__]))$this->_data = $_SESSION[__CLASS__];
 

@@ -36,7 +36,7 @@ class bUser extends bBlib{
 		$save 		= $bRequest->get('save');
 
 		// Authentication
-		$this->_decore()->authorize($login, $password, $save);
+		$this->_decorate()->authorize($login, $password, $save);
 
 		// Logout
 		if($logout)$this->logout();
@@ -84,7 +84,7 @@ class bUser extends bBlib{
 				if ($remember == 'on') {
 					$sessionExpire = $bConfig->getConfig(__CLASS__ . '.expire');
 					$sessionExpire = ($sessionExpire) ? $sessionExpire : 604800;
-					$this->_updateSession(array('expire' => $sessionExpire));
+					$this->_updateSession($sessionExpire);
 				}
 
 				$this->_setSession('id', $this->id);
@@ -119,8 +119,8 @@ class bUser extends bBlib{
 
 		$this->id 		= null;
 		$this->login	= null;
+        $this->config 	= null;
 
-		$this->_setSession();
 		$this->_clearSession();
 	}
 }

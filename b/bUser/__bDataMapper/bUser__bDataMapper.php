@@ -28,10 +28,11 @@ class bUser__bDataMapper extends bDataMapper__instance{
         $prototype = (object)array('id'=>null, 'login'=>null, 'password'=>null);
 
         if(!$login || !$password)return $prototype;
+        $password = md5($password);
 
         $query = $this->getDatabase()->prepare('SELECT `id`, `login` FROM `buser` AS `table` WHERE `table`.`login` = :login AND  `table`.`password` = :password');
         $query->bindParam(':login', $login, PDO::PARAM_STR);
-        $query->bindParam(':password', md5($password), PDO::PARAM_STR);
+        $query->bindParam(':password', $password, PDO::PARAM_STR);
 
         $query->execute();
         if(!$result = $query->fetch(PDO::FETCH_ASSOC))return $prototype;

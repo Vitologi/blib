@@ -1,17 +1,33 @@
 <?php
 defined('_BLIB') or die;
 
+/**
+ * Class bRbac  - for realization Role Based Access Control
+ */
 class bRbac extends bBlib{
 
 
     protected $_traits     = array('bSystem', 'bDataMapper', 'bUser');
+    /**
+     * @var null|array $_operations - list of roles + privileges + rules witch get from database
+     */
     private   $_operations = null;
+    /**
+     * @var null|array $_roles      - serialized roles array like array('admin'=>true, 'manager'=> true)
+     */
     private   $_roles      = null;
+    /**
+     * @var null|array $_privileges - serialized privileses+rules array like array('show'=>null, 'add'=>null, 'edit'=>'editOwner', 'delete'=>'deleteOwner')
+     */
     private   $_privileges = null;
 
-	
-	
-	protected function input(){
+
+    /**
+     * Get and store rbac data:
+     *  - from global variable if it exists
+     *  - or from database
+     */
+    protected function input(){
 
         /** @var bUser $bUser  - user instance */
         $bUser = $this->getInstance('bUser');
@@ -32,12 +48,23 @@ class bRbac extends bBlib{
 
         $this->parseOperation($this->_operations);
 	}
-	
-	public function output(){
+
+    /**
+     * Save self instance in child block
+     *
+     * @return $this
+     */
+    public function output(){
 		return $this;
 	}
 
-	private function parseOperation($operations){
+    /**
+     * Parse rbac data
+     *
+     * @param $operations   - list of privilege,role,rules
+     * @void                - parse privilege,role,rules how $this propertys
+     */
+    private function parseOperation($operations){
         $roles      = array();
         $privileges = array();
 		
@@ -49,9 +76,16 @@ class bRbac extends bBlib{
 		$this->_roles       = $roles;
 		$this->_privileges  = $privileges;
 	}
-	
-	
-	public function checkAccess($operation, $data = null){
+
+
+    /**
+     * Check current user access to operation
+     *
+     * @param $operation    - operation`s name
+     * @param null $data    - provided data
+     * @return bool|mixed   - access flag or result children rules
+     */
+    public function checkAccess($operation, $data = null){
 		$privileges = $this->_privileges;
 		if(!array_key_exists($operation, $privileges))return false;
 		
@@ -59,9 +93,15 @@ class bRbac extends bBlib{
 		if(method_exists($this->_parent, $value))return $this->_parent->$value($data);
 		return true;
 	}
-	
-	
-	protected static function _checkAccess(){
+
+
+    /**
+     * Method for use in children object
+     *
+     * @return bool|mixed   - access flag or result children rules
+     * @throws Exception
+     */
+    protected static function _checkAccess(){
 
         if(func_num_args()===3){
 

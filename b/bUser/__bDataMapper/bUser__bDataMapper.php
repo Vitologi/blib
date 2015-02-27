@@ -83,9 +83,12 @@ class bUser__bDataMapper extends bDataMapper__instance{
 
             // Insert user
             }else{
+
+                $obj->password =  md5($obj->password);
+
                 $query = $db->prepare('INSERT INTO `buser` (`login`,`password`) VALUES (:login, :password);');
                 $query->bindParam(':login', $obj->login, PDO::PARAM_STR);
-                $query->bindParam(':password', md5($obj->password), PDO::PARAM_STR);
+                $query->bindParam(':password', $obj->password, PDO::PARAM_STR);
                 $query->execute();
                 $obj->id = $db->lastInsertId();
             }

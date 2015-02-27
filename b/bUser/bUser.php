@@ -14,6 +14,21 @@ class bUser extends bBlib{
 	protected $config             = null;
 
 
+    /**
+     * @return null|int     - get user id
+     */
+    public function getId(){return $this->id;}
+
+    /**
+     * @return null|string  - get user login
+     */
+    public function getLogin(){return $this->login;}
+
+    /**
+     * @return mixed        - get user configuration
+     */
+    public function getConfig(){return $this->config;}
+
 	/**
 	 * Overload object factory for Singleton
 	 *

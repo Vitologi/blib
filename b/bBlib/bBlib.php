@@ -30,6 +30,17 @@ abstract class bBlib{
     
     /** INTERFACES */
     /**
+     * Get traits array
+     *
+     * @return null|string[]       - traits array
+     */
+    final protected function getTraits(){
+        return $this->_traits;
+    }
+
+
+
+    /**
      * Get included instance
      *
      * @param string $name      - instance`s name

@@ -1,23 +1,37 @@
 <?php
 defined('_BLIB') or die;
 
-class bInclude extends bBlib{	
-	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-		$this->parents = array('bSystem', 'bConfig');
-	}
-	
-	protected function input($data, $caller){
-		$list = bBlib::extend(bBlib::$global['_request'], 'list', array());
-		if(is_string($list))$list = (array)json_decode($list);
-		$this->list = $list;
-		$this->callback = bBlib::extend(bBlib::$global['_request'], 'callback');
-		
-		$this->path = bBlib::path('bInclude');
-		$this->cache = $this->path."/__cache/bInclude__cache.ini";
-		
-		$this->disableCache = false;
+class bInclude extends bBlib{
+
+    protected $_traits       = array('bSystem', 'bRequest', 'bConfig');
+    private   $_list         = array();
+    private   $_callback     = null;
+    private   $_path         = null;
+    private   $_cache        = null;
+    private   $_disableCache = null;
+
+	protected function input(){
+
+        /** @var bConfig $bConfig   - configuration instance */
+        $bConfig = $this->getInstance('bConfig');
+
+        /** @var bRequest $bRequest - request instance */
+        $bRequest = $this->getInstance('bRequest');
+
+
+        $this->_path            = bBlib::path('bInclude__cache');
+        $this->_cache           = bBlib::path('bInclude__cache', 'ini');
+        $this->_disableCache    = $bConfig->getConfig('bInclude.disableCache');
+
+        if($list = $bRequest->get('list')){
+            if(!is_array($list))$list = (array)json_decode($list);
+            $this->_list = $list;
+        }
+
+        if($callback = $bRequest->get('callback')){
+            $this->_callback = $callback;
+        }
+
 	}
 	
 	public function output(){
@@ -25,15 +39,15 @@ class bInclude extends bBlib{
 		//get name
 		$name = $this->getCacheName();
 		
-		if($this->disableCache || !file_exists($this->path.'/__cache/'.$name.'.js')){
-			$this->setCache($name, $this->list);
+		if($this->_disableCache || !file_exists($this->_path.$name.'.js')){
+			$this->setCache($name, $this->_list);
 		}
 		
 		//get version
-		$version = (file_exists($this->cache)?filemtime($this->cache):0);
+		$version = (file_exists($this->_cache)?filemtime($this->_cache):0);
 		
 		//get list
-		$ini = @file_get_contents($this->cache);
+		$ini = @file_get_contents($this->_cache);
 		$ini = (array)json_decode($ini);
 		$list = $ini[$name];
 		
@@ -44,7 +58,7 @@ class bInclude extends bBlib{
 		));
 		
 		header('Content-Type: application/json; charset=UTF-8');
-		echo ($this->callback?sprintf('%1$s(%2$s);',$this->callback, $answer):$answer);
+		echo ($this->_callback?sprintf('%1$s(%2$s);',$this->_callback, $answer):$answer);
 		exit;
 
 	}
@@ -52,7 +66,7 @@ class bInclude extends bBlib{
 	/** ---------------------- */
 	
 	private function getCacheName(){
-		$arr = $this->list;
+		$arr = $this->_list;
 		sort($arr);
 		return md5(implode("",$arr));
 	}
@@ -60,23 +74,23 @@ class bInclude extends bBlib{
 	private function setCache($name, $list){
 		
 		$cache = $this->scan('b', 'css', $list);
-		$css = @fopen ($this->path.'/__cache/'.$name.'.css', "w");
+		$css = @fopen ($this->_path.$name.'.css', "w");
 		@fwrite ($css, $cache['code']);
 		@fclose ($css);
 		
 		
 		$cache = $this->scan('b', 'js', $list);
-		$js = @fopen ($this->path.'/__cache/'.$name.'.js', "w");
+		$js = @fopen ($this->_path.$name.'.js', "w");
 		@fwrite ($js, $cache['code']);
 		@fclose ($js);
 		
-		$this->local['list'] = $cache['list'];
+		$this->_list = $cache['list'];
 		
-		$temp = @file_get_contents($this->cache);
+		$temp = @file_get_contents($this->_cache);
 		$temp = ($temp)?(array)json_decode($temp):array();
-		$temp = array_merge($temp,array($name => $this->list));
+		$temp = array_merge($temp,array($name => $this->_list));
 		$temp = json_encode($temp);
-		$ini = @fopen ($this->cache, "w");
+		$ini = @fopen ($this->_cache, "w");
 		@fwrite ($ini, $temp);
 		@fclose ($ini);
 		
@@ -104,9 +118,9 @@ class bInclude extends bBlib{
 			
 			if(count($list) && !in_array($name, $list)) continue;
 			
-			$block = new $name();
+			$block = $name::create();
 			$code = @file_get_contents($dir.'/'.$v);
-			$cache[$name] = array($block->parents, $code);
+			$cache[$name] = array($block->getTraits(), $code);
 	
 		}
 		

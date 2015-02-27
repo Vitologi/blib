@@ -1,91 +1,90 @@
 <?php
 defined('_BLIB') or die;
 
-class bRbac extends bBlib{	
-	
-	private static $singleton = null;
-	private $user;
-	private $operations;
-	private $roles;
-	private $privilages;
+class bRbac extends bBlib{
+
+
+    protected $_traits     = array('bSystem', 'bDataMapper', 'bUser');
+    private   $_operations = null;
+    private   $_roles      = null;
+    private   $_privileges = null;
 
 	
 	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-		$this->parents = array('bSystem', 'bDatabase', 'bConfig', 'bSession', 'bUser');
-	}
-	
-	protected function input($data, $caller){
-		$this->user = $this->local['bUser'];
+	protected function input(){
+
+        /** @var bUser $bUser  - user instance */
+        $bUser = $this->getInstance('bUser');
+
+        /** @var bRbac__bDataMapper $bDataMapper    - rbac data mapper */
+        $bDataMapper = $this->getInstance('bDataMapper');
+
+        $userId = $bUser->getId();
+
+        $globalOperations = isset(bBlib::$_VARS[__CLASS__][$userId])?bBlib::$_VARS[__CLASS__][$userId]:null;
+
+        if($globalOperations != null){
+            $this->_operations = $globalOperations;
+        }else{
+            $this->_operations = $bDataMapper->getOperations($userId);
+            bBlib::$_VARS[__CLASS__][$userId] = $this->_operations;
+        }
+
+        $this->parseOperation($this->_operations);
 	}
 	
 	public function output(){
-		
-		$oldId = $this->_getSession('userId');
-		$newId = $this->user->id;
-		if($oldId != null && ($oldId == $newId) && bRbac::$singleton == null){
-			$this->operations = $this->_getSession('operations');
-			$this->parseOperation($this->operations);
-			bRbac::$singleton = $this;
-		}elseif(!$oldId || ($oldId !== $newId) || bRbac::$singleton == null){
-			$this->operations = $this->getOperation($newId);
-			$this->_setSession('userId', $newId);
-			$this->_setSession('operations', $this->operations);
-			$this->parseOperation($this->operations);
-			bRbac::$singleton = $this;
-		}
-		
-		return array('bRbac'=>bRbac::$singleton);
-		
+		return $this;
 	}
 
-	
-	private function getOperation($id){
-		if(!$id)return array();
-
-		$Q = "
-			SELECT  `brbac__roles`.`name` AS  `role` ,  `brbac__privileges`.`name` AS  `privilage` ,  `brbac__rules`.`name` AS  `rule` 
-			FROM  `brbac__privileges` ,  `brbac__roles` ,  `brbac__user_roles`, (`brbac` 
-			LEFT JOIN  `brbac__rules` ON  `brbac`.`brbac__rules_id` =  `brbac__rules`.`id` )
-			WHERE (`brbac__user_roles`.`buser_id` =  '".$id."')
-			AND  `brbac__user_roles`.`brbac__roles_id` =  `brbac__roles`.`id` 
-			AND  `brbac`.`brbac__roles_id` =  `brbac__roles`.`id` 
-			AND  `brbac`.`brbac__privileges_id` =  `brbac__privileges`.`id`
-		";
-		$result = $this->_query($Q);
-
-		return $result->fetchAll(PDO::FETCH_ASSOC);
-	}
-	
 	private function parseOperation($operations){
-		$roles = array();
-		$privilages = array();
+        $roles      = array();
+        $privileges = array();
 		
 		foreach($operations as $key => $value){
 			$roles[$value['role']] = true;
-			if(!array_key_exists($value['privilage'], $privilages) || $privilages[$value['privilage']] !== null)$privilages[$value['privilage']] = $value['rule'];
+			if(!array_key_exists($value['privilege'], $privileges) || $privileges[$value['privilege']] !== null)$privileges[$value['privilege']] = $value['rule'];
 		} 
 		
-		$this->roles = $roles;
-		$this->privilages = $privilages;
+		$this->_roles       = $roles;
+		$this->_privileges  = $privileges;
 	}
 	
 	
-	protected function checkAccess($operation, $data = null, $caller){
-		$privilages = $this->privilages;
-		if(!array_key_exists($operation, $privilages))return false;
+	public function checkAccess($operation, $data = null){
+		$privileges = $this->_privileges;
+		if(!array_key_exists($operation, $privileges))return false;
 		
-		$value = $privilages[$operation];
-		if(is_string($value))return $caller->call($value, array($data));
+		$value = $privileges[$operation];
+		if(method_exists($this->_parent, $value))return $this->_parent->$value($data);
 		return true;
 	}
 	
 	
-	protected static function _checkAccess($data, $caller = null){
-		if($caller == null)throw new Exception("Try call access check for not defined object.");
-		bBlib::extend($data, '1', null);
-		return bRbac::$singleton->checkAccess($data[0], $data[1], $caller);
+	protected static function _checkAccess(){
+
+        if(func_num_args()===3){
+
+            /**
+             * @var string $operationName 	- name of checked operation
+             * @var mixed $data 		    - some data
+             * @var bBlib $caller		    - block-initiator
+             */
+            list($operationName, $data, $caller) = func_get_args();
+
+        }else if(func_num_args()===2){
+            list($operationName, $caller) = func_get_args();
+            $data = array();
+        }else{
+            throw new Exception('Not correct arguments given.');
+        }
+
+        if(!($caller instanceof bBlib))throw new Exception('Not correct arguments given.');
+
+        /** @var bRbac $bRbac  - rbac instance */
+        $bRbac = $caller->getInstance(__CLASS__);
+
+		return  $bRbac->checkAccess($operationName, $data);
 	}
 	
 }

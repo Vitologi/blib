@@ -29,8 +29,6 @@ class bDatabase extends bBlib{
 		return self::$_instance;
 	}
 
-    protected function input(){}
-
 	public function output(){
 		return $this;
 	}

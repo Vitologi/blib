@@ -14,8 +14,6 @@ class bDataMapper__instance extends bBlib{
     /** @var string      - name of default connection to db */
     protected $_connectionName = 'default';
 
-    protected function input(){}
-
     /**
      * Get needed connection from database-controller
      *

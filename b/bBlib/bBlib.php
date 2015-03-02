@@ -24,7 +24,7 @@ abstract class bBlib{
 
 
     /** BASE INPUT/OUTPUT METHODS */
-    abstract protected function input();
+    protected function input(){}
     public function output(){return null;}
 
     

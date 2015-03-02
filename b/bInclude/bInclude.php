@@ -1,16 +1,43 @@
 <?php
 defined('_BLIB') or die;
 
+/**
+ * Class bInclude   - Allows get all script or style file in one. And store in local cache.
+ */
 class bInclude extends bBlib{
 
-    protected $_traits       = array('bSystem', 'bRequest', 'bConfig');
-    private   $_list         = array();
-    private   $_callback     = null;
-    private   $_path         = null;
-    private   $_cache        = null;
-    private   $_disableCache = null;
+    protected   $_traits        = array('bSystem', 'bRequest', 'bConfig');
+    /**
+     * @var array       - requested list of blocks
+     */
+    private     $_list          = array();
+    /**
+     * @var null|string - callback function for jsonp realisation
+     */
+    private     $_callback      = null;
+    /**
+     * @var null|string - path to store cache file
+     */
+    private     $_path          = null;
+    /**
+     * @var null|string - path to file with meta data
+     */
+    private     $_cache         = null;
+    /**
+     * @var boolean     - disable cache flag
+     */
+    private     $_disableCache  = false;
 
-	protected function input(){
+
+    /**
+     * Set basic data:
+     *  - name of cache folder
+     *  - path to cache file
+     *  - disable cache flag
+     *  - list of needed files
+     *  - name of callback function
+     */
+    protected function input(){
 
         /** @var bConfig $bConfig   - configuration instance */
         $bConfig = $this->getInstance('bConfig');
@@ -33,8 +60,13 @@ class bInclude extends bBlib{
         }
 
 	}
-	
-	public function output(){
+
+    /**
+     * Main output method
+     *
+     * @void - return name and list of blocks
+     */
+    public function output(){
 		
 		//get name
 		$name = $this->getCacheName();
@@ -62,16 +94,25 @@ class bInclude extends bBlib{
 		exit;
 
 	}
-	
-	/** ---------------------- */
-	
-	private function getCacheName(){
+
+    /**
+     * Generate name of created cache
+     *
+     * @return string   - name of file (without extension)
+     */
+    private function getCacheName(){
 		$arr = $this->_list;
 		sort($arr);
 		return md5(implode("",$arr));
 	}
 
-	private function setCache($name, $list){
+    /**
+     * Save cached files and create/edit meta file
+     *
+     * @param string $name  - cache file name
+     * @param array $list   - included blocks list
+     */
+    private function setCache($name = '', $list = array()){
 		
 		$cache = $this->scan('b', 'css', $list);
 		$css = @fopen ($this->_path.$name.'.css', "w");
@@ -96,25 +137,30 @@ class bInclude extends bBlib{
 		
 	}
 	
-	/*
-//сканирует все директории и склеивает весь код указанного типа файлов
-//[param] $dir-директория , $mask-какие типы файлов склеивать, $code - куда поместить склееянный код
-//[answer] массив имен склеянных файлов, пишет код в $code
-*/
-	private function scan($dir, $extention, $list, $cache = array(), $deep = 0){
+    /**
+     * Scan all directory and glue code pointed by extension
+     *
+     * @param string $dir       - folder name
+     * @param string $extension - extension (js, css)
+     * @param array $list       - block`s list like array('bIndex', 'bTemplate', 'bCssreset')
+     * @param array $cache      - temp code storage like array('bIndex'=>array(array('bSystem','bConfig','bTemplate'), '%some file code%'))
+     * @param int $deep         - counter of scanning depth
+     * @return array|mixed      - code and files names like array('code'=>'% some code %', 'list'=>array('bIndex', 'bTemplate', 'bSystem'))
+     */
+    private function scan($dir = '', $extension='', $list = array(), $cache = array(), $deep = 0){
 
 		$arr = opendir($dir);
 		while($v = readdir($arr)){
 			if($v == '.' or $v == '..' or $v == 'bInclude' or $v == 'bBlib') continue;
 			
 			if(is_dir($dir.'/'.$v)){
-				$cache = array_merge($cache, $this->scan($dir.'/'.$v, $extention, $list, $cache, $deep+1));
+				$cache = array_merge($cache, $this->scan($dir.'/'.$v, $extension, $list, $cache, $deep+1));
 				continue;
 			}
 			
-			if(!fnmatch('*.'.$extention, $v)) continue;
+			if(!fnmatch('*.'.$extension, $v)) continue;
 			
-			$name = basename($v, '.'.$extention);
+			$name = basename($v, '.'.$extension);
 			
 			if(count($list) && !in_array($name, $list)) continue;
 			
@@ -124,12 +170,20 @@ class bInclude extends bBlib{
 	
 		}
 		
-		return ($deep?$cache:$this->glueCache($cache, array('code'=>null, 'list'=>array())));
+		return ($deep?$cache:$this->glueCache($cache));
 		
 	}
 
-		
-	private function glueCache($cache, $answer, $deep = 0){
+
+    /**
+     * Sort files code by priority ($_traits property) and glue them
+     *
+     * @param array $cache  - temp code storage like array('bIndex'=>array(array('bSystem','bConfig','bTemplate'), '%some file code%'))
+     * @param array $answer - returned variable prototype
+     * @param int $deep     - counter of scanning depth
+     * @return array        - gluing code like array('list'=>array('bIndex', 'bTemplate'), 'code'=>'%some code%'))
+     */
+    private function glueCache($cache = array(), $answer = array('code'=>null, 'list'=>array()), $deep = 0){
 		$i=0;
 		foreach($cache as $key => $value){
 			

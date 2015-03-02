@@ -13,6 +13,8 @@ class bConfig__database extends bBlib{
 	/** @var mixed[]	- local config storage */
 	private $_config = array();
 
+    protected function input(){}
+
 	public function output(){
 		return $this;
 	}

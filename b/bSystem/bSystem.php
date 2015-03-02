@@ -7,6 +7,8 @@ defined('_BLIB') or die;
 class bSystem extends bBlib{
 
 
+    protected function input(){}
+
     /**
      * Set default value for block
      *

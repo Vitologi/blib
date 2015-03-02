@@ -32,6 +32,7 @@ class bDataMapper extends bBlib{
 		return self::$_instance;
 	}
 
+    protected function input(){}
 
 	/**
 	 * Extend child class by Data Mapper

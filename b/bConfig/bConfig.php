@@ -24,30 +24,32 @@ class bConfig extends bBlib{
 	 * @return bConfig|null|static
      */
 	static public function create() {
-		if (self::$_instance === null)self::$_instance = parent::create(func_get_args());
+		if (self::$_instance === null){
+            self::$_instance = parent::create(func_get_args());
+            self::$_instance->initialize();
+        }
 		return self::$_instance;
-	}
-
-
-	/**
-	 * Grab config by self, set config store strategy and point default config strategy
-     */
-	public function input(){
-		$config = $this->getConfig(__CLASS__);
-		$components = isset($config["strategy"])?$config["strategy"]:array();
-		if(isset($config["default"]))$this->setDefault($config["default"]);
-
-		foreach($components as $key => $component){
-			$this->setTrait($component);
-			$this->_strategy[] = $component;
-		}
-
 	}
 
 	public function output(){
 		return $this;
 	}
 
+    /**
+     * Grab config by self, set config store strategy and point default config strategy
+     * ATTENTION: this operation execute after save singleton into static property
+     * this is need for prevent error(loop) when strategy based on block which use configuration
+     */
+    public function initialize(){
+        $config = $this->getConfig(__CLASS__);
+        $components = isset($config["strategy"])?$config["strategy"]:array();
+        if(isset($config["default"]))$this->setDefault($config["default"]);
+
+        foreach($components as $key => $component){
+            $this->setTrait($component);
+            $this->_strategy[] = $component;
+        }
+    }
 
 	/**
 	 * Get full configuration data from all included strategy

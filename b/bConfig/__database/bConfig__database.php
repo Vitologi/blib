@@ -24,6 +24,19 @@ class bConfig__database extends bBlib{
 	 * @return mixed[]			- local configs
 	 */
 	public function getConfig($selector = ''){
+        $path = explode('.', $selector);
+
+        // Protect from loop
+        if($path[0]==='bDatabase') {
+            /** @var bConfig $bConfig   - parent block */
+            $bConfig = $this->_parent;
+
+            /** @var bConfig__local $bConfig__local - default config strategy */
+            $bConfig__local = $bConfig->getInstance('bConfig__local');
+
+            return $bConfig__local->getConfig($selector);
+        }
+
 
 		// Return stored configuration if it already exists
 		if($temp = $this->_navigate($this->_config, $selector))return $temp;
@@ -40,7 +53,6 @@ class bConfig__database extends bBlib{
 		 *  - store it in local configuration array $_config
 		 *  - and return bBlock.item.subItem config
 		 */
-		$path = explode('.', $selector);
 		$currentPath ='';
 		for($i=0; $i<count($path); $i++){
 			$currentPath .= $path[$i];
@@ -69,6 +81,18 @@ class bConfig__database extends bBlib{
 	 * @void 					- save configurations to database
 	 */
 	public function setConfig($selector = '', $value = null){
+
+        // Protect from loop
+        $path = explode('.', $selector);
+        if($path[0]==='bDatabase') {
+            /** @var bConfig $bConfig   - parent block */
+            $bConfig = $this->_parent;
+
+            /** @var bConfig__local $bConfig__local - default config strategy */
+            $bConfig__local = $bConfig->getInstance('bConfig__local');
+
+            return $bConfig__local->setConfig($selector, $value);
+        }
 
 		/** @var bDataMapper__instance $dataMapper	- config data mapper */
 		$dataMapper = $this->_getDataMapper();

@@ -19,7 +19,8 @@ abstract class bBlib{
      * @return static       - concrete instance
      */
     static public function create() {
-        return new static(func_get_args());
+        $data = (func_num_args()===1)?func_get_arg(0):func_get_args();
+        return new static($data);
     }
 
 

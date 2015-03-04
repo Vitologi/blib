@@ -70,7 +70,7 @@ class bConfig__local extends bBlib{
 
 		// Save file
 		$file = bBlib::path($name.'__bConfig','php');
-		file_put_contents($file,"<?php defined('_BLIB') or die(); return '".$config."';");
+		file_put_contents($file,"<?php defined('_BLIB') or die(); return '".addslashes($config)."';");
 	}
 
 }

@@ -32,7 +32,7 @@ class bConfig__local extends bBlib{
 			$this->_config[$name]= array();
 			$file = bBlib::path($name.'__bConfig','php');
 			if(file_exists($file)){
-				$strConfig = require_once($file);
+				$strConfig = stripcslashes(require_once($file));
 				$this->_config[$name] = json_decode($strConfig, true);
 			}
 

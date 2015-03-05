@@ -1,6 +1,7 @@
 <?php
 	error_reporting(-1);
-	if(!array_key_exists('blib', $_GET)){$_GET['blib']='bIndex';}
+    $request = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET;
+	if(!isset($request['blib'])){ $request['blib']='bIndex';}
  
 	require_once("b/bBlib/bBlib.php");
-	bBlib::init($_GET['blib']);
+	bBlib::init($request['blib']);

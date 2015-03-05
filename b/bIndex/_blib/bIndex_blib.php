@@ -1,10 +1,6 @@
 <?php
 defined('_BLIB') or die;
 
-class bIndex_blib extends bBlib{	
+class bIndex_blib extends bDecorator__instance{
 	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-	}
-
 }

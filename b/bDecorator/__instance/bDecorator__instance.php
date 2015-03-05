@@ -19,7 +19,7 @@ class bDecorator__instance extends bBlib{
         return isset($this->_parent->$key);
     }
     
-    function __call($method, $args){
+    function __call($method = '', $args = array()){
         return call_user_func_array(array($this->_parent, $method), $args);
     } 
 	

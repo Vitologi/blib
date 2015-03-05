@@ -1,99 +1,138 @@
 <?php
 defined('_BLIB') or die;
 
-class bIndex extends bBlib{	
-	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-		$this->parents = array(/* 'bRewrite', 'bRbac' */ 'bSystem', 'bDatabase', 'bConfig', 'bCssreset', 'bTemplate');
-	}
-	
-	protected function input($data, $caller){
-		//block`s config
-		$this->rewrite = true;
-		if($this->rewrite)$this->setParent('bRewrite', $data);
-		
-		$this->cache = 0;
-		$this->defaultPage = 1;
-		$this->pageNo = $this->defaultPage;
-		$this->skeleton = "bIndex__skeleton_default";
-		
-		//input data
-		$data = $this->hook('getData', array($data));
-		$this->local['pageNo'] = isset($data['pageNo'])?$data['pageNo']:$this->pageNo;
-		
-		//page`s config
-		$default = array(
-			"cache"			=> $this->cache,
-			"skeleton"		=> $this->skeleton,
-			"ajax"			=> false,
-			"pageNo"		=> $this->pageNo,
-			"locked"		=> false,
-			"'{keywords}'"	=> "",
-			"'{description}'"=> "",
-			"'{title}'"		=> ""			
-		);
-		
-		$config = $this->_getConfig($this->pageNo);
-		$this->data = bBlib::extend($default, $data, $config);
+/**
+ * Class bIndex - main block for show site structure
+ * if request have `ajax` variable than show json data without HTML, else HTML template with wrapped json data
+ */
+class bIndex extends bBlib{
+
+    protected $_traits = array(/*'bRbac' */ 'bSystem', 'bRequest', 'bDataMapper', 'bConfig', 'bCssreset', 'bTemplate', 'bDecorator', 'bUser');
+
+    /**
+     * @var array   $_config    - current page configuration
+     */
+    private   $_config = array();
+
+    /**
+     * Generate configuration for page
+     */
+    protected function input(){
+
+        /** @var bRequest $bRequest - request instance */
+        $bRequest = $this->getInstance('bRequest');
+
+        // merge default page config with block`s config
+        $this->_config = array_replace_recursive(array(
+            'author'          => false,
+            'ajax'            => false,
+            'cache'           => 0,
+            'defaultPage'     => 1,
+            'skeleton'        => "bIndex__skeleton_default",
+            "'{keywords}'"    => "",
+            "'{description}'" => "",
+            "'{title}'"       => "",
+            'isLocked'        => false
+        ), $this->_getConfig());
+
+        // get page number from request or default
+        $this->_config['pageNo'] = ($bRequest->get('pageNo')?$bRequest->get('pageNo'):$this->_config['defaultPage']);
+
+        // get ajax request
+        $this->_config['ajax'] = ($bRequest->get('ajax')?$bRequest->get('ajax'):$this->_config['ajax']);
+
+        // get config for current page
+        $pageConfig = $this->_getConfig($this->_config['pageNo']);
+
+        // extend configuration with page config
+        if(is_array($pageConfig))$this->_config = array_replace_recursive($this->_config, $pageConfig);
 
 	}
 
-	
-	public function output(){
-		
-		if(!$this->hook('checkAccess', array($this->data)))die(json_encode(array("container"=>"body", "content"=>"not access")));
-		
-		$Q = array(
-			'select'	=> array(
-				'bindex' => array('template', 'bcategory_id')
-			),
-			'where' => array(
-				'bindex' => array('id'=>$this->data['pageNo'])
-			)
-		);
-		
-		if(!$result = $this->_query($Q)){throw new Exception('Can`t get chousen page ('.$this->data['pageNo'].').');}
-		$row = $result->fetch();
-		
-		
-		$data["'{keywords}'"] = $this->data["'{keywords}'"];
-		$data["'{description}'"] = $this->data["'{description}'"];
-		$data["'{title}'"] = $this->data["'{title}'"];
-		$template = json_decode($row['template'], true);
-		$data["'{template}'"] = $this->_getTemplateDiff(false, $template);
-		
-		if($this->data['ajax']){
-			header('Content-Type: application/json; charset=UTF-8');
-			$temp = json_decode($data["'{template}'"], true);
-			$temp['ajax'] = true;
-			echo json_encode($temp);
-			exit;
-		}else{
-			$skeleton = file_get_contents($this->path($this->data['skeleton'],'tpl'));
-			echo str_replace(array_keys($data), array_values($data), $skeleton);
-		}
+
+    /**
+     * Generate page and show it
+     *
+     * @throws Exception
+     */
+    public function output(){
+
+        /** @var bIndex__bDataMapper $bDataMapper  - page data mapper */
+        $bDataMapper = $this->getInstance('bDataMapper');
+
+        $pageNo = $this->_config['pageNo'];     // page number
+        $isLocked = $this->_config['isLocked']; // flag of page protection
+
+        // replace points (for template)
+        $point = array(
+            "'{keywords}'"    => $this->_config["'{keywords}'"],
+            "'{description}'" => $this->_config["'{description}'"],
+            "'{title}'"       => $this->_config["'{title}'"],
+            "'{template}'"    => '{"container":"body","content":"not access"}'
+        );
+
+
+        // if page is not locked or user have permission for get it
+        if(
+            !$isLocked
+            || $this->_decorate()->checkAccess($pageNo)
+        ){
+            // get page template tree
+            $page = $bDataMapper->getItem($pageNo);
+
+            // save it
+            $this->_config['template'] = $page->tree;
+
+            // create page from template
+            $point["'{template}'"] = $this->_getTemplateDiff(false, $page->tree);
+        }
+
+        // output json page
+        if($this->_config['ajax']){
+            header('Content-Type: application/json; charset=UTF-8');
+            $temp = json_decode($point["'{template}'"], true);
+            $temp['ajax'] = true;
+            echo json_encode($temp);
+
+        // if page gets in first time
+        }else{
+            $skeleton = file_get_contents(bBlib::path($this->_config['skeleton'],'tpl'));
+            echo str_replace(array_keys($point), array_values($point), $skeleton);
+        }
 
 	}
 
-	protected function getData($data){
-		return $data;
+    /**
+     * Check permission to unlock page
+     * @param null $pageNo  - page number
+     * @return bool         - have user access or not
+     */
+    public function checkAccess($pageNo = null){
+
+        // add role based access control system in traits
+        $this->setTrait('bRbac');
+
+        // if user have access
+        if($this->_checkAccess('unlock',$pageNo))return true;
+
+        // or not
+        return false;
 	}
+
+    /**
+     * Check user is author
+     *
+     * @return bool
+     */
+    public function isOwner(){
+
+        /** @var bUser $bUser - user instance */
+        $bUser = $this->getInstance('bUser');
+
+        $userId     = $bUser->getId();
+        $pageAuthor = $this->_config['author'];
+
+        return $userId == $pageAuthor;
+    }
 	
-	protected function checkAccess($data){
-		if($data['locked']){
-			$this->setParent('bRbac', $data);
-			if(!$this->_checkAccess('unlock',$data['pageNo']))return false;
-		}
-		return true;
-	}
-	
-	
-	
-	public function _install($data = array(), $caller = null){
-		if($caller !== null){return bDatabase::_install($data, $caller);};
-		$this->_setConfig('bIndex', $this->_getDefaultConfig(), array('group'=>'blib'));
-		$this->_setConfig('uncategorised', $this->_getDefaultConfig('item'));
-		return bDatabase::_install($data, $this);;
-	}
 }

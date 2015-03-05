@@ -1,0 +1,1 @@
+<?php defined('_BLIB') or die(); return '{\"defaultPage\":1,\"skeleton\":\"bIndex__skeleton_default\",\"cache\":0,\"uncategorised\":{\"\'{keywords}\'\":\"\",\"\'{description}\'\":\"\",\"\'{title}\'\":\"\"}}';

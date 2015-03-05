@@ -6,6 +6,8 @@ defined('_BLIB') or die;
  */
 class bRequest extends bBlib{
 
+    protected $_traits    = array('bRewrite');
+
     /** @var null|static $_instance - Singleton instance */
     private static $_instance = null;
 
@@ -14,7 +16,6 @@ class bRequest extends bBlib{
 
     /** @var array $_tunnel     - tunnel data */
     private $_tunnel    = array();
-
 
     /**
      * Overload object factory for Singleton
@@ -30,8 +31,16 @@ class bRequest extends bBlib{
      * Grab request data and tunnel (data send direct to block)
      */
     protected function input(){
-        $this->_request = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET;
-		
+
+        /** @var bRewrite $bRewrite - rewrite instance */
+        $bRewrite = $this->getInstance('bRewrite');
+
+        $rewriteData = $bRewrite->get();
+
+        $this->_request = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET+(array)$rewriteData;
+
+
+
         if(isset($this->_request['_tunnel'])){
             $this->_tunnel = (array)$this->_request['_tunnel'];
             unset($this->_request['_tunnel']);

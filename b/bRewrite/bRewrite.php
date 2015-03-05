@@ -1,36 +1,53 @@
 <?php
 defined('_BLIB') or die;
 
-class bRewrite extends bBlib{	
-	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-		$this->parents = array('bSystem', 'bDatabase');
-	}
-	
-	protected function input($data, $caller){
-		
+class bRewrite extends bBlib{
+
+    /** @var null|static $_instance - Singleton instance */
+    private static $_instance = null;
+
+    protected $_traits    = array('bConfig', 'bDataMapper');
+
+    /** @var null|array  $_url - url data */
+    private   $_url       = null;
+
+    /** @var bool  $_isDisable - disable flag */
+    private   $_isDisable = false;
+
+    /**
+     * Overload object factory for Singleton
+     *
+     * @return bRewrite|null|static
+     */
+    static public function create() {
+        if (self::$_instance === null)self::$_instance = parent::create(func_get_args());
+        return self::$_instance;
+    }
+
+	protected function input(){
+
+        /** @var bConfig $bConfig - config instance */
+        $bConfig = $this->getInstance('bConfig');
+
+        $this->_isDisable   = $bConfig->getConfig('bRewrite.isDisable');
+
+        $this->_url         = parse_url($_SERVER['REQUEST_URI']);
+
 	}
 
 	
 	public function output(){
-		$url = parse_url($_SERVER['REQUEST_URI']);
-		
-		$Q = array(
-			'select' => array(
-				'brewrite' => array('bindex_id')
-			),
-			'where' => array(
-				'brewrite' => array(
-					'url' =>  $url['path']
-				)
-			)
-		);
-		
-		$result = $this->_query($Q);
-		$row = ($result)?$result->fetch():array();
-
-		return isset($row['bindex_id'])?array('pageNo'=>$row['bindex_id']):array();
+        return $this;
 	}
 
+    public function get(){
+
+        if($this->_isDisable)return array();
+
+        /** @var bRewrite__bDataMapper $bDataMapper  - rewrite data mapper instance */
+        $bDataMapper = $this->getInstance('bDataMapper');
+
+        $rewrite = $bDataMapper->getRewrite($this->_url['path']);
+        return $rewrite->bindex_id?array('pageNo'=>$rewrite->bindex_id):array();
+    }
 }

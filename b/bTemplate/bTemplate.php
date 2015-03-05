@@ -1,75 +1,76 @@
 <?php
 defined('_BLIB') or die;
 
-class bTemplate extends bBlib{	
-	
-	private $block;
-	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-		$this->parents = array('bSystem', 'bDatabase');
-	}
-	
-	protected function input($data, $caller){
-		$this->local['stack'] = array();
-		$this->block = get_class($caller);
-	}
-	
+/**
+ * Class bTemplate  - block for work with page json-templates
+ */
+class bTemplate extends bBlib{
+
+    protected $_traits    = array('bSystem', 'bDataMapper', 'bRequest');
+
+    /**
+     * @var array $_stack   - template storage (key = template number, value = json-template)
+     */
+    private   $_stack     = array();
+
+
 	public function output(){
-		return array(
-			'bTemplate'=>$this,
-			'bTemplate__dynamic'=>false
-		);
+        if($this->_parent)return $this;
 	}
-	
-	/** Get all template nums */
-	private function usedTemplate($array, $result = array(), $deep = 0){
-		foreach ($array as $value) { 
-			if(is_array($value)) {
-				$result = $this->usedTemplate($value, $result, $deep+1);
+
+
+    /**
+     * Parse multidimensional array to list of templates (without double numbers)
+     *
+     * @param array $tree       - multidimensional array of template numbers
+     * @param array $result     - temp variable
+     * @param int $deep         - temp variable
+     * @return array            - templates list like array(1,3,5,6,8,9)
+     */
+    private function parseTemplateTree($tree = array(), $result = array(), $deep = 0){
+		foreach ($tree as $branch) {
+			if(is_array($branch)) {
+				$result = $this->parseTemplateTree($branch, $result, $deep+1);
 			}else{ 
-				$result[$value]=true; 
+				$result[$branch] = true;
 			} 
 		} 
 		return ($deep?$result:array_keys($result));
 	}
-	
-	/** Get all template from database */
-	private function addTempStack(Array $list){
-		
-		$where = array();
-		$all = $this->usedTemplate($list);
-		foreach($all as $id){
-			$where[] = array('id', $id, '=', true);
-		}
-		
-		$Q = array(
-			'select'	=> array(
-				'btemplate' => array('id', 'owner', 'name', 'blib', 'template')
-			),
-			'where'		=> array(
-				'btemplate' => $where
-			)
-		);
-		
-		if(!$result = $this->_query($Q)){throw new Exception('Can`t get template from database.');}
-			
-		while($row = $result->fetch()){
-			
-			if($row['owner'] && $this->block !== $row['owner'])continue;
-			
-			if($row['blib']){ 
-				$this->local['block'][$row['id']] = $row['blib']::create(json_decode($row['template'],true));
-			}else{
-				$this->local['stack'][$row['id']] = $row['template'];
-			}
-		}
-		
-	}
-	
-	private function templateDiff($old, $new, $deep = false) {
-		
-		$oldKey = isset($old[0])?(string)$old[0]:null;
+
+    /**
+     * Get templates from database and save it in private property
+     *
+     * @param array $list   - list of template numbers
+     * @return array        - serialized array (also store in private property)
+     */
+    private function saveTemplates($list = array()){
+
+        /** @var bTemplate__bDataMapper $bDataMapper  - data mapper instance */
+        $bDataMapper = $this->getInstance('bDataMapper');
+
+        $templates = $bDataMapper->getList($list);
+
+        foreach ($templates as $template) {
+            $this->_stack[$template['id']] = $template['template'];
+        }
+
+        return $this->_stack;
+    }
+
+
+    /**
+     * Get only difference between old and new template tree.
+     * set NULL value if new template haven`t old value
+     *
+     * @param $old          - old template tree
+     * @param $new          - new template tree
+     * @param bool $deep    - temp variable
+     * @return array        - difference template tree
+     */
+    public function getTreeDiff($old, $new, $deep = false) {
+
+		$oldKey = (isset($old[0]) && !isset($new['d']))?(string)$old[0]:null;
 		$newKey = isset($new[0])?(string)$new[0]:null;
 		$difference = array($newKey);
 		
@@ -79,151 +80,150 @@ class bTemplate extends bBlib{
 		foreach($new as $key => $value) {
 			if( is_array($value)  && $key != 0) {
 				if(!isset($old[$key]))$old[$key] = null;
-				$temp = $this->templateDiff($old[$key], $value, true);
+				$temp = $this->getTreeDiff($old[$key], $value, true);
 				if(count($temp))$difference[$key] = $temp;
 			}
 			unset($old[$key]);
 		}
-		
-		$block = isset($this->local['block'][$newKey])?$this->local['block'][$newKey]:null;
-		$isDynamic = ($block && isset($block->local['bTemplate__dynamic']))?$block->local['bTemplate__dynamic']:false;
+
 		
 		foreach($old as $key => $value) {
 			$difference[$key] = array(null);
 		}
 		
-		if($oldKey !== $newKey){
-			
-			if($block && !array_key_exists($newKey,$this->local['stack'])){
-				$this->local['stack'][$newKey] = json_encode($block->output());
-			}
-			
-			return $difference;
-		}
-		
-		if($block){
-			if(!$isDynamic)return array();
-			if(!array_key_exists($newKey,$this->local['stack'])){
-				$this->local['stack'][$newKey] = json_encode($block->output());
-			}
-			return $difference;
-		}
-		
-		
-		
-		return (count($difference)!=1 || !$deep)?$difference:array();
+		return ($oldKey !== $newKey || count($difference)!=1 || !$deep)?$difference:array();
 	}
-	
-	private function glueTempStack(Array $list, $deep = false){
-		
+
+    /**
+     * Glue template tree in one template
+     * use already saved template from $this->_stack property
+     * also can wrap templates by position markers (for frontend navigation)
+     *
+     * @param array $templateTree   - template tree
+     * @param bool $isWrap          - wrap flag
+     * @param bool $deep            - temp variable
+     * @return mixed|string         - glued template
+     */
+    private function glueTemplate(Array $templateTree = array(), $isWrap = false, $deep = false){
+        $isFirstIteration = false;
+
 		if(!$deep){
-			$deep = $list[0];
+			$deep = $templateTree[0];
+            $isFirstIteration = true;
 		}
 		
-		$template = $this->stack[$list[0]];
+		$template = (isset($this->_stack[$templateTree[0]])?$this->_stack[$templateTree[0]]:'');
 
 		$levelTemplate = array();
 		
-		foreach($list as $key => $value){
+		foreach($templateTree as $key => $value){
 			if((int)$key === 0 || (int)$value === 0){
 				continue;
 			}elseif(is_array($value)){
-				$levelTemplate['"{'.$key.'}"'] = $this->glueTempStack($value, $deep.'.'.$key);
+				$levelTemplate['"{'.$key.'}"'] = $this->glueTemplate($value, $isWrap, $deep.'.'.$key);
 			}
 		}
-		
-		return str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
+
+        if($isWrap){
+
+            if($isFirstIteration){
+                $template = '{"block":"bTemplate", "content":['.$template.'] ,"template":'.json_encode($templateTree,JSON_FORCE_OBJECT).' }';
+            }else{
+                $template = '{"block":"bTemplate", "elem":"position", "content":['.$template.'] ,"template":"'.$deep.'" }';
+            }
+
+        }
+
+
+        // replace template point
+        $template = str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
+
+        // clear not used point
+        $template = preg_replace('/"{(\d+)}"/', '{}', $template);
+
+		return $template;
 	}
-	
-	private function glueTempDiff(Array $list, $deep = false){
-		
-		if(!$deep){
-			$deep = $list[0];
-			$content = isset($this->stack[$deep])?$this->stack[$deep]:'';
-			$template = '{"block":"bTemplate", "content":['.$content.'] ,"template":'.json_encode($list,JSON_FORCE_OBJECT).' }';
-		}else{
-			$template = isset($this->stack[$list[0]])?$this->stack[$list[0]]:'';
-		}
-		
-		
-		$template = preg_replace_callback(
-			'/"{(\d+)}"/',
-			create_function(
-				'$matches',
-				'return \'{"block":"bTemplate", "elem":"position", "content":[\'.$matches[0].\'] ,"template":"'.$deep.'.\'.$matches[1].\'" }\';'
-			),
-			$template
-		);
-		
-		$levelTemplate = array();
-		
-		foreach($list as $key => $value){
-			if((int)$key === 0 || (int)$value === 0){
-				continue;
-			}elseif(is_array($value)){
-				$levelTemplate['"{'.$key.'}"'] = $this->glueTempDiff($value, $deep.'.'.$key);
-			}
-		}
-		
-		$temp = str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
-		return preg_replace('/"{(\d+)}"/', '{}', $temp);
+
+
+    /**
+     * Get template (use template tree)
+     *
+     * @param array $templateTree       - multidimensional array of template numbers
+     * @param bool $isWrap              - wrap template by position markers (for frontend navigation)
+     * @return mixed                    - glued template
+     */
+    private function getTemplate($templateTree = array(), $isWrap = false){
+        if(!is_array($templateTree)){$templateTree = array($templateTree);}
+
+        // get nums of needed template
+        $allTemplatesNum = $this->parseTemplateTree($templateTree);
+
+        // get these template from database
+        $this->saveTemplates($allTemplatesNum);
+
+        // get glued template from all saved templates
+        $gluedTemplate = $this->glueTemplate($templateTree, $isWrap);
+
+		return $gluedTemplate;
 	}
-	
-	
-	
-	public function _install($data = array(), $caller = null){
-		if($caller !== null){return bDatabase::_install($data, $caller);};
-		$this->_setConfig('bTemplate', $this->_getDefaultConfig('block'), array('group'=>'blib', 'correct'=>false));
-		return bDatabase::_install($data, $this);;
+
+
+    /**
+     * Get actual template(difference between old and new)
+     *
+     * @param null|array $oldTree       - old template tree (multidimensional array of template numbers)
+     * @param null|array $newTree       - new template tree (multidimensional array of template numbers)
+     * @return mixed                        - glued template
+     */
+    private function getTemplateDiff($oldTree = null, $newTree = null){
+
+        // if old tree is not provided than try get it from request tunnel
+        if(!is_array($oldTree)){
+            $tunnel =  (array) $this->_getTunnel();
+            $oldTree = isset($tunnel['template'])?$tunnel['template']:array();
+        }
+
+        // if get template number than create array from it
+        if(!is_array($newTree)){
+            $newTree = array($newTree);
+        }
+
+        // get difference between old and new template tree
+        $diff = $this->getTreeDiff($oldTree, $newTree);
+
+        return $this->getTemplate($diff, true);
+    }
+
+    /**
+     * Get template from child block
+     *
+     * @param array $templateTree   - template tree for get template
+     * @param bBlib $caller         - block-initiator
+     * @return mixed                - glued template
+     */
+    public static function _getTemplate($templateTree = array(), bBlib $caller){
+
+        /** @var bTemplate $bTemplate - template instance */
+        $bTemplate = $caller->getInstance(__CLASS__);
+
+		return $bTemplate->getTemplate($templateTree);
 	}
-	
-	private function getTemplate($data){
-		if(!is_array($data)){$data = array($data);}
-		$this->addTempStack($data);
-		return $this->glueTempStack($data);
-	}
-	
-	public static function _getTemplate($data, $caller = null){
-		if($caller == null)return array();
-		return $caller->local['bTemplate']->getTemplate($data[0]);
-	}
-	
-	public static function _getTemplateDiff($data, $caller = null){
-		if($caller === null)return false;
-		$self = $caller->local['bTemplate'];
-		
-		if(!is_array($data[0])){
-			$tunnel =  (array) $self->getTunnel();	
-			$data[0] = isset($tunnel['template'])?$tunnel['template']:array();
-		}
-		if(!is_array($data[1])){$data[1] = array($data[1]);}
-		$self->addTempStack($data[1]);
-		$diff = $self->templateDiff($data[0],$data[1]);
-		return $self->glueTempDiff($diff);
-	}
-	
-	public static function _getTemplateByName($data, $caller = null){ //0_0
-		if($caller == null)return false;
-		
-		$Q = array(
-			'select'	=> array(
-				'btemplate' => array('blib', 'template')
-			),
-			'where'		=> array(
-				'btemplate' => array('owner'=>get_class($caller), 'name'=>$data[0])
-			)
-		);
-		
-		if(!$result = $caller->local['bTemplate']->_query($Q)){throw new Exception('Can`t get template from database.');}
-			
-		$row = $result->fetch();
-		
-		if($row['blib']){ 
-			return new $row['blib'](json_decode($row['template'],true));
-		}else{
-			return $row['template'];
-		}
-		
+
+    /**
+     * Get actual template(difference between old and new) from child block
+     *
+     * @param null|array $oldTemplate       - old template tree (multidimensional array of template numbers)
+     * @param null|array $newTemplate       - new template tree (multidimensional array of template numbers)
+     * @param bBlib $caller                 - block-initiator
+     * @return mixed                        - glued template
+     */
+    public static function _getTemplateDiff($oldTemplate = null, $newTemplate = null, bBlib $caller){
+
+        /** @var bTemplate $bTemplate - template instance */
+        $bTemplate = $caller->getInstance(__CLASS__);
+
+        return $bTemplate->getTemplateDiff($oldTemplate, $newTemplate);
+
 	}
 	
 }

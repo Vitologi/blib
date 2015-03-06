@@ -26,7 +26,7 @@ class bMenu__bDataMapper extends bDataMapper__instance{
     public function getItem(){
 
         // Empty object
-        $prototype = (object)array('id'=>null, 'name'=>null, 'value'=>null, 'bconfig_id'=>null);
+        $prototype = (object)array('id'=>null, 'menu'=>null, 'name'=>null, 'link'=>null, 'bmenu_id'=>null);
 
         if(func_num_args()===0)return $prototype;
 

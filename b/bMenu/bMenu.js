@@ -30,8 +30,8 @@
 				item = data.content[key];
 				item.elem = 'item';
 				if(item.id == this.id){combine = item; continue;}
-				if(!content[item.parent]){content[item.parent] = [];}
-				content[item.parent].push(item);
+				if(!content[item.bmenu_id]){content[item.bmenu_id] = [];}
+				content[item.bmenu_id].push(item);
 			}
 			
 			temp = glueMenuItem(combine);

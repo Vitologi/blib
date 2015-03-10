@@ -5,7 +5,7 @@
 		function(data){
 			var chapter = {"block":"bDocumentation", "elem":"chapter", "chapter":(data.chapter?data.chapter:false)},
 				item = {"block":"bDocumentation", "elem":"item", "item":(data.item?data.item:false)};
-			
+
 			if(data.navigation)this.navigation = data.navigation;
 			
 			if(!(data.chapter && data.item) && this.singleton){
@@ -28,15 +28,17 @@
 					}
 				]
 			};
-			
+
 			this.constructor.prototype.singleton = this;			
 		},
 		false,
 		{
 			'getNavigation':function(id){
+
 				for(key in this.navigation){
 					if(this.navigation[key].id == id)return this.navigation[key];
 				}
+                return {};
 			},
 			'setChapter':function(data){
 				this.children.bDocumentation__chapter[0]._replace(data);
@@ -63,8 +65,8 @@
 			this.navigation = {};			
 				
 			for(key in navigation){
-				if(!this.navigation[navigation[key].parent])this.navigation[navigation[key].parent]=[];
-				this.navigation[navigation[key].parent].push(navigation[key]);
+				if(!this.navigation[navigation[key].bdocumentation_id])this.navigation[navigation[key].bdocumentation_id]=[];
+				this.navigation[navigation[key].bdocumentation_id].push(navigation[key]);
 				if(navigation[key].id == this.id)header=navigation[key].name;
 			}
 
@@ -127,11 +129,11 @@
 		false,
 		{
 			'getBreadcrumbs':function(){
-				var parent = this.block.getNavigation(this.item.parent),
+				var parent = this.block.getNavigation(this.item.bdocumentation_id),
 					name = (parent)?parent.name:"||";
 				return {
 					"content":[
-						{"elem":"link", "mods":{"breadcrumbs":true}, "item":this.item.parent, "content":name},
+						{"elem":"link", "mods":{"breadcrumbs":true}, "item":this.item.bdocumentation_id, "content":name},
 						{"tag":"span", "content":this.block.getNavigation(this.item.id).name} 
 					]
 				};
@@ -142,15 +144,20 @@
 			'getContent':function(){
 				var grouping = this.item.content,
 					content = {"elem":"content", "content":[]},
-					group, temp, key, i, j;
+					group, temp, key, i, j, parent;
 				
 				this.grouping = {};
-				
+
+
 				for(key in grouping){
-					if(!this.grouping[grouping[key].parent])this.grouping[grouping[key].parent]=[];
-					this.grouping[grouping[key].parent].push(grouping[key]);
+                    parent = grouping[key].bdocumentation_id;
+                    if(blib.is(parent, 'null'))continue;
+
+					if(!this.grouping[parent])this.grouping[parent]=[];
+					this.grouping[parent].push(grouping[key]);
 				}
-				
+
+
 				for(i in this.grouping){
 					temp = this.grouping[i];
 					group = {
@@ -169,8 +176,8 @@
 					
 					content.content.push(group);
 				}
-				
-				
+
+
 				return content;
 			}
 		}

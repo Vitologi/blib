@@ -21,7 +21,7 @@ class bDocumentation__bDataMapper extends bDataMapper__instance{
 
 
     /**
-     * Get menu item by name from table
+     * Get item by id from table
      *
      * @param null|int  $id - item id
      * @return stdClass     - data-object {Documentation}
@@ -39,6 +39,7 @@ class bDocumentation__bDataMapper extends bDataMapper__instance{
         $query->execute();
         if(!$result = $query->fetch(PDO::FETCH_ASSOC))return $prototype;
 
+        // get array from encoded string
         $result['description'] = ($result['description']!== null)?json_decode($result['description'],true):null;
         $result['group'] = ($result['group']!== null)?json_decode($result['group'],true):array();
 
@@ -47,10 +48,11 @@ class bDocumentation__bDataMapper extends bDataMapper__instance{
 
 
     /**
-     * Get list of data
+     * Get list of data.
+     * If list is null than get all items without description only for create tree
      *
-     * @param array $list   -
-     * @return null|object - data-array
+     * @param array $list   - number of item (its id`s)
+     * @return null|object  - data-array
      */
     public function getList(Array $list = null){
 
@@ -84,24 +86,30 @@ class bDocumentation__bDataMapper extends bDataMapper__instance{
 
         try{
 
+            if(is_array($obj->description))$obj->description=json_encode($obj->description,256);
+            if(is_array($obj->group))$obj->group=json_encode($obj->group,256);
+
+
             if(isset($obj->id)){
                 $query = $this->getDatabase()->prepare('
-                    UPDATE `bmenu`
-                    SET `menu` = :menu, `name` = :name, `link` = :link, `bmenu_id` = :bmenu_id
+                    UPDATE `bdocumentation`
+                    SET `name` = :name, `note` = :note, `description` = :description, `group` = :group, `bdocumentation_id` = :bdocumentation_id
                     WHERE `id` = :id ;
                 ');
                 $query->bindParam(':id', $obj->id, PDO::PARAM_INT);
-                $query->bindParam(':menu', $obj->menu, PDO::PARAM_INT);
                 $query->bindParam(':name', $obj->name, PDO::PARAM_STR);
-                $query->bindParam(':link', $obj->link, PDO::PARAM_STR);
-                $query->bindParam(':bmenu_id', $obj->bmenu_id, PDO::PARAM_INT);
+                $query->bindParam(':note', $obj->note, PDO::PARAM_STR);
+                $query->bindParam(':description', $obj->description, PDO::PARAM_STR);
+                $query->bindParam(':group', $obj->group, PDO::PARAM_STR);
+                $query->bindParam(':bdocumentation_id', $obj->bdocumentation_id, PDO::PARAM_INT);
                 $query->execute();
             }else{
-                $query = $this->getDatabase()->prepare('INSERT INTO `bmenu` (`menu`,`name`,`link`,`bmenu_id`) VALUES (:menu,:name,:link,:bmenu_id);');
-                $query->bindParam(':menu', $obj->menu, PDO::PARAM_INT);
+                $query = $this->getDatabase()->prepare('INSERT INTO `bdocumentation` (`name`, `note`, `description`, `group`, `bdocumentation_id`) VALUES (:name,:note,:description,:group,:bdocumentation_id);');
                 $query->bindParam(':name', $obj->name, PDO::PARAM_STR);
-                $query->bindParam(':link', $obj->link, PDO::PARAM_STR);
-                $query->bindParam(':bmenu_id', $obj->bmenu_id, PDO::PARAM_INT);
+                $query->bindParam(':note', $obj->note, PDO::PARAM_STR);
+                $query->bindParam(':description', $obj->description, PDO::PARAM_STR);
+                $query->bindParam(':group', $obj->group, PDO::PARAM_STR);
+                $query->bindParam(':bdocumentation_id', $obj->bdocumentation_id, PDO::PARAM_INT);
                 $query->execute();
                 $obj->id = $this->getDatabase()->lastInsertId();
             }

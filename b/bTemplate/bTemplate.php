@@ -74,7 +74,7 @@ class bTemplate extends bBlib{
 		$newKey = isset($new[0])?(string)$new[0]:null;
 		$difference = array($newKey);
 		
-		if($oldKey != $newKey)$old = array();
+		if($oldKey != $newKey || $newKey === null)$old = array();
 		
 		
 		foreach($new as $key => $value) {
@@ -139,7 +139,7 @@ class bTemplate extends bBlib{
         $template = str_replace(array_keys($levelTemplate), array_values($levelTemplate), $template);
 
         // clear not used point
-        $template = preg_replace('/"{(\d+)}"/', '{}', $template);
+        $template = preg_replace('/"{(\d+)}"/', '{"block":"bTemplate", "elem":"position", "content":[] ,"template":"'.$deep.'.$1" }', $template);
 
 		return $template;
 	}

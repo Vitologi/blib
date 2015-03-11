@@ -152,7 +152,7 @@ class bTemplate extends bBlib{
      * @param bool $isWrap              - wrap template by position markers (for frontend navigation)
      * @return mixed                    - glued template
      */
-    private function getTemplate($templateTree = array(), $isWrap = false){
+    public function getTemplate($templateTree = array(), $isWrap = false){
         if(!is_array($templateTree)){$templateTree = array($templateTree);}
 
         // get nums of needed template
@@ -167,6 +167,22 @@ class bTemplate extends bBlib{
 		return $gluedTemplate;
 	}
 
+    /**
+     * Get template (use template name)
+     *
+     * @param string $name - template name
+     * @param string $owner - template owner
+     * @return mixed - glued template
+     */
+    public function getOwnTemplate($name = '', $owner = ''){
+
+        /** @var bTemplate__bDataMapper $bDataMapper - data mapper instance */
+        $bDataMapper = $this->getInstance('bDataMapper');
+
+        $dataObject = $bDataMapper->getTemplate($name, $owner);
+
+        return $dataObject->template;
+    }
 
     /**
      * Get actual template(difference between old and new)
@@ -175,7 +191,7 @@ class bTemplate extends bBlib{
      * @param null|array $newTree       - new template tree (multidimensional array of template numbers)
      * @return mixed                        - glued template
      */
-    private function getTemplateDiff($oldTree = null, $newTree = null){
+    public function getTemplateDiff($oldTree = null, $newTree = null){
 
         // if old tree is not provided than try get it from request tunnel
         if(!is_array($oldTree)){

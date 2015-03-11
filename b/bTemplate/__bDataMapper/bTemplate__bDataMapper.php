@@ -56,12 +56,6 @@ class bTemplate__bDataMapper extends bDataMapper__instance{
 
         foreach($items as $key => &$item){
 
-            // 0_0 protect owner template
-            if($item['owner'] && $item['owner'] !== get_class($this->_parent)){
-                unset($items[$key]);
-                continue;
-            }
-
             /** @var string|bBlib $handler - instance of some block*/
             $handler = $item['handler'];
 

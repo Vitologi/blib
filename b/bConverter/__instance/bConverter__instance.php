@@ -1,111 +1,121 @@
 <?php
 defined('_BLIB') or die;
 
+/**
+ * Class bConverter__instance   - base decor component
+ * Used for extends other converters
+ */
 class bConverter__instance extends bBlib{
 
-    /** @var static|bConverter $_parent - decor block */
-    protected $_parent = null;
+    /** @var static $_component - decor block */
+    protected $_component = null;
+    /**
+     * @var null|mixed $_data   - stored data
+     */
+    private   $_data   = null;
+    /**
+     * @var null|string $_format - data type (number, string, xml, json, some different type)
+     */
+    private   $_format = null;
 
 
-    function __get($key){
-        return $this->_parent->$key;
+    /**
+     * Interface method for check format of current data.
+     * If format will not be detected, then it will be nulled.
+     *
+     * @return null|string  - format name
+     */
+    public function checkFormat(){
+        if($this->_component !== null)return $this->_component->checkFormat();
+
+        return $this->_format = null;
     }
 
-    function __set($key, $value){
-        return $this->_parent->$key = $value;
+    /**
+     * Interface method for convert data to new format.
+     *
+     * @param null|string $newFormat    - name of format
+     * @return null|mixed               - converted data
+     */
+    public function convertTo($newFormat = null){
+        if($this->_component !== null)return $this->_component->convertTo($newFormat);
+
+        if($this->_format === null)$this->getFormat();
+        return $this->_data;
     }
 
-    function __isset($key){
-        return isset($this->_parent->$key);
-    }
-
-    function __call($method = '', $args = array()){
-        return call_user_func_array(array($this->_parent, $method), $args);
-    }
-
-
-
-    final public function getFormat(){
-        $data = $this->_parent->getData();
-
-        switch(true) {
-
-            case is_string($data):
-                $format = 'string';
-                break;
-
-            case is_bool($data):
-                $format = 'boolean';
-                break;
-
-            case is_object($data):
-                $format = 'object';
-                break;
-
-            case is_array($data):
-                $format = 'array';
-                break;
-
-            case is_float($data):
-            case is_int($data):
-                $format = 'number';
-                break;
-
-            default:
-                $format = null;
-                break;
-
-        }
-
-        if($format !== null)$this->_parent->setFormat($format);
-
-
-        return $this->_parent->getFormat();
-    }
-
-
-    final  public function convertTo($newFormat = null){
-        $parent = $this->_parent;
-        $format = $parent->getFormat();
-
-        if($format === null)$this->getFormat();
-        $oldFormat = $parent->getFormat();
-
-        if($oldFormat !== $newFormat){
-            $converterMethod = $oldFormat.'TO'.$newFormat;
-
-            foreach($this->_instances as $converter){
-
-                if (method_exists($converter, $converterMethod)){
-                    $this->_data = $converter->$converterMethod($this->_data);
-                    $this->_format = $newFormat;
-                    break;
-                };
-
-            }
-
-
-        }
-
-        return $parent->getData();
-    }
-
+    /**
+     * Displays data according to the format. Sets php headers or does something else for correct use.
+     *
+     * @return null|mixed
+     */
     public function output(){
-        return ($this->_parent?$this:$this->view());
+        if($this->_component !== null)return $this->_component->output();
+
+        return $this->getData();
     }
 
-    public function view(){
-        $parent = $this->_parent;
-        $format = $parent->getFormat();
-        $data   = $parent->getData();
 
-        if(in_array($format,array('string','boolean','object','array','number'))){
-            var_dump($data);
-            return null;
-        }else{
-            return $parent->view();
+    /**
+     * @param bConverter__instance $component - decor component
+     * @return $this    - for chaining
+     */
+    final public function decor(bConverter__instance $component){
+        $this->_component = $component;
+        return $this;
+    }
+
+    /**
+     * Get data or provide this request to inner component (decor it)
+     *
+     * @return null|mixed
+     */
+    final public function getData(){
+        if($this->_component !== null)return $this->_component->getData();
+
+        return $this->_data;
+    }
+
+
+    /**
+     * Set data and clear format. Or provide this request to inner component (decor it)
+     *
+     * @param null|mixed $data  - some data
+     * @return null|static      - for chaining (used fully decorated component which stored in parent property)
+     */
+    final public function setData($data = null){
+        if($this->_component !== null)return $this->_component->setData($data);
+
+        $this->_data = $data;
+        $this->_format = null;
+        return $this->_parent->output();
+    }
+
+    /**
+     * Set format if it type is string. Or provide this request to inner component (decor it)
+     *
+     * @param null $format
+     * @return null
+     */
+    final public function setFormat($format = null){
+        if($this->_component !== null)return $this->_component->setFormat($format);
+
+        if(is_string($format)){
+            $this->_format = $format;
         }
 
+        return $this->_parent->output();
     }
-}
 
+    /**
+     * Get format or provide this request to inner component (decor it)
+     *
+     * @return null|string      - format name
+     */
+    final public function getFormat(){
+        if($this->_component !== null)return $this->_component->getFormat();
+
+        return $this->_format;
+    }
+
+}

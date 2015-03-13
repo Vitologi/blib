@@ -7,7 +7,7 @@ defined('_BLIB') or die;
  */
 class bIndex extends bBlib{
 
-    protected $_traits = array(/*'bRbac' */ 'bSystem', 'bRequest', 'bDataMapper', 'bConfig', 'bCssreset', 'bTemplate', 'bDecorator', 'bUser');
+    protected $_traits = array(/*'bRbac' */ 'bSystem', 'bRequest', 'bDataMapper', 'bConfig', 'bCssreset', 'bTemplate', 'bDecorator', 'bUser','bConverter');
 
     /**
      * @var array   $_config    - current page configuration
@@ -60,6 +60,9 @@ class bIndex extends bBlib{
         /** @var bIndex__bDataMapper $bDataMapper  - page data mapper */
         $bDataMapper = $this->getInstance('bDataMapper');
 
+        /** @var bConverter__instance $bConverter  - converter */
+        $bConverter = $this->getInstance('bConverter');
+
         $pageNo = $this->_config['pageNo'];     // page number
         $isLocked = $this->_config['isLocked']; // flag of page protection
 
@@ -89,10 +92,11 @@ class bIndex extends bBlib{
 
         // output json page
         if($this->_config['ajax']){
-            header('Content-Type: application/json; charset=UTF-8');
-            $temp = json_decode($point["'{template}'"], true);
+
+            $temp = $bConverter->setData($point["'{template}'"])->setFormat('json')->convertTo('array');
             $temp['ajax'] = true;
-            echo json_encode($temp);
+            $bConverter->setData($temp)->setFormat('array')->convertTo('json');
+            $bConverter->output();
 
         // if page gets in first time
         }else{

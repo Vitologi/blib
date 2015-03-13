@@ -7,6 +7,9 @@ defined('_BLIB') or die;
  */
 class bConverter__instance extends bBlib{
 
+    /** @var null|bConverter  $_parent  - factory object */
+    protected $_parent = null;
+
     /** @var static $_component - decor block */
     protected $_component = null;
     /**
@@ -81,7 +84,7 @@ class bConverter__instance extends bBlib{
      * Set data and clear format. Or provide this request to inner component (decor it)
      *
      * @param null|mixed $data  - some data
-     * @return null|static      - for chaining (used fully decorated component which stored in parent property)
+     * @return null|bConverter__instance      - for chaining (used fully decorated component which stored in parent property)
      */
     final public function setData($data = null){
         if($this->_component !== null)return $this->_component->setData($data);
@@ -94,8 +97,8 @@ class bConverter__instance extends bBlib{
     /**
      * Set format if it type is string. Or provide this request to inner component (decor it)
      *
-     * @param null $format
-     * @return null
+     * @param null $format    - format name
+     * @return null|bConverter__instance    - for chaining
      */
     final public function setFormat($format = null){
         if($this->_component !== null)return $this->_component->setFormat($format);

@@ -7,7 +7,9 @@
 abstract class bBlib{
 
     const VERSION           = "0.0.2";  // Engine version
-    protected $_parent      = null;     // Block - creator
+
+    /** @var null|bBlib $_parent - Block - creator  */
+    protected $_parent      = null;
     protected $_traits      = array();  // Blocks list for multiple inheritance
     protected $_instances   = array();  // Implemented objects
     protected $_vars        = array();  // Local variables

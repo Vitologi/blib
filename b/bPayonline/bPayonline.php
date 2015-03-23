@@ -26,7 +26,10 @@ class bPayonline extends bBlib{
      * @param {number}      data.amount    - сумма платежа
      * @param {bBlib}   caller         - обьект, вызвавший метод
      */
-	protected function input($data, $caller){
+	protected function input($data = array()){
+        if(isset($data[0]))$data=$data[0];
+        $caller = $this->_parent;
+
 		$this->caller = $caller;
         $this->action = isset($data['action'])?$data['action']:null;    //действия для контроллера
         $this->amount = isset($data['amount'])?$data['amount']:0;       //указанная пользователем сумма платежа

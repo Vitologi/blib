@@ -7,11 +7,11 @@ class bAnnounces extends bBlib{
 		$this->version = '1.0.0';
 		$this->parents = array('bDatabase');
 	}
-	
-	protected function input($data, $caller){
+
+	protected function input($data=array(), $caller = null){
 		$this->data = $data;
 	}
-	
+
 	public function output(){
 		$answer = $this->hook('getAnnounces', array($this->data));
 		header('Content-Type: application/json; charset=UTF-8');

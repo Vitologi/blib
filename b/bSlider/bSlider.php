@@ -8,11 +8,14 @@ class bSlider extends bBlib{
 		$this->parents = array('bDatabase', 'bTemplate');
 	}
 	
-	protected function input($data, $caller){
+	protected function input($data = array()){
+        if(isset($data[0]))$data=$data[0];
+        $caller = $this->_parent;
+
 		$this->caller = $caller;
 		$this->data = $data;
-		if(!isset($this->data['length']))$this->local['data']['length'] = 0;
-		if(!isset($this->data['delay']))$this->local['data']['delay'] = 10000;
+		if(!isset($this->_vars['data']['length']))$this->_vars['data']['length'] = 0;
+		if(!isset($this->_vars['data']['delay']))$this->_vars['data']['delay'] = 10000;
 	}
 	
 	public function output(){

@@ -11,7 +11,10 @@ class bTable extends bBlib{
 		$this->parents = array('bSession');
 	}
 	
-	protected function input($data, $caller){
+	protected function input($data = array()){
+        if(isset($data[0]))$data=$data[0];
+        $caller = $this->_parent;
+
 		/** parent */
 		if($caller){
 			$this->name = ($data['name']?$data['name']:$this->generateName());

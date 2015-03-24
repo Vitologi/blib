@@ -104,7 +104,7 @@ class bRequest extends bBlib{
      * @param string $name  - block's name
      * @return mixed        - some data designed for block
      */
-    protected function getTunnel($name = ''){
+    public function getTunnel($name = ''){
         return (isset($this->_tunnel[$name])?$this->_tunnel[$name]:array());
 	}
  

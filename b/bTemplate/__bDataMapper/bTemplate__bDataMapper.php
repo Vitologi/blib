@@ -4,7 +4,7 @@ defined('_BLIB') or die;
 /**
  * Class bTemplate__bDataMapper - realisation of Data Mapper for template block
  */
-class bTemplate__bDataMapper extends bDataMapper__instance{
+class bTemplate__bDataMapper extends bDataMapper{
 
     /**
      * Template object

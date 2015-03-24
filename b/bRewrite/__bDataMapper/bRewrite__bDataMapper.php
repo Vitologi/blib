@@ -4,7 +4,7 @@ defined('_BLIB') or die;
 /**
  * Class bRewrite__bDataMapper - realisation of Data Mapper for rewrite block (output web pages)
  */
-class bRewrite__bDataMapper extends bDataMapper__instance{
+class bRewrite__bDataMapper extends bDataMapper{
 
     /**
      * Rewrite object

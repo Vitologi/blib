@@ -4,7 +4,7 @@ defined('_BLIB') or die;
 /**
  * Class bSession__database__bDataMapper - realisation of Data Mapper for session block
  */
-class bSession__database__bDataMapper extends bDataMapper__instance{
+class bSession__database__bDataMapper extends bDataMapper{
 
     /**
      * Session object

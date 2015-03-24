@@ -7,7 +7,7 @@ defined('_BLIB') or die;
  */
 class bIndex extends bBlib{
 
-    protected $_traits = array(/*'bRbac' */ 'bSystem', 'bRequest', 'bDataMapper', 'bConfig', 'bCssreset', 'bTemplate', 'bDecorator', 'bUser','bConverter');
+    protected $_traits = array(/*'bRbac' */ 'bSystem', 'bRequest', 'bIndex__bDataMapper', 'bConfig', 'bCssreset', 'bTemplate', 'bDecorator', 'bUser','bConverter');
 
     /**
      * @var array   $_config    - current page configuration
@@ -58,7 +58,7 @@ class bIndex extends bBlib{
     public function output(){
 
         /** @var bIndex__bDataMapper $bDataMapper  - page data mapper */
-        $bDataMapper = $this->getInstance('bDataMapper');
+        $bDataMapper = $this->getInstance('bIndex__bDataMapper');
 
         /** @var bConverter__instance $bConverter  - converter */
         $bConverter = $this->getInstance('bConverter');

@@ -4,7 +4,7 @@ defined('_BLIB') or die;
 /**
  * Class bIndex__bDataMapper - realisation of Data Mapper for index block (output web pages)
  */
-class bIndex__bDataMapper extends bDataMapper__instance{
+class bIndex__bDataMapper extends bDataMapper{
 
     /**
      * Page object

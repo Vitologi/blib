@@ -8,7 +8,7 @@ defined('_BLIB') or die;
  */
 class bConfig__database extends bBlib{
 
-	protected $_traits  = array('bSystem','bDataMapper');
+	protected $_traits  = array('bSystem','bConfig__database__bDataMapper');
 
 	/** @var mixed[]	- local config storage */
 	private $_config = array();
@@ -42,7 +42,7 @@ class bConfig__database extends bBlib{
 		if($temp = $this->_navigate($this->_config, $selector))return $temp;
 
 		/** @var bConfig__database__bDataMapper $dataMapper	- config data mapper */
-		$dataMapper = $this->_getDataMapper();
+		$dataMapper = $this->getInstance('bConfig__database__bDataMapper');
 
 
 		/** Recursive(string based) grab configuration from database
@@ -94,8 +94,8 @@ class bConfig__database extends bBlib{
             return $bConfig__local->setConfig($selector, $value);
         }
 
-		/** @var bDataMapper__instance $dataMapper	- config data mapper */
-		$dataMapper = $this->_getDataMapper();
+		/** @var bDataMapper $dataMapper	- config data mapper */
+		$dataMapper = $this->getInstance('bConfig__database__bDataMapper');
 
 		$config = $dataMapper->getItem($selector);
 

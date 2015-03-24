@@ -15,7 +15,7 @@ class bSession__database extends bBlib
     private        $_id       = null;
     private        $_expire   = 0;                              // Cookie lifetime
     private        $_data     = array();                        // Local session storage
-    protected      $_traits   = array('bSystem', 'bDataMapper');
+    protected      $_traits   = array('bSystem', 'bSession__database__bDataMapper');
 
     /**
      * Overload object factory for Singleton
@@ -71,8 +71,8 @@ class bSession__database extends bBlib
     {
         $this->_data = $this->_navigate($this->_data, $selector, $value);
 
-        /** @var bDataMapper__instance $bDataMapper - session Data Mapper */
-        $bDataMapper = $this->getInstance('bDataMapper');
+        /** @var bDataMapper $bDataMapper - session Data Mapper */
+        $bDataMapper = $this->getInstance('bSession__database__bDataMapper');
         $empty = $bDataMapper->getItem();
 
         $empty->id = $this->_id;
@@ -93,8 +93,8 @@ class bSession__database extends bBlib
     public function updateSession($expire = null)
     {
 
-        /** @var bDataMapper__instance $bDataMapper - session Data Mapper */
-        $bDataMapper = $this->getInstance('bDataMapper');
+        /** @var bDataMapper $bDataMapper - session Data Mapper */
+        $bDataMapper = $this->getInstance('bSession__database__bDataMapper');
 
 
 

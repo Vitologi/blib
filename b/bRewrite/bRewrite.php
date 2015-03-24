@@ -6,7 +6,7 @@ class bRewrite extends bBlib{
     /** @var null|static $_instance - Singleton instance */
     private static $_instance = null;
 
-    protected $_traits    = array('bConfig', 'bDataMapper');
+    protected $_traits    = array('bConfig', 'bRewrite__bDataMapper');
 
     /** @var null|array  $_url - url data */
     private   $_url       = null;
@@ -45,7 +45,7 @@ class bRewrite extends bBlib{
         if($this->_isDisable)return array();
 
         /** @var bRewrite__bDataMapper $bDataMapper  - rewrite data mapper instance */
-        $bDataMapper = $this->getInstance('bDataMapper');
+        $bDataMapper = $this->getInstance('bRewrite__bDataMapper');
 
         $rewrite = $bDataMapper->getRewrite($this->_url['path']);
         return $rewrite->bindex_id?array('pageNo'=>$rewrite->bindex_id):array();

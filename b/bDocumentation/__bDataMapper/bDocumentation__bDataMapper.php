@@ -4,7 +4,7 @@ defined('_BLIB') or die;
 /**
  * Class bDocumentation__bDataMapper - realisation of Data Mapper for documentation block
  */
-class bDocumentation__bDataMapper extends bDataMapper__instance{
+class bDocumentation__bDataMapper extends bDataMapper{
 
     /**
      * Documentation object

@@ -6,7 +6,7 @@ defined('_BLIB') or die;
  */
 class bTemplate extends bBlib{
 
-    protected $_traits    = array('bSystem', 'bDataMapper', 'bRequest');
+    protected $_traits    = array('bSystem', 'bTemplate__bDataMapper', 'bRequest');
 
     /**
      * @var array $_stack   - template storage (key = template number, value = json-template)
@@ -47,7 +47,7 @@ class bTemplate extends bBlib{
     private function saveTemplates($list = array()){
 
         /** @var bTemplate__bDataMapper $bDataMapper  - data mapper instance */
-        $bDataMapper = $this->getInstance('bDataMapper');
+        $bDataMapper = $this->getInstance('bTemplate__bDataMapper');
 
         $templates = $bDataMapper->getList($list);
 
@@ -177,7 +177,7 @@ class bTemplate extends bBlib{
     public function getOwnTemplate($name = '', $owner = ''){
 
         /** @var bTemplate__bDataMapper $bDataMapper - data mapper instance */
-        $bDataMapper = $this->getInstance('bDataMapper');
+        $bDataMapper = $this->getInstance('bTemplate__bDataMapper');
 
         $dataObject = $bDataMapper->getTemplate($name, $owner);
 

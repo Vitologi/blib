@@ -6,7 +6,7 @@ class bUser extends bBlib{
 	/** @var null|static $_instance - Singleton instance */
 	private static $_instance = null;
 
-	protected $_traits            = array('bSystem', 'bConfig', 'bRequest', 'bDataMapper', 'bDecorator', 'bSession');
+	protected $_traits            = array('bSystem', 'bConfig', 'bRequest', 'bUser__bDataMapper', 'bDecorator', 'bSession');
 	protected $bTemplate__dynamic = true;
 	private   $_template          = array();
 	protected $id                 = null;
@@ -78,8 +78,8 @@ class bUser extends bBlib{
 
 	protected function authorize($login = null, $password = null, $remember = false){
 
-		/** @var bDataMapper__instance $bDataMapper - user Data Mapper */
-		$bDataMapper = $this->getInstance('bDataMapper');
+		/** @var bDataMapper $bDataMapper - user Data Mapper */
+		$bDataMapper = $this->getInstance('bUser__bDataMapper');
 		/** @var bConfig $bConfig - config block */
 		$bConfig	 = $this->getInstance('bConfig');
 

@@ -7,71 +7,186 @@ defined('_BLIB') or die;
  * Included patterns:
  * 		singleton		- one factory
  * 		factory method	- for create needed Data Mapper to block
- * 		decorator		- decorate base Data Mapper by concrete block's Data Mapper
+ * 		data mapper		- collection method for work with database
  *
  */
 class bDataMapper extends bBlib{
 
-	/** @var null|static - singleton instance */
-	private static $_instance = null;
+	/** @var bDataMapper[] $_mappers - singleton collections */
+	private static $_mappers = array();
+
+	/** @var string      - name of default connection to db */
+	protected $_connectionName = 'default';
 
 	/** @var string[] - included traits */
-	protected $_traits = array('bSystem');
-
-	/** @var bDataMapper__instance[] - associative array of mappers */
-	private $_mappers = array();
-
+	protected $_traits = array('bSystem','bDatabase');
 
 	/**
 	 * Overload object factory for Singleton
 	 *
 	 * @return null|static
 	 */
-	static public function create() {
-		if (self::$_instance === null)self::$_instance = parent::create(func_get_args());
-		return self::$_instance;
+	final static public function create() {
+		$caller = get_called_class();
+
+		if (!isset(self::$_mappers[$caller]))self::$_mappers[$caller] = parent::create(func_get_args());
+
+		return self::$_mappers[$caller];
 	}
 
 
 	/**
 	 * Extend child class by Data Mapper
 	 *
-	 * @return bDataMapper__instance	- block's Data Mapper or default instance
+	 * @return bDataMapper	- block's Data Mapper or default instance
      */
-	public function output(){
-		$concreteMapper = get_class($this->_parent).'__'.__CLASS__;
-		return $this->getDataMapper($concreteMapper);
+	final public function output(){
+		return $this;
 	}
+
+	/**
+	 * Get needed connection from database-controller
+	 *
+	 * @return null|PDO     - PDO object
+	 * @throws Exception
+	 */
+	final protected function getDatabase(){
+
+		/** @var bDatabase $bDatabase   - instance of database controller */
+		$bDatabase = $this->getInstance('bDatabase');
+
+		return $bDatabase->getDatabase($this->_connectionName);
+	}
+
+	/**
+	 * Change default connection to database (change word database)
+	 *
+	 * @param string $name      - connection settings name
+	 * @return $this            - for chaining
+	 */
+	final protected function connect($name = 'default'){
+		$this->_connectionName = $name;
+		return $this;
+	}
+
 
 	/**
 	 * Mappers factory
 	 *
 	 * @param string|bBlib $name 		- mapper class name
-	 * @return bDataMapper__instance 	- mapper instance
+	 * @return bDataMapper			 	- mapper instance
 	 */
-	public function getDataMapper($name = ''){
+	final public function getDataMapper($name = ''){
 
 		// if already have
-		if(array_key_exists($name, $this->_mappers)){
-			return $this->_mappers[$name];
+		if(array_key_exists($name, self::$_mappers)){
+			return self::$_mappers[$name];
 		}
 
 		// if can create
 		if(class_exists($name)){
-			return $this->_mappers[$name] = $name::create()->setParent(bDataMapper__instance::create());
+			return self::$_mappers[$name] = $name::create();
 		}
 
 		// default Data Mapper
-		return $this->_mappers[$name] = bDataMapper__instance::create();
+		return $this;
+	}
+
+
+	/**
+	 * Example for get single Item from table
+	 *
+	 * @return null|stdClass    - data-object
+	 */
+	public function getItem(){
+
+		// empty object
+		if(func_num_args()===0){
+			return (object)array('id'=>null,'value'=>null);
+		}
+
+
+		$id = func_get_arg(0);
+		$query = $this->getDatabase()->prepare('SELECT * FROM `bdatamapper` AS `table` WHERE `table`.`id`=:id');
+		$query->bindParam(':id', $id, PDO::PARAM_INT);
+		$query->execute();
+
+		if(!$result = $query->fetch(PDO::FETCH_ASSOC))return null;
+		return (object)$result;
 	}
 
 	/**
-	 * Get Data Mapper from child block
+	 * Get list of data (not completed) 0_0
 	 *
-	 * @param bBlib $caller					- block-initiator
-	 * @return bDataMapper__instance|null	- block's Data Mapper
-     */
-	public static function _getDataMapper(bBlib $caller){
-		return $caller->getInstance('bDataMapper');
+	 * @return null|array   - data-array
+	 */
+	public function getList(){
+		$query = $this->getDatabase()->prepare('SELECT * FROM `bdatamapper`');
+		$query->execute();
+
+		if(!$result = $query->fetchAll(PDO::FETCH_ASSOC))return null;
+		return $result;
 	}
+
+	/**
+	 * Handler for saving or update single Item
+	 *
+	 * @param stdClass $obj     - instance of data-object
+	 * @return $this            - for chaining
+	 * @throws Exception
+	 */
+	public function save(stdClass &$obj){
+
+		try{
+
+			if(isset($obj->id)){
+				$query = $this->getDatabase()->prepare('UPDATE `bdatamapper` SET `value` = :value WHERE `id` = :id ;');
+				$query->bindParam(':id', $obj->id, PDO::PARAM_INT);
+				$query->bindParam(':value', $obj->value, PDO::PARAM_INT);
+				$query->execute();
+			}else{
+				$query = $this->getDatabase()->prepare('INSERT INTO `bdatamapper` (`value`) VALUES (:value) ;');
+				$query->bindParam(':value', $obj->value, PDO::PARAM_INT);
+				$query->execute();
+				$obj->id = $this->getDatabase()->lastInsertId();
+			}
+
+		}catch (PDOException $e){
+			throw new Exception('Database error('.$e->getCode().') '.$e->errorInfo);
+		}
+
+		return $this;
+	}
+
+
+	/**
+	 * Install empty table in database
+	 *
+	 * @return bool
+	 */
+	public function install(){
+		$query = $this->getDatabase()->prepare('
+            CREATE TABLE IF NOT EXISTS `bdatamapper` (
+                `id` INT NOT NULL AUTO_INCREMENT,
+                `value` INT,
+                PRIMARY KEY (`id`)
+            )
+            ENGINE = MyISAM
+            DEFAULT CHARACTER SET = utf8
+            COLLATE = utf8_general_ci;
+        ');
+
+		return $query->execute();
+	}
+
+	/**
+	 * Uninstall table in database
+	 *
+	 * @return bool
+	 */
+	public function uninstall(){
+		$query = $this->getDatabase()->prepare('DROP TABLE IF EXISTS `bdatamapper`;');
+		return $query->execute();
+	}
+
 }

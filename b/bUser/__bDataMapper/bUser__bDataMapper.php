@@ -4,7 +4,7 @@ defined('_BLIB') or die;
 /**
  * Class bUser__bDataMapper - realisation of Data Mapper for configuration block
  */
-class bUser__bDataMapper extends bDataMapper__instance{
+class bUser__bDataMapper extends bDataMapper{
 
     /**
      * User object

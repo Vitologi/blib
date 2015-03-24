@@ -4,7 +4,7 @@ defined('_BLIB') or die;
 /**
  * Class bRbac__bDataMapper - realisation of Data Mapper for role based access system block
  */
-class bRbac__bDataMapper extends bDataMapper__instance{
+class bRbac__bDataMapper extends bDataMapper{
 
     /**
      * Get rbac by user id

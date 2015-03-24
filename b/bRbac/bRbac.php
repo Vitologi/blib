@@ -7,7 +7,7 @@ defined('_BLIB') or die;
 class bRbac extends bBlib{
 
 
-    protected $_traits     = array('bSystem', 'bDataMapper', 'bUser');
+    protected $_traits     = array('bSystem', 'bRbac__bDataMapper', 'bUser');
     /**
      * @var null|array $_operations - list of roles + privileges + rules witch get from database
      */
@@ -33,7 +33,7 @@ class bRbac extends bBlib{
         $bUser = $this->getInstance('bUser');
 
         /** @var bRbac__bDataMapper $bDataMapper    - rbac data mapper */
-        $bDataMapper = $this->getInstance('bDataMapper');
+        $bDataMapper = $this->getInstance('bRbac__bDataMapper');
 
         $userId = $bUser->getId();
 

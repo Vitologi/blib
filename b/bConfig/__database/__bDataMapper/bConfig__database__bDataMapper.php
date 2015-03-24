@@ -4,7 +4,7 @@ defined('_BLIB') or die;
 /**
  * Class bConfig__database__bDataMapper - realisation of Data Mapper for configuration block
  */
-class bConfig__database__bDataMapper extends bDataMapper__instance{
+class bConfig__database__bDataMapper extends bDataMapper{
 
     /**
      * Configuration object

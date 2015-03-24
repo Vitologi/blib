@@ -6,7 +6,7 @@ defined('_BLIB') or die;
  */
 class bDocumentation extends bBlib{
 
-    protected $_traits   = array('bSystem', 'bConfig', 'bDataMapper', 'bDecorator', 'bRequest');
+    protected $_traits   = array('bSystem', 'bConfig', 'bDocumentation__bDataMapper', 'bDecorator', 'bRequest');
 
     /** @var array $_template - base template for frontend */
     private $_template = array(
@@ -94,7 +94,7 @@ class bDocumentation extends bBlib{
         if(!$id){return array();}
 
         /** @var bDocumentation__bDataMapper $bDataMapper - data mapper instance */
-        $bDataMapper = $this->getInstance('bDataMapper');
+        $bDataMapper = $this->getInstance('bDocumentation__bDataMapper');
 
         // get menu item list
         $item = $bDataMapper->getItem($id);
@@ -113,7 +113,7 @@ class bDocumentation extends bBlib{
     protected function getNavigation(){
 
         /** @var bDocumentation__bDataMapper $bDataMapper - data mapper instance */
-        $bDataMapper = $this->getInstance('bDataMapper');
+        $bDataMapper = $this->getInstance('bDocumentation__bDataMapper');
 
         // get menu item list
         $navigation = $bDataMapper->getList();

@@ -85,4 +85,12 @@ class bSystem extends bBlib{
         return $obj;
     }
 
+    /**
+     * Create interface for work with array like object
+     * @param array $array              - some array
+     * @return bSystem__objectaccess    - object
+     */
+    public static function _objectAccess(Array $array = array()){
+        return new bSystem__objectaccess($array);
+    }
 }

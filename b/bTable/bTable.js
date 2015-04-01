@@ -3,29 +3,36 @@
 	blib.build.define(
 		{'block':'bTable'},
 		function(data){
-			var temp = [],
-				meta = blib.extend({'position':{},'fields':{}}, data.meta);
+			var _this = this,
+				temp = [],
+				meta = blib.extend({
+					'name':'defaultTable',
+					'tunnel':{},
+					'position':{},
+					'fields':{},
+					'key':[],
+					'page':{
+						'number':0,
+						'rows':0,
+						'count':0
+					}
+				}, data.meta);
 
-			this.tunnel = data.tunnel || false;
-			this.name = data.name;
-			this.position = meta.position;
-			this.fields = meta.fields;
-			this.keys = meta.keys;
-			this.page = meta.page;
-			this.content = data.content;
-			this.numColumn = 0;
-			this.checkedRow = 0;
+			_this.meta = meta;
+			_this.content = data.content;
+			_this.numColumn = 0;
+			_this.checkedRow = 0;
 			
 			temp.push(this.getHeader());
 			temp.push(this.getBody());
 			temp.push(this.getFooter());
-			
-			this.template = {};
-			
-			this.template.mods = data.mods;
-			this.template.content = temp;
-			
-			this._static('bLink').setUphold(this.name, this);
+
+			_this.template = {};
+
+			_this.template.mods = data.mods;
+			_this.template.content = temp;
+
+			_this._static('bLink').setUphold(meta.name, this);
 
 		},
 		{'tag':'table'},
@@ -44,7 +51,10 @@
 			},
 			'_onRemove':[
 				function(){
-					this._static('bLink').dropUphold(this.name, this);
+					var _this = this,
+						meta = _this.meta;
+
+					_this._static('bLink').dropUphold(meta.name, _this);
 				}
 			],
 			'_getStatus':function(){
@@ -59,9 +69,11 @@
 	blib.build.define(
 		{'block':'bTable', 'elem':'head'},
 		function(data){
-			var block = this.block,
-				position = block.position,
-				fields = block.fields,
+			var _this = this,
+				block = _this.block,
+				meta = _this.block.meta,
+				position = meta.position,
+				fields = meta.fields,
 				temp = [],
 				key, name;
 			
@@ -114,12 +126,13 @@
 	blib.build.define(
 		{'block':'bTable', 'elem':'tr'},
 		function(data){
-			var block = this.block,
-				position = block.position,
-				fields = block.fields,
+			var _this = this,
+				meta = _this.block.meta,
+				position = meta.position,
+				fields = meta.fields,
 				temp = [],
 				key, name,
-				content = this.content = data.content;
+				content = _this.content = data.content;
 			
 			for(key in position){
 				name = position[key];
@@ -133,39 +146,44 @@
 		{'tag':'tr'},
 		{
 			'onclick':function(){
-				var checked = this._getMode('checked');
+				var _this = this,
+					checked = _this._getMode('checked');
 				
 				if(checked){
-					this.uncheckItem();
+					_this.uncheckItem();
 				}else{
-					this.checkItem();
+					_this.checkItem();
 				}
-				
-				this._setMode('checked', !checked);				
+
+				_this._setMode('checked', !checked);
 			},
 			
 			'checkItem':function(){
-				var block = this.block,
-					keys = block.keys,
-					items = blib.config('tunnel.'+block.tunnel+'.items')||[],
+				var _this = this,
+					block = _this.block,
+					meta = _this.block.meta,
+					keys = meta.keys,
+					items = blib.config('tunnel.'+meta.tunnel.blib+'.items')||[],
 					tunnel = {},
 					item = {},
 					i;
 				
 				for(i in keys){
-					item[keys[i]] = this.content[keys[i]];
+					item[keys[i]] = _this.content[keys[i]];
 				}
 				items.push(item);
-				tunnel[block.tunnel] = {'items':items};
+				tunnel[meta.tunnel.blib] = {'items':items};
 				blib.tunnel(tunnel);
 				block.checkRow(true);
 			},
 			
 			'uncheckItem':function(){
-				var block = this.block,
-					keys = block.keys,
+				var _this = this,
+					block = _this.block,
+					meta = _this.block.meta,
+					keys = meta.keys,
 					tunnel = blib.config('tunnel'),
-					items = blib.config('tunnel.'+block.tunnel+'.items')||[],
+					items = blib.config('tunnel.'+meta.tunnel.blib+'.items')||[],
 					item, i, j, key, keyLen = 0, count;
 					
 				for(i in keys)keyLen++;
@@ -180,7 +198,7 @@
 					if(keyLen ==count)items.splice(i,1);
 				}
 				
-				tunnel[block.tunnel]['items'] = items;
+				tunnel[meta.tunnel.blib]['items'] = items;
 				blib.tunnel(tunnel,true);
 				block.checkRow(false);
 			}
@@ -190,13 +208,14 @@
 	blib.build.define(
 		{'block':'bTable', 'elem':'td'},
 		function(data){
-			var block = this.block,
-				name = this.name = data.name,
-				meta = block.fields[name],
-				content = this.content = data.content;
+			var _this = this,
+				meta = _this.block.meta,
+				name = _this.name = data.name,
+				metaTD = meta.fields[name],
+				content = _this.content = data.content;
 			
-			this.template.mods = meta.mods;
-			this.template.content = content;
+			_this.template.mods = metaTD.mods;
+			_this.template.content = content;
 
 		},
 		{'tag':'td'}
@@ -217,14 +236,13 @@
 	blib.build.define(
 		{'block':'bTable', 'elem':'paginator'},
 		function(data){
-			var block = this.block,
-				page = block.page,
+			var _this = this,
+				meta = _this.block.meta,
+				page = meta.page,
 				all = Math.ceil(page.count/page.rows),
-				paginator = page.paginator,
 				temp = [],
 				i, mods = {};
 			
-			page.paginator = paginator;
 			page.all = all;
 			
 			for(i=0;i<all;i++){
@@ -248,30 +266,44 @@
 			this.id = data.id;
 			this.template.mods = data.mods;
 			this.template.attrs = data.attrs;
-			this.template.content = this.id+'';
+			this.template.content = this.id+1+'';
 		},
 		{'tag':'span'},
 		{
 			'onclick':function(){
-				var self = this,
-					block = self.block,
-					name = block.name,
-					body = block.children.bTable__body[0];
-				
-				block.page.number = this.id;
-				
+				var _this = this,
+					block = _this.block,
+					meta = block.meta,
+					name = meta.name,
+					tunnel = meta.tunnel,
+					data = {
+						'blib':block.tunnel,
+						'_tunnel':{}
+					},
+					body = block.children.bTable__body[0],
+					tempTunnel;
+
+				tempTunnel = {'_tunnel':{'bTable':{}}};
+				tempTunnel['_tunnel']['bTable'][name]={'page':meta.page};
+				tunnel = blib.extend(true, tunnel, tempTunnel);
+
+				tunnel._tunnel.bTable[name].page.number = _this.id;
+
 				blib.ajax({
-					'data':{'blib':'bTable','name':name, 'page':block.page},
+					'data':tunnel,
 					'dataType':'json',
 					'success':function(data){
+						meta.page.number = _this.id;
 						body.rebuilding(data);
-						self.setActive();
+						_this.setActive();
 					}
 				});
 			},
 			'setActive':function(){
-				var block = this.block,
-					number = block.page.number,
+				var _this = this,
+					block = _this.block,
+					meta = _this.block.meta,
+					number = meta.page.number,
 					concurent = block.children.bTable__page,
 					key;
 				

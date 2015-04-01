@@ -74,6 +74,8 @@ abstract class bBlib{
      * @return $this                - for chaining
      */
     final protected function setTrait($name = '', $data = array()){
+        if(isset($this->_instances[$name]))return $this;
+
         if(!is_array($this->_traits))$this->_traits = array();
         if(!in_array($name, $this->_traits))$this->_traits[] = $name;
 

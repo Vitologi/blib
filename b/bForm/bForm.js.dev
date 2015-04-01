@@ -1,42 +1,43 @@
 (function(){
-	
-	//standart function for element
-	var standartProto = {
+
+	//standard function for element
+	var standardProto = {
 			'prepare':function(data){
 				if(!data.attrs)data.attrs={};
 				this.name = data.name || data.attrs.name;
 				data.attrs.name = data.name;
-				
-				
+
+
 				this.block.fields[data.name] =  this;
 				this.template = data;
 			},
 			'prepareValue':function(){
-				var query = this.block.meta.query[0];
-				if(!this.template.content && query)this.template.content = query[this.name];
+				var items = this.block.meta.items[0];
+				if(!this.template.content && items)this.template.content = items[this.name];
 				this.template.attrs.value = this.template.content;
 				this.template.content = false;
 			},
 			'prepareContent':function(){
-				var query = this.block.meta.query[0];
-				if(!this.template.content && query)this.template.content = query[this.name];
+				var items = this.block.meta.items[0];
+				if(!this.template.content && items)this.template.content = items[this.name];
 			},
 			'val':function(data){
 				return (data)?this._attr('value',data):this.dom.value;
 			}
 		},
-		standartFunction = function(obj){
+		standardFunction = function(obj){
+
 			for(var key in obj)this[key]=obj[key];
 		};
-		
-	standartFunction.prototype = standartProto;
-	
+
+	standardFunction.prototype = standardProto;
+
 	//FORM
 	blib.build.define(
 		{'block':'bForm'},
 		function(data){
 			if(!data.attrs)data.attrs={};
-			var meta = data.meta || {'processor':false,	'tunnel':false,	'ajax':true, 'action':'', 'method':'POST', 'select':{}, 'query':{}};
+			var meta = data.meta || {'processor':false,	'tunnel':false,	'ajax':true, 'action':'', 'method':'POST', 'select':{}, 'items':{}};
 			this.meta = {
 				'processor':meta.processor || false,
 				'tunnel':meta.tunnel || false,
@@ -44,47 +45,49 @@
 				'action':meta.action || data.attrs.action || '',
 				'method':meta.method || data.attrs.method || 'POST',
 				'select':meta.select || {},
-				'query':meta.query || {}
-			}
+				'items':meta.items || {}
+			};
 
 			this.fields = {};
 			this.name = data.name;
 			this.template.mods = data.mods;
 			this.template.attrs = data.attrs;
 			this.template.content = data.content;
-			
+
 			if(!meta.ajax){
 				this.template.attrs.action = meta.action;
 				this.template.attrs.method = meta.method;
 			}
-			
+
 			//console.log(this.name, this);
 			this._static('bLink').setUphold(this.name, this);
-			
+
 		},
 		{
 			'tag':"form"
 		},
-		new standartFunction({
+		new standardFunction({
 			'serialize':function(){
 				var result = {},
 					i, j, temp;
-					
+
 				for(i in this.fields){
 					temp = undefined;
 					if(blib.is(this.fields[i],"array")){
-						
+
 						for(j in this.fields[i]){
 							if(this.fields[i][j].dom.checked){
 								temp = this.fields[i][j].val();
 								break;
 							}
 						}
-						
+
+					}else if(blib.is(this.fields[i].val(),"null")){
+						continue;
 					}else{
 						temp = this.fields[i].val();
 					}
-					
+
 					if(temp instanceof HTMLInputElement && temp.files && temp.files.length){
 						if(!result['_files'])result['_files'] = [];
 						result['_files'].push(temp);
@@ -92,7 +95,7 @@
 						result[i] = temp;
 					}
 				}
-				
+
 				return result;
 			},
 			'submit':function(handler){
@@ -102,14 +105,14 @@
 					action = meta.action,
 					method = meta.method,
 					request, files, temp;
-				
-				if(ajax){					
+
+				if(ajax){
 					request = this.serialize();
 					if(request['_files']){
 						files = request['_files'];
 						delete request['_files'];
 					}
-					
+
 					if(meta.tunnel){
 						temp = {};
 						temp[meta.tunnel] = request;
@@ -118,9 +121,9 @@
 						request = {};
 						files = undefined;
 					}
-					
+
 					if(processor)request.blib = processor;
-					
+
 					blib.ajax({
 						'url':action,
 						'type':method,
@@ -138,25 +141,25 @@
 				}
 
 			},
-			'_getStatus':function(){				
+			'_getStatus':function(){
 				var status = this._getStatusList(this.fields),
 					tunnel = this.meta.tunnel,
 					serialized, temp = {};
-				
+
 				if(!status.error){
 					serialized = this.serialize();
-					
+
 					if('_files'in serialized){
 						blib.tunnel({'_files':serialized['_files']});
 						serialized['_files'] = null;
 					}
-					
+
 					temp[tunnel] = {'items':[serialized]};
-					blib.tunnel(temp);					
+					blib.tunnel(temp);
 				}
-				
+
 				return status;
-				
+
 			},
 			'_onRemove':[
 				function(){
@@ -165,7 +168,7 @@
 			]
 		})
 	);
-	
+
 	//MESSAGE
 	blib.build.define(
 		{'block':'bForm', 'elem':'message'},
@@ -177,8 +180,7 @@
 		false,
 		{
 			'setText':function(text){
-				var self = this,
-					text = text;
+				var self = this;
 				self.template.content = text;
 				self.dom.innerHTML = text;
 
@@ -192,39 +194,39 @@
 			}
 		}
 	);
-	
+
 	//HIDDEN
 	blib.build.define(
 		{'block':'bForm', 'elem':'hidden'},
-		function(data){		
+		function(data){
 			this.prepare(data);
 			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"hidden"}},
-		new standartFunction({})
+		new standardFunction({})
 	);
-	
+
 	//LABEL
 	blib.build.define(
 		{'block':'bForm', 'elem':'label'},
-		function(data){		
+		function(data){
 			this.prepare(data);
 		},
 		{'tag':"label"},
-		new standartFunction({})
+		new standardFunction({})
 	);
-	
+
 	//TEXT
 	blib.build.define(
 		{'block':'bForm', 'elem':'text'},
-		function(data){		
+		function(data){
 			this.prepare(data);
 			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"text"}},
-		new standartFunction({})
+		new standardFunction({})
 	);
-	
+
 	//SUBMIT
 	blib.build.define(
 		{'block':'bForm', 'elem':'submit'},
@@ -233,7 +235,7 @@
 			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"submit"}},
-		new standartFunction({
+		new standardFunction({
 			'onclick':function(e){
 				var self = this,
 					block = self.block,
@@ -242,42 +244,42 @@
 						if(data.reset)block.dom.reset();
 						if(data.message)block.children.bForm__message[0].setText(data.message);
 					};
-					
+
 				if(!meta.ajax)return true;
-				
+
 				if(e.preventDefault){
 					e.preventDefault();
 				}else{
 					e.returnValue = false;
 				}
-									
+
 				block.submit(handler);
 			}
 		})
 	);
-	
+
 	//RESET
 	blib.build.define(
 		{'block':'bForm', 'elem':'reset'},
 		function(data){
 			this.template.content = data.content;
-			this.prepareValue();			
+			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"reset"}},
-		new standartFunction({})
+		new standardFunction({})
 	);
-	
+
 	//BUTTON
 	blib.build.define(
 		{'block':'bForm', 'elem':'button'},
 		function(data){
 			this.template.content = data.content;
-			this.prepareValue();			
+			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"button"}},
-		new standartFunction({})
+		new standardFunction({})
 	);
-	
+
 	//IMAGE
 	blib.build.define(
 		{'block':'bForm', 'elem':'image'},
@@ -286,74 +288,74 @@
 			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"image"}},
-		new standartFunction({})
+		new standardFunction({})
 	);
-	
+
 	//PASSWORD
 	blib.build.define(
 		{'block':'bForm', 'elem':'password'},
-		function(data){		
+		function(data){
 			this.prepare(data);
 			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"password"}},
-		new standartFunction({})
+		new standardFunction({})
 	);
-	
+
 	//CHECKBOX
 	blib.build.define(
 		{'block':'bForm', 'elem':'checkbox'},
-		function(data){		
+		function(data){
 			this.prepare(data);
 			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"checkbox"}},
-		new standartFunction({
+		new standardFunction({
 			'val':function(data){
 				if(!data)return (this.dom.checked?this.dom.value:undefined);
 				this.dom.checked=true;
 			}
 		})
 	);
-	
+
 	//RADIO
 	blib.build.define(
 		{'block':'bForm', 'elem':'radio'},
-		function(data){		
+		function(data){
 			this.name = data.name || data.attrs.name;
 			if(!data.attrs)data.attrs = {};
 			data.attrs.name = data.name;
-			
+
 			if(!this.block.fields[data.name])this.block.fields[data.name] = [];
 			this.block.fields[data.name].push(this);
-			
+
 			this.template = data;
-			
+
 			this.prepareValue();
 		},
 		{'tag':"input", 'attrs':{'type':"radio"}},
-		new standartFunction({
+		new standardFunction({
 			'val':function(data){
 				if(!data)return (this.dom.checked?this.dom.value:undefined);
 				this.dom.checked=true;
 			}
 		})
 	);
-	
+
 	//FILE 0_0
 	blib.build.define(
 		{'block':'bForm', 'elem':'file'},
-		function(data){		
+		function(data){
 			this.prepare(data);
 		},
 		{'tag':"input", 'attrs':{'type':"file"}},
-		new standartFunction({
+		new standardFunction({
 			'val':function(data){
 				return (this.dom.files.length?this.dom:undefined);
 			}
 		})
 	);
-	
+
 	//TEXTAREA
 	blib.build.define(
 		{'block':'bForm', 'elem':'textarea'},
@@ -362,9 +364,9 @@
 			this.prepareContent();
 		},
 		{'tag':"textarea"},
-		new standartFunction({})
+		new standardFunction({})
 	);
-	
+
 	blib.build.define(
 		{'block':'bForm', 'elem':'option'},
 		function(data){
@@ -379,7 +381,7 @@
 			}
 		},
 		{'tag':"option"},
-		new standartFunction({
+		new standardFunction({
 			'deselect':function(){
 				this._attr('selected',false);
 			},
@@ -388,54 +390,49 @@
 			}
 		})
 	);
-	
+
 	//SELECT
 	blib.build.define(
 		{'block':'bForm', 'elem':'select'},
 		function(data){
 			this.prepare(data);
-			this.options = {};	
+			this.options = {};
 			this.select = data.select;
 			this.show = data.show;
 			this.key = data.key;
-			
+
 			var meta = this.block.meta,
 				options = meta.select[data.select],
-				defValue = (meta.query && meta.query[0])?meta.query[0][this.name]:null,
-				optionValue, optionText, optionSelected, setDefault;
-			
+				defValue = (meta.items && meta.items[0])?meta.items[0][this.name]:null,
+				optionValue, optionText, optionSelected, setDefault, i;
+
 			this.defValue = defValue;
 			if(!this.template.content)this.template.content = [];
-			
+
 			for(i in options){
 				optionText = '';
 				optionValue = options[i][this.key];
 				for(j in this.show){
 					optionText += options[i][this.show[j]]+' ';
 				}
-				
+
 				if(this.defValue == optionValue){
 					setDefault = optionSelected = true;
 				}else{
 					optionSelected = false;
 				}
-				
+
 				this.template.content.push({'block':'bForm', 'elem':'option', 'selected':optionSelected, 'value':optionValue, 'content':optionText});
 			}
-			
-			
-			if(!setDefault){
-				this.template.content.push({'block':'bForm', 'elem':'option', 'selected':true, 'value':this.defValue, 'content':'default'});
-			}
-			
+
 		},
 		{'tag':"select"},
-		new standartFunction({
+		new standardFunction({
 			'val':function(data){
 				for(var key in this.options){
 					if(!this.options[key].dom.selected)continue;
 					return this.options[key].val();
-				};
+				}
 			},
 			'addOption':function(value){
 				this.deselect();
@@ -450,7 +447,7 @@
 			}
 		})
 	);
-	
+
 	//SELECTPLUS
 	blib.build.define(
 		{'block':'bForm', 'elem':'selectplus'},
@@ -472,7 +469,7 @@
 			}
 		}
 	);
-	
+
 	//SELECTADD
 	blib.build.define(
 		{'block':'bForm', 'elem':'selectadd'},
@@ -490,7 +487,7 @@
 					input = parent.getSelectinput(),
 					select = parent.getSelect(),
 					status = input._getMode('open');
-				
+
 				if(status){
 					select.addOption(input.val());
 					input.close();
@@ -502,12 +499,12 @@
 			}
 		}
 	);
-	
+
 	//SELECTINPUT
 	blib.build.define(
 		{'block':'bForm', 'elem':'selectinput'},
 		function(data){
-			
+
 		},
 		{'tag':"input",'attrs':{'type':'text'}},
 		{
@@ -522,21 +519,21 @@
 			}
 		}
 	);
-	
+
 	//TEXTAREAPLUS
 	blib.build.define(
 		{'block':'bForm', 'elem':'textareaplus'},
 		function(data){
-		
+
 			var self = this,
 				setData = function(data){
 					self.setData(data);
 				};
-			
+
 			this.editor = data.editor || 'bEditor';
 			data.elem = 'textarea';
 			this.template.mods = data.mods;
-			
+
 			this.template.content = [
 				{'block':this.editor, 'output':setData},
 				data
@@ -555,5 +552,5 @@
 			}
 		}
 	);
-	
+
 })();

@@ -1,0 +1,12 @@
+{
+    "name": "morozov/www",
+    "authors": [
+        {
+            "name": "Spektr",
+            "email": "spektr1987@rambler.ru"
+        }
+    ],
+    "require": {
+        "simple-validator/simple-validator": "dev-master"
+    }
+}

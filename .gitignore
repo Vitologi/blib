@@ -7,3 +7,5 @@ b/bBlib/__hook/*
 !index.html
 b/bIndex/bIndex.css
 b/bDecorator/__bConfig/
+
+/vendor/

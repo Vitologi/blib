@@ -17,6 +17,8 @@
 	.bPanel_style_default{}
 		.bPanel_style_default .bPanel__side{
 			float: left;
+			padding: 5px;
+			min-height: 500px;
 			border-right: 1px solid rgb(190, 190, 190);}
 		.bPanel_style_default .bPanel__parent{
 			padding: 5px;}
@@ -38,6 +40,6 @@
 			border: 5px solid white;
 			background-color: rgb(228, 228, 228);
 			box-sizing: border-box;
-			text-shadow: 1px 1px 0px white;
+			text-shadow: 1px 1px 0 white;
 			font-weight: bold;
 			color: rgb(134, 134, 134);}

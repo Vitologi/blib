@@ -1,146 +1,55 @@
 <?php
 defined('_BLIB') or die;
 
-class bPanel extends bBlib{	
-	
-	private static $blocks = null;
-	private $template = '{}';
-	private $module = array();
-	private $controller = "";
-	private $layout = "";
-	private $view = "";
-	
-	//getters & setters
-	final public function setTemplate($value){$this->template = $value;}	
-	final public function setModule($name, $value){$this->module[$name] = $value;}
-	public function getController(){return $this->controller;}
-	public function setController($value){return $this->controller = $value;}
-	public function getLayout(){return $this->layout;}
-	public function setLayout($value){return $this->layout = $value;}
-	public function getView(){return $this->view;}
-	public function setView($value){return $this->view = $value;}
-	
-	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-		$this->bTemplate__dynamic = true;
-		$this->parents = array('bTemplate');
-	}
-	
-	protected function input($data, $caller){
-		$this->caller = $caller;
-		
-		$default = array(
-			"controller"=>"bPanel",
-			"layout"=>"show",
-			"view"=>"error"
-		);
-		$tunnel = ($caller)?$caller->getTunnel():$this->getTunnel();
-		$this->data = bBlib::extend($default, $tunnel, $data);
-		
-		$this->controller = $this->data['controller'];
-		$this->layout = $this->data['layout'];
-		$this->view = $this->data['view'];
-		
-		if(bPanel::$blocks == null)$this->scanBlocks(); //filling blocks stack
-		$this->setTemplate($this->_getTemplateByName('template')); //default template
-	}
-	
-	public function output(){
-		if($this->caller)return array('bPanel'=>$this);
+/**
+ * Class bPanel - router for (blocks controllers) blocks administrative part
+ */
+class bPanel extends bBlib{
 
-		if($this->controller == "bPanel"){
-			$this->controller();
-			$temp = $this->assembly();
-		}else{
-			$block = $this->getOverride($this->controller);
-			$block->_controller();
-			$temp = $block->_assembly();
-		}
-		
-		$answer = array('block'=>'bPanel', 'mods'=>array("style"=>"default"), "content"=>array($temp));
+    /**
+     * @var array $_traits  - included traits
+     */
+    protected $_traits = array('bRequest');
 
-		
-		if(isset($this->data['blib']) && $this->data['blib']=='bPanel'){
-			header('Content-Type: application/json; charset=UTF-8');
-			echo json_encode($answer);
-			exit;
-		}else{
-			return $answer;
-		}
+    /**
+     * @var array $_data     - default data array
+     */
+    protected $_data    = array(
+        "controller" => "bPanel__bPanel"
+    );
 
-	}
-	
+    /**
+     * Set concrete controller name
+     *
+     * @param array $data   - data from template
+     */
+    protected function input($data = array()){
+        if(!is_array($data))$data = array();
 
-	
-	final public function showBlocks(){
-		return array("block"=>__class__, "elem"=>"blocks", "content"=>bPanel::$blocks);
-	}
-	
-	final public function showError($text = "Module is not defined"){
-		return array("block"=>__class__, "elem"=>"error", "content"=>$text);
-	}
-	
-	//extend block to admin function
-	private function getOverride($controller){
-		$temp = new $controller();
-		$override = $controller.'__'.__class__;
-		if(bPanel::$blocks[$controller]){$temp->setParent($override, array());}
-		$temp->setParent(__class__, array());
-		return $temp;
-	}
-	
-	//get all installed blocks
-	private function scanBlocks(){
-		$arr = opendir('b');
-		$temp = array();
-		while($v = readdir($arr)){
-			if($v == '.' or $v == '..' or $v == 'bBlib') continue;
-			$name = $v.'__'.__class__;
-			$path = $this->path($name,'php');
-			$temp[$v] = (file_exists($path)?true:false);
-		}
-		bPanel::$blocks = $temp;
-	}
+        /** @var bRequest $bRequest  - request instance */
+        $bRequest = $this->getInstance('bRequest');
 
-	
-	private function assembly(){
-		if(is_array($this->template))$this->template = json_encode($this->template);
-		foreach($this->module as $key =>$value){
-			if(is_array($value))$this->module[$key] = json_encode($value);
-		}		
-		return json_decode(str_replace(array_keys($this->module), array_values($this->module), $this->template),true);
-	}
-	
-	private function controller($data = array()){
+        $tunnel = $bRequest->getTunnel(__CLASS__);
 
-		switch($this->getLayout()){
-			case "show":
-			default:
-				
-				switch($this->getView()){
-					case "error":
-					default:
-						$this->setModule('"{1}"', $this->showBlocks());
-						$this->setModule('"{2}"', $this->showError('tools'));
-						$this->setModule('"{3}"', $this->showError('operation'));
-						$this->setModule('"{4}"', $this->showError('content'));
-						break;
-				}
-				break;
-		}
-	}
-	
-	/** COMPILING ADMIN PANEL */
-	public static function _assembly($data = array(), $caller = null){
-		if($caller == null)return false;
-		return $caller->local['bPanel']->assembly();
-	}
-	
-	public static function _controller($data = array(), $caller = null){
-		if($caller == null)return false;
-		return $caller->local['bPanel']->controller($data);
-	}
-	
-	
+        $this->_data = array_replace($this->_data, $tunnel, $data);
+
+        if(!class_exists($this->_data['controller']))$this->_data['controller'] = "bPanel__bPanel";
+    }
+
+    /**
+     * Redirect process to concrete controller
+     *
+     * @return mixed    - concrete controller answer
+     */
+    public function output(){
+
+        /** @var bBlib $controller - block instance */
+        $controller = $this->_data['controller'];
+
+        $concreteController = $controller::create();
+
+        return $concreteController->output();
+
+    }
+
 }

@@ -11,12 +11,12 @@
 		{'block':'bPanel', 'elem':'blocks'},
 		function(data){
 			var content = [],
-				tunnel;
+				tunnel, controller, key;
 			
 			for(key in data.content){
-				tunnel = {'bPanel':{'controller':key}};
-				tunnel[key] = {'layout':"show"};
-				
+                controller = data.content[key];
+				tunnel = {'bPanel':{'controller':controller}};
+
 				content.push({
 					'block':'bLink',
 					'mods':{'style':'button', 'position':'vertical'},
@@ -40,10 +40,7 @@
 				ajax = (data.ajax !== undefined)?data.ajax:true,
 				uphold = data.uphold || [];
 				
-			tunnel[data.controller] = {
-				'layout':data.layout,
-				'view':data.view
-			};
+			tunnel[data.controller] = data.tunnel;
 
 			this.template.content = [{
 				'block':'bLink',

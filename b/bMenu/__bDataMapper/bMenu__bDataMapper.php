@@ -4,7 +4,7 @@ defined('_BLIB') or die;
 /**
  * Class bMenu__bDataMapper - realisation of Data Mapper for menu block
  */
-class bMenu__bDataMapper extends bDataMapper__instance{
+class bMenu__bDataMapper extends bDataMapper{
 
     /**
      * Menu object
@@ -66,13 +66,76 @@ class bMenu__bDataMapper extends bDataMapper__instance{
     }
 
     /**
+     * Get count of rows in table
+     *
+     * @return null|number   - row count
+     */
+    public function getCount(){
+        $query = $this->getDatabase()->prepare('SELECT COUNT(*) AS `length` FROM `bmenu`');
+        $query->execute();
+
+        if(!$result = $query->fetch(PDO::FETCH_ASSOC))return null;
+        return $result['length'];
+    }
+
+    /**
+     * Get list of data
+     *
+     * @return array - data-array
+     * @throws Exception
+     */
+    public function getSmallList(){
+
+        $query = $this->getDatabase()->prepare('SELECT `id`, `name`, `link` FROM `bmenu` AS `table` GROUP BY `id`');
+        $query->execute();
+
+        if(!$result= $query->fetchAll(PDO::FETCH_ASSOC))throw new Exception("Can`t get small menu list from db.");
+
+        return $result;
+    }
+
+    /**
      * Get list of data
      *
      * @param array $params
      * @return null|object - data-array
+     * @throws Exception
      */
     public function getList($params = array()){
+        $params = array_replace_recursive(
+            array('from'=>0,'count'=>5),
+            $params
+        );
 
+        $from = (int)$params['from'];
+        $count = (int)$params['count'];
+
+        $query = $this->getDatabase()->prepare('SELECT * FROM `bmenu` AS `table` GROUP BY `id` DESC LIMIT :from, :count');
+        $query->bindValue(':from', $from, PDO::PARAM_INT);
+        $query->bindValue(':count', $count, PDO::PARAM_INT);
+
+        $query->execute();
+
+        if($result= $query->fetchAll(PDO::FETCH_ASSOC))return $result;
+
+        throw new Exception("Can`t get menu list");
+
+    }
+
+    /**
+     * Delete list from database
+     *
+     * @param array $list
+     * @return null|object - data-array
+     * @throws Exception
+     */
+    public function destroy(Array $list = null){
+
+        if(!is_array($list))throw new Exception("Send wrong item list to delete");
+
+        $whereIn = implode(',', array_fill(0, count($list), '?'));
+        $query = $this->getDatabase()->prepare('DELETE FROM `bmenu` WHERE `id` IN  ('.$whereIn.')');
+        if(!$query->execute($list))throw new Exception("Can`t delete menu items");
     }
 
     /**

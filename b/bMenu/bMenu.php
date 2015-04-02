@@ -3,36 +3,33 @@ defined('_BLIB') or die;
 
 /**
  * Class bMenu - for generate and work with menu
+ * Included patterns:
+ * 		MVC	- use input property like action and view for create code logic
  */
 class bMenu extends bBlib{
 
-    protected $_traits   = array('bSystem', 'bDataMapper', 'bConfig', 'bDecorator');
-
-    /** @var array $_template - base template for frontend */
-    private   $_template = array(
-        'block'   => __class__,
-        'mods'    => array(),
-        'content' => array(),
-        'id'      => null
+    protected $_traits = array('bSystem', 'bRequest','bMenu__view', 'bMenu__model');
+    private   $_mvc    = array(
+        'action' => 'index',
+        'view'   => 'index',
+        'id'    => 1
     );
-
-    /** @var array  $_config - menu configuration */
-    private $_config = array();
-
 
     /**
      * Redefine input template through decorator
      *
-     * @param array $template   - user template
+     * @param array $data   - user template
      */
-    protected function input($template = array()){
+    protected function input($data = array()){
 
-        /** @var bDecorator__instance $bDecorator - decorator instance */
-        $bDecorator = $this->getInstance('bDecorator');
+        /** @var bRequest $bRequest - request instance */
+        $bRequest   = $this->getInstance('bRequest');
 
-        // Decor template
-        $decorTemplate   = $bDecorator->getData($template);
-		$this->_template = array_replace_recursive($this->_template, $decorTemplate);
+        $tunnel     = $bRequest->getTunnel(__CLASS__);
+
+        // Glue request params
+        $this->_mvc     = array_replace($this->_mvc, $tunnel, $data);
+
 	}
 
     /**
@@ -42,53 +39,39 @@ class bMenu extends bBlib{
      */
     public function output(){
 
-        // get menu from base
-        $menu = $this->getMenu($this->_template['id']);
+        /** @var  bMenu__model $model */
+        $model  = $this->getInstance('bMenu__model');
 
-        // set it into template
-        $this->_template['content'] = $menu;
+        /** @var  bMenu__view $view */
+        $view   = $this->getInstance('bMenu__view');
 
-        // return template
-        return $this->_template;
-	}
+        $mvc    = $this->_mvc;
+        $id     = $mvc['id'];
 
-    /**
-     * Data provider through decorator
-     *
-     * @param $data     - data from block
-     * @return mixed    - data from decorator
-     */
-    public function getData($data){
-		return $data;
-	}
-
-    /**
-     * Get menu from database
-     *
-     * @param null|int $id  - menu group id
-     * @return array        - all menu items included in menu
-     */
-    protected function getMenu($id = null){
-
-        if(!$id){return array();}
-
-        /** @var bConfig $bConfig - config instance */
-        $bConfig = $this->getInstance('bConfig');
-
-        /** @var bMenu__bDataMapper $bDataMapper - data mapper instance */
-        $bDataMapper = $this->getInstance('bDataMapper');
-
-        // get menu item list
-        $menuList = $bDataMapper->getMenu($id);
-
-        // get config for menu
-        $this->_config = $config = $bConfig->getConfig('bMenu.items');
-
-        // serialize menu items by config
-        foreach($menuList as &$item){
-            $item['config'] = isset($config[$item['id']])?$config[$item['id']]:array();
+        switch($mvc['action']){
+            case 'index':
+            default:
+                $temp = $model->getMenu($id);
+                break;
         }
 
-        return $menuList;
-    }
+
+        switch($mvc['view']){
+            case "horizontal":
+                return $view->horizontal($temp, $id);
+                break;
+
+            case "indexJson":
+                return $view->indexJson($temp, $id);
+                break;
+
+
+            case 'index':
+            default:
+                return $view->index($temp, $id);
+                break;
+        }
+
+	}
+
 }

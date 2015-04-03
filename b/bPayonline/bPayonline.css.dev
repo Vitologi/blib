@@ -27,5 +27,20 @@
             max-width:100%;}
         .bPayonline__paysystem_selected > .bPayonline__paysystemOk{
             display: block;}
-            
-    .bPayonline__amtelCard{}
+    .bPayonline__amount{}
+    .bPayonline__submit{}
+        .bPayonline__amount,
+        .bPayonline__submit{
+            margin: 5px 1%;
+            text-align: center;
+            font-size: 1.2em;
+            max-width:100%;
+            width: 47%;}
+
+    .bPayonline_style_default{}
+        .bPayonline_style_default center{
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #e2e2e2;
+            border-top: 0;
+            box-shadow: 0 0 2px rgb(216, 216, 216);}

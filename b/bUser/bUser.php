@@ -6,9 +6,7 @@ class bUser extends bBlib{
 	/** @var null|static $_instance - Singleton instance */
 	private static $_instance = null;
 
-	protected $_traits            = array('bSystem', 'bConfig', 'bRequest', 'bUser__bDataMapper', 'bDecorator', 'bSession');
-	protected $bTemplate__dynamic = true;
-	private   $_template          = array();
+	protected $_traits            = array('bSystem', 'bConfig', 'bRequest', 'bUser__bDataMapper', 'bDecorator', 'bSession', 'bUser__view');
 	protected $id                 = null;
 	protected $login              = null;
 	protected $config             = null;
@@ -36,8 +34,6 @@ class bUser extends bBlib{
 	 */
 	static public function create() {
 		if (self::$_instance === null)self::$_instance = parent::create();
-
-		self::$_instance->setTemplate(func_get_args(0));
 		return self::$_instance;
 	}
 
@@ -50,11 +46,17 @@ class bUser extends bBlib{
 		$logout 	= $bRequest->get('logout');
 		$save 		= $bRequest->get('save');
 
+		/** @var self $bDecorator */
+		$bDecorator = $this->getInstance('bDecorator');
+
 		// Authentication
-		$this->_decorate()->authorize($login, $password, $save);
+		$bDecorator->authorize($login, $password, $save);
+		$this->id 		= $bDecorator->getId();
+		$this->login 	= $bDecorator->getLogin();
+		$this->config 	= $bDecorator->getConfig();
 
 		// Logout
-		if($logout)$this->logout();
+		if($logout)$bDecorator->logout();
 	}
 
 	/**
@@ -63,26 +65,21 @@ class bUser extends bBlib{
 	 * @return array|bUser
      */
 	public function output(){
-		return ($this->_parent?$this:$this->getTemplate());
+		if($this->_parent instanceof bBlib) return $this;
+
+		/** @var bUser__view $bUser__view */
+		$bUser__view = $this->getInstance('bUser__view');
+		$bUser__view->set('login',$this->login);
+
+		return $bUser__view->index();
 	}
 
-	protected function setTemplate($template = array()){
-		$this->_template = array_replace_recursive(array('block'=>__CLASS__, 'mods'=>array(), 'attrs'=>array(), 'meta'=>array(), 'content'=> ''), $template);
-	}
-
-	protected function getTemplate(){
-		$this->_template['content'] = $this->login;
-		return $this->_template;
-	}
-
-
-	protected function authorize($login = null, $password = null, $remember = false){
+	public function authorize($login = null, $password = null, $remember = false){
 
 		/** @var bDataMapper $bDataMapper - user Data Mapper */
 		$bDataMapper = $this->getInstance('bUser__bDataMapper');
 		/** @var bConfig $bConfig - config block */
 		$bConfig	 = $this->getInstance('bConfig');
-
 
 		// Authentication
 		if($login){
@@ -126,7 +123,7 @@ class bUser extends bBlib{
 	/**
 	 * Logout user (clear session data and user info)
      */
-	protected function logout(){
+	public function logout(){
 
 		/** @var bRequest $bRequest - request object*/
 		$bRequest = $this->getInstance('bRequest');

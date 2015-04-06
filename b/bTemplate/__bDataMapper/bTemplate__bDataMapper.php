@@ -104,16 +104,25 @@ class bTemplate__bDataMapper extends bDataMapper{
      * Get templates list from database
      *
      * @param array $list
+     * @param string $owner     - template block - owner
      * @return null|object - data-array
      */
-    public function getList(Array $list = null){
+    public function getList(Array $list = null, $owner = null){
 
         $prototype = array();
+        $ownStatement = '';
 
         if($list == null)return $prototype;
 
+
         $whereIn = implode(',', array_fill(0, count($list), '?'));
-        $query = $this->getDatabase()->prepare('SELECT * FROM `btemplate` AS `table` WHERE `table`.`id` IN  ('.$whereIn.')');
+
+        if($owner !== null){
+            $list[] = $owner;
+            $ownStatement = ' AND `table`.`owner` LIKE  ? ';
+        }
+
+        $query = $this->getDatabase()->prepare('SELECT * FROM `btemplate` AS `table` WHERE `table`.`id` IN  ('.$whereIn.')'.$ownStatement);
 
         $query->execute($list);
 

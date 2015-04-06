@@ -170,7 +170,7 @@ class bTemplate extends bBlib{
     /**
      * Get template (use template name)
      *
-     * @param string $name - template name
+     * @param string $name - template name(or list)
      * @param string $owner - template owner
      * @return mixed - glued template
      */
@@ -178,6 +178,15 @@ class bTemplate extends bBlib{
 
         /** @var bTemplate__bDataMapper $bDataMapper - data mapper instance */
         $bDataMapper = $this->getInstance('bTemplate__bDataMapper');
+
+        if(is_array($name)){
+            $temp = array();
+            $list = $bDataMapper->getList($name, $owner);
+
+            foreach($list as $key => $value)$temp[]= $value['template'];
+
+            return $temp;
+        }
 
         $dataObject = $bDataMapper->getTemplate($name, $owner);
 

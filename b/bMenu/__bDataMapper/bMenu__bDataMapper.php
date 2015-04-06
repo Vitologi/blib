@@ -86,7 +86,7 @@ class bMenu__bDataMapper extends bDataMapper{
      */
     public function getSmallList(){
 
-        $query = $this->getDatabase()->prepare('SELECT `id`, `name`, `link` FROM `bmenu` AS `table` GROUP BY `id`');
+        $query = $this->getDatabase()->prepare('SELECT `id`, `name`, `link` FROM `bmenu` AS `table` ORDER BY `id`');
         $query->execute();
 
         if(!$result= $query->fetchAll(PDO::FETCH_ASSOC))throw new Exception("Can`t get small menu list from db.");
@@ -110,7 +110,7 @@ class bMenu__bDataMapper extends bDataMapper{
         $from = (int)$params['from'];
         $count = (int)$params['count'];
 
-        $query = $this->getDatabase()->prepare('SELECT * FROM `bmenu` AS `table` GROUP BY `id` DESC LIMIT :from, :count');
+        $query = $this->getDatabase()->prepare('SELECT * FROM `bmenu` AS `table` ORDER BY `id` DESC LIMIT :from, :count');
         $query->bindValue(':from', $from, PDO::PARAM_INT);
         $query->bindValue(':count', $count, PDO::PARAM_INT);
 

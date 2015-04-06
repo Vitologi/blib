@@ -1,47 +1,53 @@
 <?php
 defined('_BLIB') or die;
 
-class bSlider extends bBlib{	
-	
-	protected function inputSelf(){
-		$this->version = '1.0.0';
-		$this->parents = array('bDatabase', 'bTemplate');
-	}
-	
-	protected function input($data = array()){
-        if(isset($data[0]))$data=$data[0];
-        $caller = $this->_parent;
+class bSlider extends bBlib{
 
-		$this->caller = $caller;
-		$this->data = $data;
-		if(!isset($this->_vars['data']['length']))$this->_vars['data']['length'] = 0;
-		if(!isset($this->_vars['data']['delay']))$this->_vars['data']['delay'] = 10000;
+	protected $_traits = array('bSystem', 'bTemplate');
+	protected $_length = 0;
+	protected $_delay = 10000;
+	protected $_list = array();
+	protected $_mods = array();
+
+	protected function input($template = array()){
+
+		if(isset($template['mods']))$this->_mods = $template['mods'];
+		if(isset($template['length']))$this->_length = $template['length'];
+		if(isset($template['delay']))$this->_delay = $template['delay'];
+		if(isset($template['content']))$this->_list = $template['content'];
 	}
 	
 	public function output(){
 		
-		if(!$this->data['id']){return array();}
-		
-		$Q = array(
-			'select'	=> array(
-				'bslider' => array(),
-				'btemplate' => array('template')
-			),
-			'where' => array(
-				'bslider' => array('id'=>$this->data['id'])
-			),
-			'sql'=>' LIMIT '.$this->data['length'].', 5'
-		);
-		$result = $this->_query($Q);
+		/** @var bTemplate $bTemplate */
+		$bTemplate = $this->getInstance('bTemplate');
 
-		$slider = array();
-		
-		while($row = $result->fetch()){
-			$slider[] = array('elem'=>'slide', 'content'=>array(json_decode($row['template'])));
+		$sliders = $bTemplate->getOwnTemplate($this->_list, __CLASS__);
+
+		foreach($sliders as $key => $value){
+			$sliders[$key]=json_decode($value);
 		}
 
-		return array('block'=>__class__, 'mods'=>$this->data['mods'], 'delay'=>$this->data['delay'], 'content'=>$slider);
-		
+		return $this->indexView($sliders);
+
+	}
+
+	public function indexView(Array $list = array()){
+		$content = array();
+
+		foreach($list as $key => $elem){
+			$content[] = array(
+				'elem'    => 'slide',
+				'content' => array($elem)
+			);
+		}
+
+		return array(
+			'block'   => __class__,
+			'mods'    => $this->_mods,
+			'delay'   => $this->_delay,
+			'content' => $content
+		);
 	}
 	
 }

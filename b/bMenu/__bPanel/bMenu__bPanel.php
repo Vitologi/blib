@@ -223,7 +223,7 @@ class bMenu__bPanel extends bBlib{
         }
 
         // build final view
-        return $bMenu__view->buildResult();
+        return $bMenu__view->generate();
 
     }
 

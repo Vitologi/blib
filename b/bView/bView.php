@@ -115,7 +115,7 @@ class bView  extends bBlib{
      * @param bool $asArray     - how return result (like array or like json string)
      * @return string|array     - complete template
      */
-    final public function buildResult($asArray = false){
+    final public function generate($asArray = false){
 
         $template = $this->_template;
         $blocks = $this->_positions;

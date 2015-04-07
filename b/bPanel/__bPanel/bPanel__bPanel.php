@@ -73,7 +73,7 @@ class bPanel__bPanel extends bBlib{
                 break;
         }
 
-        return $bPanel__view->buildResult();
+        return $bPanel__view->generate();
 
     }
 

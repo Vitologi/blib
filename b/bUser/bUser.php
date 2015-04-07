@@ -1,6 +1,9 @@
 <?php
 defined('_BLIB') or die;
 
+/**
+ * Class bUser	- block for stor user authentication data (like id, login, password)
+ */
 class bUser extends bBlib{
 
 	/** @var null|static $_instance - Singleton instance */
@@ -51,12 +54,13 @@ class bUser extends bBlib{
 
 		// Authentication
 		$bDecorator->authorize($login, $password, $save);
-		$this->id 		= $bDecorator->getId();
-		$this->login 	= $bDecorator->getLogin();
-		$this->config 	= $bDecorator->getConfig();
 
 		// Logout
 		if($logout)$bDecorator->logout();
+
+		$this->id 		= $bDecorator->getId();
+		$this->login 	= $bDecorator->getLogin();
+		$this->config 	= $bDecorator->getConfig();
 	}
 
 	/**
@@ -74,6 +78,13 @@ class bUser extends bBlib{
 		return $bUser__view->index();
 	}
 
+	/**
+	 * Authenticate user for requested login and password
+	 *
+	 * @param null|string $login		- user login
+	 * @param null|string $password		- user password
+	 * @param bool $remember			- remember flag, for save cookie after close browser
+     */
 	public function authorize($login = null, $password = null, $remember = false){
 
 		/** @var bDataMapper $bDataMapper - user Data Mapper */

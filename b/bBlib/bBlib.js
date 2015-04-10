@@ -21,7 +21,6 @@
 				'tunnel':true
 			},
             'version':'0.2.0',
-			'tunnel':{},
 			'store':{
 				'isset':('localStorage' in window && window['localStorage'] !== null)?true:false,
 				'data':{}
@@ -397,7 +396,7 @@
 			}
 			storeSave();
 		}
-	}
+	};
 	
 	//set handler on DOM ready event
 	Blib.ready = function(handler, deep){
@@ -443,146 +442,7 @@
 			window.onload=onReady;
 		}
 	};
-	
-	
-	
-	//ajax
-	Blib.ajax = (function() {
-		var salt = 0;
-		
-		return function(param){
-			var dataType	= param['dataType'] || "text",
-				success		= param['success'] || function(){},
-				error		= param['error'] || function(){},
-				data		= param['data'] || {},
-				files		= param['files'] || null,
-				type		= param['type'] || "POST",
-				url			= param['url'] || "/",
-				headers		= param['headers'] || ["X-Requested-With","XMLHttpRequest"],
-				head 		= getElement(['head'])[0],
-				tunnel 		= !data.blib,
-				jsonpElement, temp, key, i, j, len, fileName, xhr, successRequest;
-			
-			if(tunnel){
-				if(config['tunnel']['_files']){
-					files = config['tunnel']['_files'];
-					config['tunnel']['_files'] = null;
-				}
-				data['_tunnel'] = config['tunnel'];
-			}
-			
-			//exception for jsonp method
-			if(type==='JSONP'){
-				temp = "jsonp"+salt++;
-				
-				Blib.ajax[temp] = function(){
-					config['tunnel'] = {};
-					success.apply(null, arguments);
-					delete Blib.ajax[temp];
-				}
-				
-				jsonpElement  = document.createElement('script');
-				jsonpElement.type="text/javascript";
-				jsonpElement.src = url += (url.indexOf("?")!=-1?"&":"?")+object2url(data)+'&callback=Blib.ajax.'+temp;
-				head.appendChild(jsonpElement);
-				
-				window.setTimeout(function(){
-					head.removeChild(jsonpElement);
-				},10000);
-				
-				return;
-			}
-			
-			//exception for ajax files submit
-			if(files){
-				
-				temp = new FormData();
-				if(!temp)return this;
-				
-				
-				for(i in files){
-					len = files[i].files.length;
-					if(!len)continue;
-					fileName = files[i].name;
-					
-					if(len>1)fileName+='[]';
-					
-					for(j=0;j<len;j++){
-						temp.append(fileName, files[i].files[j]);
-					}
-					
-				}
-				for(key in data){
-					if(is(data[key],['array', 'object'])){ data[key]=JSON.stringify(data[key]); } //0_0 bug in multy sending
-					temp.append(key, data[key]);
-				}
-				
-				data = temp;
-				
-			}else if(is(data, 'object') && type !== "DATA"){
-				data = object2url(data);
-			}
-			
-			if (window.XMLHttpRequest) xhr = new XMLHttpRequest();
-			else if (window.ActiveXObject) {
-				try {
-					xhr = new ActiveXObject('Msxml2.XMLHTTP');
-				} catch (e){}
-				try {
-					xhr = new ActiveXObject('Microsoft.XMLHTTP');
-				} catch (e){}
-			}
-			if (!xhr) {return this;}
 
-			xhr.onreadystatechange = function(){
-				if (xhr.readyState === 4 && xhr.status === 200) {
-					successRequest = true;
-					try{
-						temp = (dataType==="json")?JSON.parse(xhr.responseText):xhr.responseText;
-					}catch(e){
-						successRequest = false;
-						Blib.exception("Cannot parse sending ajax-data.", e);
-					}
-					
-					if(successRequest){
-						if(tunnel)config['tunnel'] = {};
-						success(temp);						
-					}else{
-						error(temp);
-					}
-				}
-			}
-			
-			switch(type){
-				case "GET":
-					headers = ["Content-Type", "text/html"];
-					url += (url.indexOf("?")!=-1?"&":"?")+data;
-					data = null;
-				break;
-				
-				case "POST":
-					if(!files)headers=["Content-Type", "application/x-www-form-urlencoded"];
-				break;
-				
-				case "DATA":
-					headers = ["Content-Type", "application/json"];
-					data = JSON.stringify(data);
-					type = "POST";
-				break;
-				
-			}
-			
-			xhr.open(type, url, true);
-			xhr.setRequestHeader(headers[0],headers[1]);
-			xhr.send(data);
-		};
-	})();
-	
-	Blib.tunnel = function(obj,reset){
-		config.tunnel = (reset)?obj:extend(true,config.tunnel,obj);
-		return this;
-	}
-	
 	/** OBJECT METHODS */
 	Blib.prototype = {
 		'constructor':Blib,
@@ -669,6 +529,237 @@
 	
 	
 })( window );
+
+
+
+/**
+ * Blib.ajax library. Allows send ajax request.
+ *
+ */
+(function( Blib ){
+
+	/** PRIVATE VARIABLE AND METHODS */
+	var is 			= Blib.is,
+		clone		= Blib.clone,
+		extend 		= Blib.extend,
+		object2url 	= Blib.object2url,
+
+		//local config
+		config = {
+			'head':document.getElementsByTagName('head')[0],
+			'jsonp':{
+				'salt':0
+			},
+			'defaultRequest':{
+				'dataType':"text",
+				'success':function(){},
+				'error':function(){},
+				'beforeSend':function(){},
+				'complete':function(){},
+				'data':{},
+				'files':null,
+				'type':"POST",
+				'url':"/",
+				'headers':{
+					"X-Requested-With":"XMLHttpRequest"
+				}
+			},
+			'success':[],
+			'error':[],
+			'complete':[],
+			'beforeSend':[]
+		};
+
+
+	//save config into global config and protect them
+	Blib.config("ajax", config);
+	Blib.config("_private.ajax", true);
+
+	var ajaxSetup = function(obj){
+			if(is(obj.beforeSend,'function'))config.beforeSend.push(obj.beforeSend);
+		},
+
+		parseResponse = function(obj,type){
+			var result = obj;
+
+			switch (type) {
+				case "json":
+					try{
+						result = JSON.parse(obj);
+					}catch(e){
+						Blib.exception("Cannot parse to json sending ajax-data.", e);
+					}
+
+					break;
+
+				default:
+					break;
+
+			}
+
+			return result;
+		},
+
+		ajax = function(request){
+
+			var request = extend({},config.defaultRequest,request),
+				success = clone(config.success),
+				error = clone(config.error),
+				complete = clone(config.complete),
+				beforeSend = clone(config.beforeSend),
+				i, j, k, len, xhr, response;
+
+			success.push(request.success);
+			error.push(request.error);
+			complete.push(request.complete);
+			beforeSend.push(request.beforeSend);
+
+			request.success 	= success;
+			request.error 		= error;
+			request.complete 	= complete;
+			request.beforeSend 	= beforeSend;
+
+			if(request.dataType == 'jsonp'){
+				jsonp(request);
+				return;
+			}
+
+			if (window.XMLHttpRequest) xhr = new XMLHttpRequest();
+			else if (window.ActiveXObject) {
+				try {
+					xhr = new ActiveXObject('Msxml2.XMLHTTP');
+				} catch (e){
+					try {
+						xhr = new ActiveXObject('Microsoft.XMLHTTP');
+					} catch (e){}
+				}
+			}
+			if (!xhr) {return this;}
+
+			xhr.onreadystatechange = function(){
+				if ( xhr.readyState == 4 ) {
+					if ( xhr.status == 200 ) {
+						response = parseResponse(xhr.responseText, request.dataType);
+
+						for(i=0,len=success.length; i<len; i++) {
+							success[i].call(request, response);
+						}
+
+					} else {
+
+						for(i=0,len=error.length; i<len; i++) {
+							error[i].call(request);
+						}
+					}
+
+					for(i=0,len=complete.length; i<len; i++) {
+						complete[i].call(request, response);
+					}
+
+				}
+			};
+
+			xhr.onerror = function () {
+				for(i=0,len=error.length; i<len; i++) {
+					error[i].call(request);
+				}
+			};
+
+			for(i=0,len=beforeSend.length; i<len; i++) {
+				beforeSend[i].call(request);
+			}
+
+			switch(request.type){
+				case "GET":
+					request.headers["Content-Type"] = "text/html";
+					request.url += (request.url.indexOf("?")!=-1?"&":"?")+object2url(request.data);
+					request.data = null;
+					break;
+
+				case "FILES":
+					var formData 	= new FormData(),
+						data 		= request.data,
+						files 		= request.files,
+						fileName;
+
+					if(formData){
+
+						for(i in files){
+							len = files[i].files.length;
+							if(!len)continue;
+							fileName = files[i].name;
+
+							if(len>1)fileName+='[]';
+
+							for(j=0;j<len;j++){
+								formData.append(fileName, files[i].files[j]);
+							}
+
+						}
+
+						for(k in data){
+							if(is(data[k],['array', 'object'])){ data[k]=JSON.stringify(data[k]); } //0_0 bug in multy sending
+							formData.append(k, data[k]);
+						}
+
+						request.data = formData;
+
+					}
+					break;
+
+				case "POST":
+					request.headers["Content-Type"] = "application/x-www-form-urlencoded";
+					request.data = object2url(request.data);
+					break;
+
+				case "DATA":
+					request.type = "POST";
+					request.headers["Content-Type"] = "application/json";
+					request.data = JSON.stringify(request.data);
+					break;
+
+			}
+
+			xhr.open(request.type, request.url, true);
+
+			for(i in request.headers){
+				xhr.setRequestHeader(i, request.headers[i]);
+			}
+
+			xhr.send(request.data);
+		},
+
+		jsonp = function(request){
+			var callback = "jsonp"+config.jsonp.salt++,
+				head = config.head,
+				success = request.success,
+				url = request.url,
+				data = request.data,
+				jsonpElement, i, len;
+
+			Blib.ajax[callback] = function(){
+				for(i=0, len=success.length; i<len; i++) {
+					success[i].apply(request, arguments);
+				}
+				delete Blib.ajax[callback];
+			};
+
+			jsonpElement  = document.createElement('script');
+			jsonpElement.type="text/javascript";
+			jsonpElement.src = url += (url.indexOf("?")!=-1?"&":"?")+object2url(data)+'&callback=Blib.ajax.'+callback;
+			head.appendChild(jsonpElement);
+
+			window.setTimeout(function(){
+				head.removeChild(jsonpElement);
+			},10000);
+		};
+
+	Blib.ajax = ajax;
+	Blib.ajaxSetup = ajaxSetup;
+
+})( window.blib );
+
+
 
 /**
  * Blib.localize library. Allows save many foreign words.
@@ -863,7 +954,7 @@
 	Blib.include =  function(blocks, target){
 		var version = config.version,
 			server = block2url('index', 'php', '/'),
-			ajaxType = "DATA",
+			dataType = "json",
 			domElement;
 		
 		if(is(blocks, "string")){
@@ -875,13 +966,13 @@
 		if(blocks.length !== 1){
 			wait++;
 			
-			if(Blib.config('system.server')){ ajaxType = "JSONP";}
+			if(Blib.config('system.server')){ dataType = "jsonp";}
 			
 			Blib.ajax({
 				url:server,
 				data:{'blib':'bInclude', 'list':blocks},
-				type:ajaxType,
-				dataType: "json",
+				type:"DATA",
+				dataType: dataType,
 				success: function(data){
 					config.version = data['version'];
 					combine({'action':"add", 'extention':"css", 'name':data['name'] , 'list':data['list']});
@@ -917,7 +1008,7 @@
 	
 	Blib.include.decrement = function(){
 		wait--;
-	}
+	};
 	
 	Blib.include.complete = function(handler, delay){
 		
@@ -934,7 +1025,7 @@
 				temp = handlers[key];
 				delete handlers[key];
 				temp();
-			};
+			}
 			
 		},delay || 100);
 	}

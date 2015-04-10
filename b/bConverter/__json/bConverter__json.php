@@ -31,7 +31,8 @@ class bConverter__json extends bConverter__instance{
      * Convert data to new format.
      *
      * @param null|string $newFormat    - format name
-     * @return mixed|null   - converted data(or old data, if conversion failed)
+     * @return mixed|null               - converted data(or old data, if conversion failed)
+     * @throws Exception
      */
     public function convertTo($newFormat = null){
 
@@ -54,10 +55,10 @@ class bConverter__json extends bConverter__instance{
                 $data = (object)json_decode($data, true);
             }
 
-            if(json_last_error() === JSON_ERROR_NONE){
-                $this->setData($data);
-                $this->setFormat($newFormat);
-            }
+            if(json_last_error() !== JSON_ERROR_NONE)throw new Exception('Have error in convert process.');
+
+            $this->setData($data);
+            $this->setFormat($newFormat);
 
         }else{
             return $this->_component->convertTo($newFormat);
@@ -78,6 +79,7 @@ class bConverter__json extends bConverter__instance{
         if($format === 'json'){
             header('Content-Type: application/json; charset=UTF-8');
             echo $data;
+            exit;
         }else{
             return $this->_component->output();
         }

@@ -8,34 +8,21 @@
 
 class bController extends bBlib{
 
-    /** @var null|bBlib|mixed $_model   - default model */
-    protected $_model   = null;
-    /** @var null|bView $_view          - default view */
-    protected $_view    = null;
     /** @var string $_action            - current action */
     protected $_action  = 'index';
-    /** @var string $_layout            - current view layout */
-    protected $_layout  = 'index';
+    /** @var string $_view              - current view layout */
+    protected $_view    = 'index';
 
-    public function getModel(){return $this->_model;}
     public function getView(){return $this->_view;}
     public function getAction(){return $this->_action.'Action';}
-    public function getLayout(){return $this->_layout;}
 
-    public function setModel(bBlib $model){
-        $this->_model = $model;
-        return $this;
-    }
-    public function setView(bView $view){
-        $this->_view = $view;
-        return $this;
-    }
+
     public function setAction($action){
         if(is_string($action)){$this->_action = $action;}
         return $this;
     }
-    public function setLayout($layout){
-        if(is_string($layout)){$this->_layout = $layout;}
+    public function setView($view){
+        if(is_string($view)){$this->_view = $view;}
         return $this;
     }
 
@@ -44,51 +31,71 @@ class bController extends bBlib{
      * Get property from [set data]->[tunnel data]->[request data]->[some default value]->null (use this order)
      *
      * @param string $name  - property name
-     * @param array $data   - main data
-     * @return null|mixed   - property value
+     * @param null $default - default value
+     * @return mixed|null   - property value
      */
-    final protected function get($name = '', Array $data = array()){
+    final protected function get($name = '', $default = null){
 
         /** @var bRequest $bRequest */
         $bRequest = $this->setTrait('bRequest')->getInstance('bRequest');
         $tunnel = $bRequest->getTunnel(get_class($this));
-        $request = $bRequest->get($name);
+        $request = $bRequest->get($name, $default);
 
-        if(isset($data[$name])){
-            return $data[$name];
-        }elseif(isset($tunnel[$name])){
-            return $tunnel[$name];
-        }elseif($request !== null){
-            return $request;
-        }elseif($name == 'action'){
-            return $this->getAction();
-        }elseif($name == 'view'){
-            return $this->getLayout();
+        return(isset($tunnel[$name])?$tunnel[$name]:$request);
+
+    }
+
+
+    protected function input(Array $data = array()){
+
+        if(isset($data['action'])){
+            $this->setAction($data['action']);
+        }else{
+            $this->setAction($this->get('action', $this->_action));
         }
 
-        return null;
+        if(isset($data['view'])){
+            $this->setView($data['view']);
+        }else{
+            $this->setView($this->get('view', $this->_view));
+        }
+
+        $this->configure($data);
     }
 
     /**
      * Do router function
      *  - provide self into child
      *  - call needed action
-     *  - parse return data chosen view
      * 
-     * @return mixed
+     * @return mixed    - action result
      */
     final public function output(){
         if ($this->_parent instanceof bBlib) return $this;
 
-        $data   = array();
         $action = $this->getAction();
-        $view   = $this->getView();
-        $layout = $this->getLayout();
 
+        if (method_exists($this, $action)){
+            return $this->$action();
+        }else{
+            return $this->indexAction();
+        }
 
-        if (method_exists($this, $action)) $data = $this->$action();
-        if (method_exists($view, $layout)) $view->$layout($data);
-
-        return $view->generate();
     }
+
+    /**
+     * Default action
+     */
+    public function indexAction(){
+
+    }
+
+    /**
+     * Default configuration method
+     * @param $data     - some input data
+     */
+    protected function configure($data = null){
+
+    }
+
 }

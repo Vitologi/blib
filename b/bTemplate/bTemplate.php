@@ -202,9 +202,12 @@ class bTemplate extends bBlib{
      */
     public function getTemplateDiff($oldTree = null, $newTree = null){
 
+        /** @var bRequest $bRequest */
+        $bRequest = $this->getInstance('bRequest');
+
         // if old tree is not provided than try get it from request tunnel
         if(!is_array($oldTree)){
-            $tunnel =  (array) $this->_getTunnel();
+            $tunnel =  (array) $bRequest->get(__CLASS__);
             $oldTree = isset($tunnel['template'])?$tunnel['template']:array();
         }
 

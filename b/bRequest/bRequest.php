@@ -63,10 +63,11 @@ class bRequest extends bBlib{
      * Get request variable
      *
      * @param string $name  - property name
+     * @param null $default - default property value
      * @return null
      */
-    public function get($name = ''){
-        return (isset($this->_request[$name])?$this->_request[$name]:null);        
+    public function get($name = '', $default = null){
+        return (isset($this->_request[$name])?$this->_request[$name]:$default);
     }
 
     /**

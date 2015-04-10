@@ -50,6 +50,7 @@ abstract class bBlib{
      * @return null|bBlib       - null or implemented block
      */
     final protected function getInstance($name = ''){
+        if(!isset($this->_instances[$name]))$this->setTrait($name);
         return (isset($this->_instances[$name])?$this->_instances[$name]:null);
     }
     

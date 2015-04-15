@@ -32,7 +32,7 @@ class bAnnounces extends bBlib{
 		/** @var bRequest $bRequest */
 		$bRequest = $this->getInstance('bRequest');
 
-		$tunnel   = $bRequest->getTunnel(__CLASS__);
+		$tunnel   = (array)$bRequest->get(__CLASS__);
 		$request = array('count' => $bRequest->get('count'), 'limit' => $bRequest->get('limit'));
 
 		// Glue request params

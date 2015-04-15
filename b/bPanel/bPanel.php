@@ -29,7 +29,7 @@ class bPanel extends bBlib{
         /** @var bRequest $bRequest  - request instance */
         $bRequest = $this->getInstance('bRequest');
 
-        $tunnel = $bRequest->getTunnel(__CLASS__);
+        $tunnel = (array) $bRequest->get(__CLASS__);
 
         $this->_data = array_replace($this->_data, $tunnel, $data);
 

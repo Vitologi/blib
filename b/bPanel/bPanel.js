@@ -21,7 +21,7 @@
 					'block':'bLink',
 					'mods':{'style':'button', 'position':'vertical'},
 					'ajax':true,
-					'tunnel':tunnel,
+					'data':tunnel,
 					'visible':true,
 					'content':key
 				});
@@ -47,7 +47,7 @@
 				'mods':mods,
 				'ajax':ajax,
 				'uphold':uphold,
-				'tunnel':tunnel,
+				'data':tunnel,
 				'visible':true,
 				'content':data.content
 			}];

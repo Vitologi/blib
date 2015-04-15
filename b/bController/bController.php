@@ -38,7 +38,7 @@ class bController extends bBlib{
 
         /** @var bRequest $bRequest */
         $bRequest = $this->setTrait('bRequest')->getInstance('bRequest');
-        $tunnel = $bRequest->getTunnel(get_class($this));
+        $tunnel = (array)$bRequest->get(get_class($this));
         $request = $bRequest->get($name, $default);
 
         return(isset($tunnel[$name])?$tunnel[$name]:$request);

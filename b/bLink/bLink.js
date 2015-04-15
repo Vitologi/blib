@@ -3,6 +3,7 @@
 	var config = {
 			'curloc':window.location.pathname,
 			'dontShow':{
+				'ajax':true,
 				'bTemplate':true
 			}
 		},
@@ -16,7 +17,6 @@
 		function(data){
 			this.ajax = data.ajax;
 			this.link = data.link||this.getCurloc();
-			this.tunnel = data.tunnel;
 			this.data = data.data || {};
 			this.disabled = (data.mods)?data.mods.disabled:false;
 			this.uphold = data.uphold || [];
@@ -46,8 +46,8 @@
 				blib.build.ready(function(){_this.onclick.call(_this, {});}, true);
 			},
 			'_getStatus':function(){
-				var self = this,
-					uphold = self.uphold,
+				var _this = this,
+					uphold = _this.uphold,
 					uLen = uphold.length,
 					i=0, temp = [], status, stack;
 				
@@ -55,7 +55,7 @@
 					temp.push(storage[uphold[i]]);
 				}
 				
-				return self._getStatusList(temp);
+				return _this._getStatusList(temp);
 				
 			},
 			'setUphold':function(name, obj){
@@ -70,69 +70,71 @@
 			'onclick':function(e){
 				e.preventDefault ? e.preventDefault() : e.returnValue = false;
 				
-				var self = this,
-					before = self.before,
-					after = self.after,
+				var _this = this,
+					before = _this.before,
+					after = _this.after,
+					disabled = _this.disabled,
+					ajax = _this.ajax,
+					link = _this.link,
+					requestData = _this.data,
 					allow, key;
 				
 				
-				if(self.disabled)return false;
-				allow = self._getStatus();
-				if(allow.error)return self.showError(allow);
-				self.clearError();
+				if(disabled)return false;
+				allow = _this._getStatus();
+				if(allow.error)return _this.showError(allow);
+				_this.clearError();
 				
 				for(key in before){
-					before[key].call(self);
+					before[key].call(_this);
 				}
-				
-				if(!self.ajax){
-					blib.tunnel(self.tunnel);
-					window.location.href = self.link+"?"+blib.object2url({'_tunnel':blib.config('tunnel')});
+
+				if(!ajax){
+					window.location.href = link+"?"+blib.object2url(requestData);
 					return false;
 				}
 
-				self.data.ajax = true;
-				
-				blib.tunnel(self.tunnel);
-				
-				self.setCurloc(self.link);
-				self.setLocation();
+				requestData.ajax = true;
+
+				_this.setCurloc(link);
 				
 				blib.ajax({
-					url:self.link,
-					data:self.data,
-					dataType:'json',
+					'url':link,
+					'data':requestData,
+					'dataType':'json',
 					'success':function(data){
-						
+
+						_this.setLocation(requestData);
+
 						blib('body').html(blib.build(data));
 						
 						for(key in after){
-							after[key].call(self, [data]);
+							after[key].call(_this, [data]);
 						}
 					}
 				});
 
 			},
-			'dontShow':{
-				'bTemplate':true
-			},
-			'setLocation':function(params){
-				var self = this,
+			'setLocation':function(data, params){
+				var _this = this,
+					visible = _this.visible,
 					dontShow = config.dontShow,
-					key, temp, tunnel;
+					key, temp, loc;
+
+				data = data || _this.data;
 				
-				if((params && params.visible) || self.visible){
-					temp = blib.config('tunnel');
+				if((params && params.visible) || visible){
+					temp = blib.clone(data);
 					for(key in dontShow)delete temp[key];
-					tunnel = "?"+blib.object2url({'_tunnel':temp}, {'length':20});
+					loc = "?"+blib.object2url(temp, {'length':20});
 				}
 				
 				if(history.pushState){
-					history.pushState({}, location.host , self.getCurloc());
-					history.pushState({}, location.search , tunnel);
+					history.pushState({}, location.host , _this.getCurloc());
+					history.pushState({}, location.search , loc);
 				}else{
 					window.chHashFlag = true;
-					location.hash = self.getCurloc();
+					location.hash = _this.getCurloc();
 				}
 			},
 			'showError':function(error){
@@ -150,22 +152,13 @@
 		{'block':'bLink', 'elem':'location'},
 		function(data){
 			var parent = this._static('bLink'),
-				tunnel = blib.config('tunnel')||{},
-				content = data.content,
-				key, item;
+				content = data.content;
 			
 			this.visible = data.visible || false;
 			
 			if(data.link)parent.setCurloc(data.link);
-			
-			for(key in content){
-				item = content[key];
-				tunnel[key] = item;
-			}
 
-			blib.tunnel(tunnel);
-			
-			parent.setLocation({'visible':this.visible});
+			parent.setLocation(content, {'visible':this.visible});
 			this.template = false;
 		}
 	);

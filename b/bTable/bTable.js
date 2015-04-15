@@ -1,17 +1,39 @@
-(function(){
-	
+(function( Blib ){
+
+	var ajaxSetup = Blib.ajaxSetup,
+		extend = Blib.extend,
+		config = {
+			'request':{
+				'bTable':{},
+				'items':[]
+			},
+			'files':false
+		};
+
+	//save config into global config and protect them
+	Blib.config("bTable", config);
+	Blib.config("_private.bTable", true);
+
+	ajaxSetup({
+		'beforeSend':function(){
+			this.data = extend(true, {}, config.request, this.data);
+		}
+	});
+
+
 	blib.build.define(
 		{'block':'bTable'},
 		function(data){
 			var _this = this,
 				temp = [],
-				meta = blib.extend({
-					'name':'defaultTable',
+				meta = blib.extend(true, {
+					'name':false,
 					'tunnel':{},
 					'position':{},
 					'fields':{},
 					'key':[],
 					'page':{
+						'handler':undefined,
 						'number':0,
 						'rows':0,
 						'count':0
@@ -32,7 +54,7 @@
 			_this.template.mods = data.mods;
 			_this.template.content = temp;
 
-			_this._static('bLink').setUphold(meta.name, this);
+			if(meta.name)_this._static('bLink').setUphold(meta.name, this);
 
 		},
 		{'tag':'table'},
@@ -46,15 +68,17 @@
 			'getFooter':function(){
 				return {'block':'bTable', 'elem':'footer'};
 			},
-			'clearTunnel':function(){
-				blib.config('tunnel.'+this.tunnel+'.items',[]);
-			},
 			'_onRemove':[
 				function(){
 					var _this = this,
 						meta = _this.meta;
 
-					_this._static('bLink').dropUphold(meta.name, _this);
+					if(meta.name)_this._static('bLink').dropUphold(meta.name, _this);
+					config.request = {
+						'bTable':{},
+						'items':[]
+					};
+
 				}
 			],
 			'_getStatus':function(){
@@ -65,7 +89,7 @@
 			}
 		}
 	);
-	
+
 	blib.build.define(
 		{'block':'bTable', 'elem':'head'},
 		function(data){
@@ -162,18 +186,37 @@
 				var _this = this,
 					block = _this.block,
 					meta = _this.block.meta,
+					name = meta.name,
+					tunnel = meta.tunnel,
 					keys = meta.keys,
-					items = blib.config('tunnel.'+meta.tunnel.blib+'.items')||[],
-					tunnel = {},
-					item = {},
-					i;
-				
+					item = {}, items, i;
+
 				for(i in keys){
 					item[keys[i]] = _this.content[keys[i]];
 				}
+
+				// get saved items
+				if(name){
+					if(!config.request.bTable[name])config.request.bTable[name]={'items':[]}
+					items = config.request.bTable[name]['items'];
+				}else{
+					items = config.request.items;
+				}
+
 				items.push(item);
-				tunnel[meta.tunnel.blib] = {'items':items};
-				blib.tunnel(tunnel);
+
+				/*
+				// save items
+				if(name){
+					config.request.bTable[name]['items'] = items;
+				}else{
+					config.request.items = items;
+				}
+				*/
+
+				// update including tunnel
+				config.request = extend(true, {}, tunnel, config.request);
+
 				block.checkRow(true);
 			},
 			
@@ -181,13 +224,29 @@
 				var _this = this,
 					block = _this.block,
 					meta = _this.block.meta,
+					name = meta.name,
 					keys = meta.keys,
-					tunnel = blib.config('tunnel'),
-					items = blib.config('tunnel.'+meta.tunnel.blib+'.items')||[],
-					item, i, j, key, keyLen = 0, count;
+					items, item, i, j, key, keyLen = 0, count;
 					
 				for(i in keys)keyLen++;
-				
+
+				/*
+				// get saved items
+				if(name && config.request.bTable[name]){
+					items = config.request.bTable[name];
+				}else{
+					items = config.request.items;
+				}
+				*/
+
+				// get saved items
+				if(name){
+					if(!config.request.bTable[name])config.request.bTable[name]={'items':[]}
+					items = config.request.bTable[name]['items'];
+				}else{
+					items = config.request.items;
+				}
+
 				for(i in items){
 					item = items[i];
 					count = 0;
@@ -197,9 +256,16 @@
 					}
 					if(keyLen ==count)items.splice(i,1);
 				}
-				
-				tunnel[meta.tunnel.blib]['items'] = items;
-				blib.tunnel(tunnel,true);
+
+				/*
+				// save items
+				if(name){
+					config.request.bTable[name] = items;
+				}else{
+					config.request.items = items;
+				}
+				*/
+
 				block.checkRow(false);
 			}
 		}
@@ -274,23 +340,25 @@
 				var _this = this,
 					block = _this.block,
 					meta = block.meta,
+					page = blib.clone(meta.page),
 					name = meta.name,
 					tunnel = meta.tunnel,
-					data = {
-						'blib':block.tunnel,
-						'_tunnel':{}
-					},
 					body = block.children.bTable__body[0],
 					tempTunnel;
 
-				tempTunnel = {'_tunnel':{'bTable':{}}};
-				tempTunnel['_tunnel']['bTable'][name]={'page':meta.page};
-				tunnel = blib.extend(true, tunnel, tempTunnel);
+				page.number = _this.id;
 
-				tunnel._tunnel.bTable[name].page.number = _this.id;
+				if(name){
+					tempTunnel = {'bTable':{}};
+					tempTunnel.bTable[name] = {'page':page};
+				}else{
+					tempTunnel = {'page':page};
+				}
+
+				tempTunnel = extend(true, {'blib':page.handler}, tunnel, tempTunnel);
 
 				blib.ajax({
-					'data':tunnel,
+					'data':tempTunnel,
 					'dataType':'json',
 					'success':function(data){
 						meta.page.number = _this.id;
@@ -317,4 +385,4 @@
 	);
 
 
-})(window);
+})( window.blib );

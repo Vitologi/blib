@@ -1,7 +1,15 @@
-(function(){
+(function( Blib ){
 
 	//standard function for element
-	var standardProto = {
+	var ajaxSetup = Blib.ajaxSetup,
+		extend = Blib.extend,
+		config = {
+			'request':{
+				'bForm':{}
+			},
+			'files':false
+		},
+		standardProto = {
 			'prepare':function(data){
 				if(!data.attrs)data.attrs={};
 				this.name = data.name || data.attrs.name;
@@ -32,35 +40,47 @@
 
 	standardFunction.prototype = standardProto;
 
+	//save config into global config and protect them
+	Blib.config("bForm", config);
+	Blib.config("_private.bForm", true);
+
+	ajaxSetup({
+		'beforeSend':function(){
+			this.data = extend(true, {}, config.request, this.data);
+			if(config.files)this.files = [].concat(config.files, this.files);
+		}
+	});
+
 	//FORM
 	blib.build.define(
 		{'block':'bForm'},
 		function(data){
+
+			var _this = this,
+				meta = extend(true, {
+					'name':false,
+					'tunnel':{},
+					'ajax':true,
+					'action':'',
+					'method':'POST',
+					'select':{},
+					'items':{}
+				}, data.meta);
+
 			if(!data.attrs)data.attrs={};
-			var meta = data.meta || {'processor':false,	'tunnel':false,	'ajax':true, 'action':'', 'method':'POST', 'select':{}, 'items':{}};
-			this.meta = {
-				'processor':meta.processor || false,
-				'tunnel':meta.tunnel || false,
-				'ajax':('ajax' in meta)?meta.ajax:true,
-				'action':meta.action || data.attrs.action || '',
-				'method':meta.method || data.attrs.method || 'POST',
-				'select':meta.select || {},
-				'items':meta.items || {}
-			};
+			if(data.attrs.action)meta.action = data.attrs.action;
+			if(data.attrs.method)meta.method = data.attrs.method;
 
-			this.fields = {};
-			this.name = data.name;
-			this.template.mods = data.mods;
-			this.template.attrs = data.attrs;
-			this.template.content = data.content;
+			_this.meta = meta;
 
-			if(!meta.ajax){
-				this.template.attrs.action = meta.action;
-				this.template.attrs.method = meta.method;
-			}
+			_this.fields = {};
+			_this.name = meta.name;
+			_this.template.attrs = meta.attrs;
+			_this.template.method = meta.method;
+			_this.template.mods = data.mods;
+			_this.template.content = data.content;
 
-			//console.log(this.name, this);
-			this._static('bLink').setUphold(this.name, this);
+			if(_this.name)this._static('bLink').setUphold(_this.name, this);
 
 		},
 		{
@@ -100,8 +120,9 @@
 			},
 			'submit':function(handler){
 				var meta = this.meta,
+					name = meta.name,
 					ajax = meta.ajax,
-					processor = meta.processor,
+					tunnel = meta.tunnel,
 					action = meta.action,
 					method = meta.method,
 					request, files, temp;
@@ -113,16 +134,13 @@
 						delete request['_files'];
 					}
 
-					if(meta.tunnel){
-						temp = {};
-						temp[meta.tunnel] = request;
-						if(files)temp._files = files;
-						blib.tunnel(temp);
-						request = {};
-						files = undefined;
+					if(name){
+						temp = {'bForm':{}};
+						temp.bForm[name] = request;
+						request = temp;
 					}
 
-					if(processor)request.blib = processor;
+					request = extend(true, tunnel, request);
 
 					blib.ajax({
 						'url':action,
@@ -142,20 +160,28 @@
 
 			},
 			'_getStatus':function(){
-				var status = this._getStatusList(this.fields),
-					tunnel = this.meta.tunnel,
-					serialized, temp = {};
+				var _this = this,
+					meta = _this.meta,
+					name = meta.name,
+					status = _this._getStatusList(_this.fields),
+					tunnel = meta.tunnel,
+					request, temp;
 
 				if(!status.error){
-					serialized = this.serialize();
+					request = _this.serialize();
 
-					if('_files'in serialized){
-						blib.tunnel({'_files':serialized['_files']});
-						serialized['_files'] = null;
+					if('_files'in request){
+						config.files = request['_files'];
+						request['_files'] = null;
 					}
 
-					temp[tunnel] = {'items':[serialized]};
-					blib.tunnel(temp);
+					if(name){
+						temp = {'bForm':{}};
+						temp.bForm[name] = request;
+						request = temp;
+					}
+
+					config.request = extend(true, config.request, tunnel, request);
 				}
 
 				return status;
@@ -164,6 +190,10 @@
 			'_onRemove':[
 				function(){
 					this._static('bLink').dropUphold(this.name, this);
+					config.request = {
+						'bForm':{}
+					};
+					config.files = false;
 				}
 			]
 		})
@@ -553,4 +583,4 @@
 		}
 	);
 
-})();
+})( window.blib );

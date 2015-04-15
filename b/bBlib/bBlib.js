@@ -557,7 +557,7 @@
 				'beforeSend':function(){},
 				'complete':function(){},
 				'data':{},
-				'files':null,
+				'files':[],
 				'type':"POST",
 				'url':"/",
 				'headers':{
@@ -577,6 +577,7 @@
 
 	var ajaxSetup = function(obj){
 			if(is(obj.beforeSend,'function'))config.beforeSend.push(obj.beforeSend);
+			if(is(obj.success,'function'))config.success.push(obj.success);
 		},
 
 		parseResponse = function(obj,type){

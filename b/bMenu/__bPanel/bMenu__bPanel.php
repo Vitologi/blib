@@ -7,33 +7,16 @@ defined('_BLIB') or die;
  * Included patterns:
  * 		MVC	- use input property like action and view for create code logic
  */
-class bMenu__bPanel extends bBlib{
+class bMenu__bPanel extends bController{
 
     /**
      * @var array
      */
-    protected $_traits    = array('bSystem', 'bRequest', 'bMenu__model', 'bMenu__view', 'bPanel__model', 'bMenu__validator');
+    protected $_traits    = array(/* 'bRequest', */ 'bMenu__model', 'bMenu__view', 'bPanel__model', 'bMenu__validator');
 
-    /**
-     * @var array $_mvc     - default request data
-     */
-    protected $_mvc       = array(
-        "action"     => "index",
-        "view"       => "index",
-        "items"      => array() // item array (need for CRUD operation)
-    );
-
-
-    /**
-     * @var array $_tableData   - default table data (for paginator)
-     */
-    protected $_tableData = array(
-        'page' => array(
-            'number' => 0,  // curent page No
-            'rows'   => 5,  // rows on page
-            'count'  => 0   // rows count
-        )
-    );
+    protected $_tableName = 'menuTable';
+    protected $_formName  = 'menuForm';
+    protected $_items = array();
 
     /**
      * Get tunnel data for business logic, set view template and configure it
@@ -41,10 +24,7 @@ class bMenu__bPanel extends bBlib{
      * @param array $data   - provided data
      * @throws Exception
      */
-    protected function input($data = array()){
-
-        /** @var bRequest $bRequest - request instance */
-        $bRequest = $this->getInstance('bRequest');
+    protected function configure($data = array()){
 
         /** @var bMenu__view $bMenu__view - template instance */
         $bMenu__view = $this->getInstance('bMenu__view');
@@ -52,17 +32,9 @@ class bMenu__bPanel extends bBlib{
         /** @var bPanel__model $bPanel__model */
         $bPanel__model = $this->getInstance('bPanel__model');
 
-        // Set request params
-        $tunnel = $bRequest->getTunnel(__CLASS__);
-        $this->_mvc = array_replace($this->_mvc, $tunnel, $data);
 
-        // Set table data
-        $tableName = 'menuTable';
-        $tunnel = $bRequest->getTunnel('bTable');
-        if (isset($tunnel[$tableName])) {
-            $this->_tableData = array_replace_recursive($this->_tableData, $tunnel[$tableName]);
-        }
-        $bMenu__view->set("tableName", $tableName);
+        $bMenu__view->set("tableName", $this->_tableName);
+        $bMenu__view->set("formName", $this->_formName);
 
         // Save in menu view blocks list
         $blocks = $bPanel__model->getBlocks();
@@ -73,13 +45,101 @@ class bMenu__bPanel extends bBlib{
 
     }
 
-    /**
-     * Provide controller function
-     *
-     * @return array|string
-     * @throws Exception
-     */
-    public function output(){
+
+    public function indexAction(){
+
+        /** @var  bMenu__model $bMenu__model */
+        $bMenu__model  = $this->getInstance('bMenu__model');
+
+        /** @var  bMenu__view $bMenu__view */
+        $bMenu__view   = $this->getInstance('bMenu__view');
+
+        $table = $this->get('bTable');
+        $tableData = (isset($table[$this->_tableName]) ? $table[$this->_tableName]: array());
+        $tableData = array_replace_recursive(array(
+            'page'  => array(
+                'number' => 0,
+                'rows'   => 5,
+                'count'  => 0
+            ),
+            'items' => array()
+        ), $tableData);
+
+        $number = $tableData['page']['number'];
+        $rows   = $tableData['page']['rows'];
+        $list   = $bMenu__model->getList($number, $rows);
+        $count  = $bMenu__model->getCount();
+
+        $bMenu__view->set('list', $list);
+        $bMenu__view->set('number', $number);
+        $bMenu__view->set('rows', $rows);
+        $bMenu__view->set('count', $count);
+
+        switch($this->getView()){
+            case "listJson":
+                $bMenu__view->recordsJson();
+                break;
+
+            default:
+                $bMenu__view->records();
+                break;
+        }
+
+        return $bMenu__view->generate();
+    }
+
+
+    public function formAction(){
+
+        /** @var  bMenu__model $bMenu__model */
+        $bMenu__model  = $this->getInstance('bMenu__model');
+
+        /** @var  bMenu__view $bMenu__view */
+        $bMenu__view   = $this->getInstance('bMenu__view');
+
+        /** get item from table */
+        $table = $this->get('bTable');
+        $tableData = (isset($table[$this->_tableName]) ? $table[$this->_tableName]: array());
+        $tableData = array_replace_recursive(array(
+            'page'  => array(
+                'number' => 0,
+                'rows'   => 5,
+                'count'  => 0
+            ),
+            'items' => array()
+        ), $tableData);
+        $tableItem = (isset($tableData['items'][0])?$tableData['items'][0]:array());
+
+        /** get item from form */
+        $form = $this->get('bForm');
+        $formData = (isset($form[$this->_formName]) ? $form[$this->_formName]: array());
+        $formItem = $formData;
+
+        $item = array_replace_recursive($tableItem, $formItem);
+
+        if(isset($item['id'])){
+            $item = $bMenu__model->getItem($item['id']);
+        }
+
+        $bMenu__view->set('item', $item);
+
+        $selectList = $bMenu__model->getSmallList();
+        $bMenu__view->set('selectList', $selectList);
+
+        switch($this->getView()){
+            case "add":
+                $bMenu__view->addPanel();
+                break;
+
+            case "edit":
+                $bMenu__view->editPanel();
+                break;
+        }
+
+        return $bMenu__view->generate();
+    }
+
+    public function addAction(){
 
         /** @var  bMenu__model $bMenu__model */
         $bMenu__model  = $this->getInstance('bMenu__model');
@@ -90,141 +150,104 @@ class bMenu__bPanel extends bBlib{
         /** @var bMenu__validator $bMenu__validator */
         $bMenu__validator = $this->getInstance('bMenu__validator');
 
-        $mvc        = $this->_mvc;
-        $items      = $mvc["items"];
-        $item       = isset($items[0])?$items[0]:null;
+        /** get item from form */
+        $form = $this->get('bForm');
+        $formData = (isset($form[$this->_formName]) ? $form[$this->_formName]: array());
+        $item  = $formData;
 
-        switch($mvc['action']){
+        // validate input data
+        if($errors = $bMenu__validator->validateAddForm($item)){
 
-            case "index":
-            case "list":
-                break;
+            // change view
+            $this->setView('add');
 
-            // add menu item
-            case "add":
+            // set view(template) variable
+            $bMenu__view->set('message', "Данные не соответствуют формату.");
+            $bMenu__view->set('errors', $errors);
+            $bMenu__view->set('item', $item);
 
-                // validate input data
-                if($errors = $bMenu__validator->validateAddForm($item)){
+            return $this->formAction();
 
-                    // change view
-                    $mvc['view'] = "add";
+        }else{
+            $result = $bMenu__model->addItem($item);
 
-                    // set view(template) variable
-                    $bMenu__view->set('message', "Данные не соответствуют формату.");
-                    $bMenu__view->set('errors', $errors);
-                    $bMenu__view->set('item', $item);
-                }else{
-                    $result = $bMenu__model->addItem($item);
-                    $mvc['view'] = "index";
-                    $bMenu__view->set('message', "Запись успешно добавлена.");
-                    $bMenu__view->set('item', $result);
-                }
+            $this->setView('index');
 
-                break;
+            $bMenu__view->set('message', "Запись успешно добавлена.");
 
-            case "edit":
-
-                if($errors = $bMenu__validator->validateEditForm($item)){
-                    $mvc['view'] = "edit";
-                    $bMenu__view->set('message', "Данные не соответствуют формату.");
-                    $bMenu__view->set('errors', $errors);
-                    $bMenu__view->set('item', $item);
-                }else{
-                    $mvc['view'] = "edit";
-                    $result = $bMenu__model->editItem($item);
-                    $bMenu__view->set('message', "Запись успешно отредактирована.");
-                    $bMenu__view->set('item', $result);
-                }
-
-                break;
-
-                case "delete":
-
-                    $itemNums = $bMenu__model->serializeItemNumbers($items);
-
-                    if($errors = $bMenu__validator->validateDelete($itemNums)){
-                        $bMenu__view->set('message', "Данные не соответствуют формату.");
-                        $bMenu__view->set('errors', $errors);
-                    }else{
-                        $bMenu__model->deleteItem($itemNums);
-                        $bMenu__view->set('message', "Строки успешно удалены.");
-                    }
-
-                    $mvc['view'] = "listTable";
-
-                    break;
-
-
-            default:
-                break;
+            return $this->indexAction();
         }
 
 
-        switch($mvc['view']){
+    }
 
-            case "index":
-            case "listTable":
-                // detect how much item need, configure view
-                $page = $this->_tableData['page'];
-                $number = $page['number'];
-                $rows = $page['rows'];
 
-                // get rows
-                $list = $bMenu__model->getList($number, $rows);
-                $bMenu__view->set('list', $list);
-                $bMenu__view->set('number', $number);
-                $bMenu__view->set('rows', $rows);
+    public function editAction(){
 
-                $count = $bMenu__model->getCount();
-                $bMenu__view->set('count', $count);
-                $bMenu__view->set('message', "Панель редактирования пунктов меню.");
+        /** @var  bMenu__model $bMenu__model */
+        $bMenu__model  = $this->getInstance('bMenu__model');
 
-                // configure indexPanel view
-                $bMenu__view->indexPanel();
-                break;
+        /** @var  bMenu__view $bMenu__view */
+        $bMenu__view   = $this->getInstance('bMenu__view');
 
-            // get purify table data for ajax
-            case "listJson":
-                $page = $this->_tableData['page'];
-                $number = $page['number'];
-                $rows = $page['rows'];
+        /** @var bMenu__validator $bMenu__validator */
+        $bMenu__validator = $this->getInstance('bMenu__validator');
 
-                $list = $bMenu__model->getList($number, $rows);
-                $bMenu__view->set('list', $list);
-                $bMenu__view->set('number', $number);
-                $bMenu__view->set('rows', $rows);
 
-                $bMenu__view->listJson();
-                break;
+        $form = $this->get('bForm');
+        $formData = (isset($form[$this->_formName]) ? $form[$this->_formName]: array());
+        $item = $formData;
 
-            // add form
-            case "add":
-                $selectList = $bMenu__model->getSmallList();
-                $bMenu__view->set('selectList', $selectList);
-                $bMenu__view->addPanel();
-                break;
-
-            // edit form
-            case "edit":
-                $selectList = $bMenu__model->getSmallList();
-
-                if($item['id']){
-                    $item = $bMenu__model->getItem($item['id']);
-                    $bMenu__view->set('item', $item);
-                }
-
-                $bMenu__view->set('selectList', $selectList);
-                $bMenu__view->editPanel();
-                break;
-
-            default:
-                break;
-
+        if($errors = $bMenu__validator->validateEditForm($item)){
+            $bMenu__view->set('message', "Данные не соответствуют формату.");
+            $bMenu__view->set('errors', $errors);
+            $bMenu__view->set('item', $item);
+        }else{
+            $result = $bMenu__model->editItem($item);
+            $bMenu__view->set('message', "Запись успешно отредактирована.");
+            $bMenu__view->set('item', $result);
         }
 
-        // build final view
-        return $bMenu__view->generate();
+        $this->setView('edit');
 
+        return $this->formAction();
+    }
+
+    public function deleteAction(){
+
+        /** @var  bMenu__model $bMenu__model */
+        $bMenu__model  = $this->getInstance('bMenu__model');
+
+        /** @var  bMenu__view $bMenu__view */
+        $bMenu__view   = $this->getInstance('bMenu__view');
+
+        /** @var bMenu__validator $bMenu__validator */
+        $bMenu__validator = $this->getInstance('bMenu__validator');
+
+        $table = $this->get('bTable');
+        $tableData = (isset($table[$this->_tableName]) ? $table[$this->_tableName]: array());
+        $tableData = array_replace_recursive(array(
+            'page'  => array(
+                'number' => 0,
+                'rows'   => 5,
+                'count'  => 0
+            ),
+            'items' => array()
+        ), $tableData);
+
+        $itemNums = $bMenu__model->serializeItemNumbers($tableData['items']);
+
+        if($errors = $bMenu__validator->validateDelete($itemNums)){
+            $bMenu__view->set('message', "Данные не соответствуют формату.");
+            $bMenu__view->set('errors', $errors);
+        }else{
+            $bMenu__model->deleteItem($itemNums);
+            $bMenu__view->set('message', "Строки успешно удалены.");
+        }
+
+        $this->setView('index');
+
+        return $this->indexAction();
     }
 
 }

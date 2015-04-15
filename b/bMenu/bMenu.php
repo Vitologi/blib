@@ -25,7 +25,7 @@ class bMenu extends bBlib{
         /** @var bRequest $bRequest - request instance */
         $bRequest   = $this->getInstance('bRequest');
 
-        $tunnel     = $bRequest->getTunnel(__CLASS__);
+        $tunnel     = (array) $bRequest->get(__CLASS__);
 
         // Glue request params
         $this->_mvc     = array_replace($this->_mvc, $tunnel, $data);

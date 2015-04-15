@@ -151,7 +151,7 @@ class bMenu__view extends bView{
      *
      * @throws Exception
      */
-    public function indexPanel(){
+    public function records(){
 
         /** @var bPanel__view $bPanel__view */
         $bPanel__view = $this->getInstance('bPanel__view');
@@ -162,9 +162,11 @@ class bMenu__view extends bView{
 
         /** Buttons */
         $add    = $bPanel__view->buildButton('Добавить', array(), array(
+            'action'=>'form',
             'view'   => 'add'
         ), 'bMenu__bPanel');
         $edit   = $bPanel__view->buildButton('Редактировать', array('menuTable'), array(
+            'action'=>'form',
             'view'   => 'edit'
         ), 'bMenu__bPanel');
         $delete = $bPanel__view->buildButton('Удалить', array('menuTable'), array(
@@ -196,7 +198,7 @@ class bMenu__view extends bView{
     /**
      *  View for send data (menu item list) like json
      */
-    public function listJson(){
+    public function recordsJson(){
         /** @var bConverter__instance $bConverter */
         $bConverter = bConverter::create()->output();
 
@@ -217,19 +219,18 @@ class bMenu__view extends bView{
 
 
         return array(
-            'block'=>'bForm',
-            'name'	=> 'menuForm',
-            'mods'=>array('style'=>'default'),
-            'meta'	=> array(
-                'processor'	=> false,
-                'tunnel'=>'bMenu__bPanel',
+            'block' => 'bForm',
+            'mods'  => array('style' => 'default'),
+            'meta'  => array(
+                'name'   => 'menuForm',
+                'tunnel' => array(),
                 'method' => "POST",
                 'action' => "/",
-                'ajax' =>true,
+                'ajax'   => true,
                 'select' => array(
-                    'list' => $this->get('selectList',array())
+                    'list' => $this->get('selectList', array())
                 ),
-                'items'=>array($item)
+                'items'  => array($item)
             ),
             'content'	=> array(
 
@@ -271,19 +272,18 @@ class bMenu__view extends bView{
             'block'   => 'bTable',
             'mods'    => array('style' => 'default'),
             'meta'    => array(
-                'tunnel' => array(
-                    'blib'          => 'bMenu__bPanel',
-                    '_tunnel'=>array(
-                        'bMenu__bPanel' => array(
-                            'action' => 'list',
-                            'view'   => 'listJson'
-                        )
-                    )
-                ),
                 'name'    => $tableName,
+                'tunnel' => array(
+                    'bMenu__bPanel' => array(
+                        'action' => 'index',
+                        'view'   => 'listJson'
+                    )
+
+                ),
                 'position'  => array('id', 'menu', 'name', 'link', 'bconfig_id', 'bmenu_id'),
                 'keys'      => array('id', 'bmenu_id'),
                 'page'      => array(
+                    'handler'   => 'bMenu__bPanel',
                     'number'    => $number,
                     'rows'      => $rows,
                     'count'     => $count,

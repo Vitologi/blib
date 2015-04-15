@@ -14,9 +14,6 @@ class bRequest extends bBlib{
     /** @var array $_request    - request data */
     private $_request   = array();
 
-    /** @var array $_tunnel     - tunnel data */
-    private $_tunnel    = array();
-
     /**
      * Overload object factory for Singleton
      *
@@ -39,13 +36,6 @@ class bRequest extends bBlib{
 
         $this->_request = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET+(array)$rewriteData;
 
-
-
-        if(isset($this->_request['_tunnel'])){
-            $this->_tunnel = (array)$this->_request['_tunnel'];
-            unset($this->_request['_tunnel']);
-        }
-        
     }
 
     /**
@@ -81,33 +71,5 @@ class bRequest extends bBlib{
         return $this->_request[$name] = $value;
     }
 
-
-    /**
-     * Get tunnel data from child block
-     *
-     * @param $caller
-     * @return mixed
-     * @throws Exception
-     */
-    public static function _getTunnel(bBlib $caller){
-        if(!($caller instanceof bBlib)){throw new Exception('Inherited methods need have bBlib caller.');}
-		$block = get_class($caller);
-
-        /** @var bRequest $bRequest - request block's instance */
-        $bRequest = $caller->getInstance('bRequest');
-
-		return $bRequest->getTunnel($block);
-    }
-
-
-    /**
-     * Protected method for get tunnel data
-     * @param string $name  - block's name
-     * @return mixed        - some data designed for block
-     */
-    public function getTunnel($name = ''){
-        return (isset($this->_tunnel[$name])?$this->_tunnel[$name]:array());
-	}
- 
 }
 

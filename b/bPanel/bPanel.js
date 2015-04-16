@@ -15,12 +15,11 @@
 			
 			for(key in data.content){
                 controller = data.content[key];
-				tunnel = {'bPanel':{'controller':controller}};
+				tunnel = {'bPanel':{'controller':controller},'view':'json'};
 
 				content.push({
 					'block':'bLink',
 					'mods':{'style':'button', 'position':'vertical'},
-					'ajax':true,
 					'data':tunnel,
 					'visible':true,
 					'content':key
@@ -35,9 +34,8 @@
 	blib.build.define(
 		{'block':'bPanel', 'elem':'button'},
 		function(data){
-			var tunnel = {'bPanel':{'controller':data.controller}},
+			var tunnel = {'bPanel':{'controller':data.controller},'view':'json'},
 				mods = blib.extend({'style':'button'}, data.mods),
-				ajax = (data.ajax !== undefined)?data.ajax:true,
 				uphold = data.uphold || [];
 				
 			tunnel[data.controller] = data.tunnel;
@@ -45,7 +43,6 @@
 			this.template.content = [{
 				'block':'bLink',
 				'mods':mods,
-				'ajax':ajax,
 				'uphold':uphold,
 				'data':tunnel,
 				'visible':true,

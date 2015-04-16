@@ -18,7 +18,7 @@
 					
 					for(key in itemContent){
 						elem.content.push(glueMenuItem(itemContent[key]));
-					};
+					}
 					
 					return elem;
 				},
@@ -129,7 +129,7 @@
 					
 					blib.ajax({
 						url:self.link,
-						data:{'ajax':true},
+						data:{'view':'json'},
 						dataType:'json',
 						'success':function(data){
 							self.setLocation();
@@ -167,7 +167,7 @@
 			'rollUpOther':function(){
 				var self = this,
 					id = self.id,
-					bMenu__link = blib('.bMenu__link')
+					bMenu__link = blib('.bMenu__link'),
 					i = 0, len = bMenu__link.length;
 				
 				for( ;i<len;i++){

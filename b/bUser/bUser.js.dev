@@ -4,7 +4,7 @@
 		'val':function(){
 			return this.dom.value;
 		}
-	}
+	};
 	
 	
 	blib.build.define(
@@ -26,21 +26,26 @@
 			'submit':function(){
 				var _this = this,
 					url = _this.template.attrs.action,
-					data = ( _this.login)?{'logout':true}:{
+					requestData = ( _this.login)?{'logout':true}:{
 						'login': _this.getLogin(),
 						'password': _this.getPassword()
 					},
 					temp;
 				
 				if(!_this.login && (temp = _this.getSave())) data.save = temp;
-				data.ajax = true;
+				requestData.view = 'json';
 				
 				blib.ajax({
 					'url':url,
-					'data':data,
+					'data':requestData,
 					'dataType':'json',
 					'success':function(data){
 						blib.build(data);
+
+						if(_this.login){
+							blib.build({'block':'bLink','link':'/','data':requestData,'go':true});
+						}
+
 					}
 				});
 			},

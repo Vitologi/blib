@@ -3,7 +3,7 @@
 	var config = {
 			'curloc':window.location.pathname,
 			'dontShow':{
-				'ajax':true,
+				'view':true,
 				'bTemplate':true
 			}
 		},
@@ -15,7 +15,6 @@
 	blib.build.define(
 		{'block':'bLink'},
 		function(data){
-			this.ajax = data.ajax;
 			this.link = data.link||this.getCurloc();
 			this.data = data.data || {};
 			this.disabled = (data.mods)?data.mods.disabled:false;
@@ -74,7 +73,6 @@
 					before = _this.before,
 					after = _this.after,
 					disabled = _this.disabled,
-					ajax = _this.ajax,
 					link = _this.link,
 					requestData = _this.data,
 					allow, key;
@@ -89,30 +87,29 @@
 					before[key].call(_this);
 				}
 
-				if(!ajax){
-					window.location.href = link+"?"+blib.object2url(requestData);
-					return false;
-				}
+				if(requestData.view == 'json') {
 
-				requestData.ajax = true;
+					_this.setCurloc(link);
 
-				_this.setCurloc(link);
-				
-				blib.ajax({
-					'url':link,
-					'data':requestData,
-					'dataType':'json',
-					'success':function(data){
+					blib.ajax({
+						'url': link,
+						'data': requestData,
+						'dataType': 'json',
+						'success': function (data) {
 
-						_this.setLocation(requestData);
+							_this.setLocation(requestData);
 
-						blib('body').html(blib.build(data));
-						
-						for(key in after){
-							after[key].call(_this, [data]);
+							blib('body').html(blib.build(data));
+
+							for (key in after) {
+								after[key].call(_this, [data]);
+							}
 						}
-					}
-				});
+					});
+
+				}else{
+					window.location.href = link+"?"+blib.object2url(requestData);
+				}
 
 			},
 			'setLocation':function(data, params){

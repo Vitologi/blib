@@ -5,41 +5,38 @@ defined('_BLIB') or die;
  * Class bIndex - main block for show site structure
  * if request have `ajax` variable than show json data without HTML, else HTML template with wrapped json data
  */
-class bIndex extends bBlib{
+class bIndex extends bController{
 
-    protected $_traits = array(/*'bRbac' */ 'bSystem', 'bRequest', 'bIndex__bDataMapper', 'bConfig', 'bCssreset', 'bTemplate', 'bDecorator', 'bUser','bConverter');
+    protected $_traits = array(/*'bRbac' */ 'bRequest', 'bIndex__bDataMapper', 'bConfig', 'bCssreset', 'bTemplate', 'bDecorator', 'bUser','bConverter');
 
     /**
      * @var array   $_config    - current page configuration
      */
-    private   $_config = array();
+    private   $_config = array(
+        'author'          => false,
+        'ajax'            => false,
+        'cache'           => 0,
+        'defaultPage'     => 1,
+        'skeleton'        => "bIndex__skeleton_default",
+        "'{keywords}'"    => "",
+        "'{description}'" => "",
+        "'{title}'"       => "",
+        'access'        => false
+    );
 
     /**
      * Generate configuration for page
      */
-    protected function input(){
-
-        /** @var bRequest $bRequest - request instance */
-        $bRequest = $this->getInstance('bRequest');
+    protected function configure($data = null){
 
         // merge default page config with block`s config
-        $this->_config = array_replace_recursive(array(
-            'author'          => false,
-            'ajax'            => false,
-            'cache'           => 0,
-            'defaultPage'     => 1,
-            'skeleton'        => "bIndex__skeleton_default",
-            "'{keywords}'"    => "",
-            "'{description}'" => "",
-            "'{title}'"       => "",
-            'access'        => false
-        ), $this->_getConfig());
+        $this->_config = array_replace_recursive($this->_config, $this->_getConfig());
 
         // get page number from request or default
-        $this->_config['pageNo'] = $bRequest->get('pageNo', $this->_config['defaultPage']);
+        $this->_config['pageNo'] = $this->get('pageNo', $this->_config['defaultPage']);
 
         // get ajax request
-        $this->_config['ajax'] = $bRequest->get('ajax', $this->_config['ajax']);
+        $this->_config['ajax'] = $this->get('ajax', $this->_config['ajax']);
 
         // get config for current page
         $pageConfig = $this->_getConfig($this->_config['pageNo']);
@@ -55,7 +52,7 @@ class bIndex extends bBlib{
      *
      * @throws Exception
      */
-    public function output(){
+    public function indexAction(){
 
         /** @var bIndex__bDataMapper $bDataMapper  - page data mapper */
         $bDataMapper = $this->getInstance('bIndex__bDataMapper');
@@ -71,7 +68,7 @@ class bIndex extends bBlib{
             "'{keywords}'"    => $this->_config["'{keywords}'"],
             "'{description}'" => $this->_config["'{description}'"],
             "'{title}'"       => $this->_config["'{title}'"],
-            "'{template}'"    => '{"container":"body","content":"not access"}'
+            "'{template}'"    => '{"block":"bServerMessage", "content":"accesserror"}'
         );
 
 
@@ -90,18 +87,26 @@ class bIndex extends bBlib{
             $point["'{template}'"] = $this->_getTemplateDiff(false, $page->tree);
         }
 
-        // output json page
-        if($this->_config['ajax']){
 
-            $temp = $bConverter->setData($point["'{template}'"])->setFormat('json')->convertTo('array');
-            $temp['ajax'] = true;
-            $bConverter->setData($temp)->setFormat('array')->convertTo('json');
-            $bConverter->output();
+        switch($this->getView()){
+            // output json page
+            case "json":
 
-        // if page gets in first time
-        }else{
-            $skeleton = file_get_contents(bBlib::path($this->_config['skeleton'],'tpl'));
-            echo str_replace(array_keys($point), array_values($point), $skeleton);
+                $temp = $bConverter->setData($point["'{template}'"])->setFormat('json')->convertTo('array');
+                //$temp['ajax'] = true;
+                $bConverter->setData($temp)->setFormat('array')->convertTo('json');
+                $bConverter->output();
+
+                break;
+
+            // if page gets in first time
+            default:
+
+                $skeleton = file_get_contents(bBlib::path($this->_config['skeleton'],'tpl'));
+                echo str_replace(array_keys($point), array_values($point), $skeleton);
+
+                break;
+
         }
 
 	}

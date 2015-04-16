@@ -18,7 +18,7 @@
 					
 					for(key in itemContent){
 						elem.content.push(glueMenuItem(itemContent[key]));
-					};
+					}
 					
 					return elem;
 				},
@@ -31,7 +31,7 @@
 				item.elem = 'item';
 				if(item.id == this.id){combine = item; continue;}
 				if(!content[item.bmenu_id]){content[item.bmenu_id] = [];}
-                content[item.bmenu_id].push(item);
+				content[item.bmenu_id].push(item);
 			}
 			
 			temp = glueMenuItem(combine);
@@ -129,7 +129,7 @@
 					
 					blib.ajax({
 						url:self.link,
-						data:{'ajax':true},
+						data:{'view':'json'},
 						dataType:'json',
 						'success':function(data){
 							self.setLocation();
@@ -167,7 +167,7 @@
 			'rollUpOther':function(){
 				var self = this,
 					id = self.id,
-					bMenu__link = blib('.bMenu__link')
+					bMenu__link = blib('.bMenu__link'),
 					i = 0, len = bMenu__link.length;
 				
 				for( ;i<len;i++){

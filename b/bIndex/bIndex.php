@@ -32,14 +32,14 @@ class bIndex extends bBlib{
             "'{keywords}'"    => "",
             "'{description}'" => "",
             "'{title}'"       => "",
-            'isLocked'        => false
+            'access'        => false
         ), $this->_getConfig());
 
         // get page number from request or default
-        $this->_config['pageNo'] = ($bRequest->get('pageNo')?$bRequest->get('pageNo'):$this->_config['defaultPage']);
+        $this->_config['pageNo'] = $bRequest->get('pageNo', $this->_config['defaultPage']);
 
         // get ajax request
-        $this->_config['ajax'] = ($bRequest->get('ajax')?$bRequest->get('ajax'):$this->_config['ajax']);
+        $this->_config['ajax'] = $bRequest->get('ajax', $this->_config['ajax']);
 
         // get config for current page
         $pageConfig = $this->_getConfig($this->_config['pageNo']);
@@ -64,7 +64,7 @@ class bIndex extends bBlib{
         $bConverter = $this->getInstance('bConverter');
 
         $pageNo = $this->_config['pageNo'];     // page number
-        $isLocked = $this->_config['isLocked']; // flag of page protection
+        $access = $this->_config['access']; // flag of page protection
 
         // replace points (for template)
         $point = array(
@@ -77,8 +77,8 @@ class bIndex extends bBlib{
 
         // if page is not locked or user have permission for get it
         if(
-            !$isLocked
-            || $this->_decorate()->checkAccess($pageNo)
+            !is_string($access)
+            || $this->_decorate()->checkAccess($access, $pageNo)
         ){
             // get page template tree
             $page = $bDataMapper->getItem($pageNo);
@@ -108,16 +108,17 @@ class bIndex extends bBlib{
 
     /**
      * Check permission to unlock page
-     * @param null $pageNo  - page number
-     * @return bool         - have user access or not
+     * @param null|string $privilege    - page access privilege
+     * @param null $pageNo              - page number
+     * @return bool                     - have user access or not
      */
-    public function checkAccess($pageNo = null){
+    public function checkAccess($privilege = null, $pageNo = null){
 
         // add role based access control system in traits
         $this->setTrait('bRbac');
 
         // if user have access
-        if($this->_checkAccess('unlock',$pageNo))return true;
+        if($this->_checkAccess($privilege, $pageNo))return true;
 
         // or not
         return false;

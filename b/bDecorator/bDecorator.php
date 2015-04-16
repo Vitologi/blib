@@ -55,17 +55,18 @@ class bDecorator extends bBlib{
      * @return null|bDecorator__instance    - n-wrapped instance of block decorator
      */
     public function output(){
-        $block  = get_class($this->_parent);
+        $block  = $this->_parent;
+        $blockName = get_class($block);
 
-        if( isset($this->_list[$block]) && $list = $this->_list[$block]){
+        if( isset($this->_list[$blockName]) && $list = $this->_list[$blockName]){
 			foreach( $list as $key=>$decorator){
 
                 /** @var  bDecorator__instance $decorator   - concrete block's decorator */
-				$this->_parent = $decorator::create()->setParent($this->_parent);
+                $block = $decorator::create()->setParent($block);
 			}
 		}
 
-        return $this->_parent;
+        return $block;
         
 	}
 

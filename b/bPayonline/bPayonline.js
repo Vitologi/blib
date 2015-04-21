@@ -1,16 +1,16 @@
 (function(){
-	
+
     // Локализация кодов ошибок
     blib.localize({
         'bPayonline':{
+            'success':"Данные успешно получены, ожидайте перенаправления на сайт платежного агрегатора",
             'error':{
-                '0':"Данные платежа получены",
-                '1':"Не указана сумма платежа",
-                '2':"Недопустимый формат сумма платежа",
-                '3':"Недопустимая (менее минимально допустимой) сумма платежа",
-                '4':"Недопустимая (превышающая максимально допустимую) сумма платежа",
-                '5':"Недопустимая валюта платежа",
-                '6':"Не указан код платежа"
+                'errorEmptyAmout':"Не указана сумма платежа",
+                'errorFormat':"Недопустимый формат суммы платежа",
+                'errorMinAmount':"Недопустимая (менее минимально допустимой) сумма платежа",
+                'errorMaxAmount':"Недопустимая (превышающая максимально допустимую) сумма платежа",
+                'errorCurrency':"Недопустимая валюта платежа",
+                'errorOrderId':"Не указан код платежа"
             },
             '__submit':'Оплатить',
             '__amount':'Введите сумму платежа'
@@ -66,9 +66,12 @@
                     'dataType':'json',
                     'data':{'blib':'bPayonline', 'action':'getSecureData', 'amount':amount},
                     'success':function(data){
-                        _this.setMessage(blib.localize('bPayonline.error.'+data.status.code));
-                        if(data.status.code)return;
-                        _this.redirectToPayonline(data);
+                        if(data.errors){
+                            _this.setMessage(data.errors);
+                        }else{
+                            _this.setMessage('bPayonline.success');
+                            _this.redirectToPayonline(data);
+                        }
                     }
                 });
             },
@@ -112,10 +115,19 @@
         false,
         {
             'setMessage':function(data){
-                var _this = this;
-                if(!blib.is(data, 'object'))data = {'content':data};
+                var _this = this,
+                    temp = [], i, len;
+
+                if(blib.is(data, 'array')){
+                    for(i=0,len = data.length; i<len;i++){
+                        temp.push({'content':data[i]});
+                    }
+                }else{
+                    temp = data;
+                }
+
                 _this._removeChildren();
-                _this._append(data);
+                _this._append({'content':temp});
             }
         }
 	);
@@ -192,12 +204,6 @@
     // Конфигурации для различных систем оплаты
     var config = {
         'urlOk':'/b/bPayonline/__paysystem/_type/bPayonline__paysystemOk.png',
-        'default':{
-            'url'       : false,
-            'message'   : 'bPayonline.__paysystem.message.default',
-            'image'     : '/b/bPayonline/__paysystem/_type/bPayonline__paysystem_type_default.png',
-            'detail'    : 'bPayonline__instruction_type_default'
-        },
         'webMoney':{
             'url'       : 'https://secure.payonlinesystem.com/ru/payment/select/paymaster/',
             'message'   : 'bPayonline.__paysystem.message.webMoney',
@@ -270,13 +276,7 @@
             };
             
             block.callback = function(){
-                blib.ajax({
-                    'url':'/'+blib.path(config['default'].detail, 'html'),
-                    'dataType':'html',
-                    'success':function(data){
-                        block.setDetail(data);
-                    }
-                });
+                block.children.bPayonline__paysystem[0].onclick();
             };
             
 		},

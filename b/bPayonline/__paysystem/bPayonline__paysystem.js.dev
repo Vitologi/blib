@@ -3,12 +3,6 @@
     // Конфигурации для различных систем оплаты
     var config = {
         'urlOk':'/b/bPayonline/__paysystem/_type/bPayonline__paysystemOk.png',
-        'default':{
-            'url'       : false,
-            'message'   : 'bPayonline.__paysystem.message.default',
-            'image'     : '/b/bPayonline/__paysystem/_type/bPayonline__paysystem_type_default.png',
-            'detail'    : 'bPayonline__instruction_type_default'
-        },
         'webMoney':{
             'url'       : 'https://secure.payonlinesystem.com/ru/payment/select/paymaster/',
             'message'   : 'bPayonline.__paysystem.message.webMoney',
@@ -81,13 +75,7 @@
             };
             
             block.callback = function(){
-                blib.ajax({
-                    'url':'/'+blib.path(config['default'].detail, 'html'),
-                    'dataType':'html',
-                    'success':function(data){
-                        block.setDetail(data);
-                    }
-                });
+                block.children.bPayonline__paysystem[0].onclick();
             };
             
 		},

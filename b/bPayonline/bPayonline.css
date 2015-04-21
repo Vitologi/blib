@@ -1,15 +1,22 @@
-.bPyonline{}
+.bPayonline{
+    overflow: hidden;}
+    .bPayonline__side{}
+    .bPayonline__side_left{
+        float: left;}
+    .bPayonline__side_right{
+        margin-left: 170px;}
     .bPayonline__message{
-        display: block;
-        border: 1px solid rgb(228, 228, 228);
-        min-height: 1em;
-        text-align: center;
-        margin: 5px;
-        padding: 5px;}
+          display: block;
+          border: 1px solid rgb(228, 228, 228);
+          min-height: 1em;
+          text-align: center;
+          margin: 5px;
+          padding: 15px;
+          background: rgb(244, 244, 244);}
     .bPayonline__detail{}
     .bPayonline__paysystem{
         position:relative;
-        display: inline-block;
+        display: block;
         margin: 5px;
         white-space: nowrap;}
     .bPayonline__paysystemOk{
@@ -33,14 +40,15 @@
         .bPayonline__submit{
             margin: 5px 1%;
             text-align: center;
-            font-size: 1.2em;
-            max-width:100%;
-            width: 47%;}
+            max-width:100%;}
 
-    .bPayonline_style_default{}
-        .bPayonline_style_default center{
-            margin: 5px;
-            padding: 5px;
-            border: 1px solid #e2e2e2;
-            border-top: 0;
-            box-shadow: 0 0 2px rgb(216, 216, 216);}
+    .bPayonline_style_default{
+        background: -moz-linear-gradient(left,  rgba(204,204,204,1) 0px, rgba(240,240,240,1) 170px, rgba(242,242,242,0) 171px);
+        background: -webkit-gradient(linear, left top, right top, color-stop(0, rgba(204,204,204,1)), color-stop(170,rgba(240,240,240,1)), color-stop(171,rgba(242,242,242,0)));
+        background: -webkit-linear-gradient(left,  rgba(204,204,204,1) 0px,rgba(240,240,240,1) 170px,rgba(242,242,242,0) 171px);
+        background: -o-linear-gradient(left,  rgba(204,204,204,1) 0px,rgba(240,240,240,1) 170px,rgba(242,242,242,0) 171px);
+        background: -ms-linear-gradient(left,  rgba(204,204,204,1) 0px,rgba(240,240,240,1) 170px,rgba(242,242,242,0) 171px);
+        background: linear-gradient(to right,  rgba(204,204,204,1) 0px,rgba(240,240,240,1) 170px,rgba(242,242,242,0) 171px);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#cccccc', endColorstr='#00f2f2f2',GradientType=1 );}
+        .bPayonline_style_default .bPayonline__side{
+            padding: 2px;}

@@ -30,6 +30,40 @@ abstract class bBlib{
     protected function input(){}
     public function output(){return null;}
 
+
+    /**
+     * Set variables in view
+     *
+     * @param string $name      - key for $this->_variables
+     * @param mixed $value      - value for    $this->_variables
+     * @return $this            - for chaining
+     */
+    final public function setVars($name = null, $value){
+        if(is_string($name)){
+            $this->_vars[$name] = $value;
+        }
+        return $this;
+    }
+
+
+    /**
+     * Get variables in view
+     *
+     * @param string $name      - key for $this->_variables
+     * @param mixed $default    - default value
+     * @return mixed            - variable value or default
+     */
+    final public function getVars($name = null, $default = null){
+        if(
+            is_string($name)
+            && isset($this->_vars[$name])
+            && $this->_vars[$name] !== null
+        ){
+            return $this->_vars[$name];
+        }
+
+        return $default;
+    }
     
     /** INTERFACES */
     /**
@@ -149,22 +183,7 @@ abstract class bBlib{
         // base input handler
         $this->input($data);
     }
-    
-    /** Divide scope on local & global */
-    function __get($key){
-        if($key{0}==="_"){
-            return isset(self::$_VARS[$key])?self::$_VARS[$key]:null;
-        }
-        return isset($this->_vars[$key])?$this->_vars[$key]:null;
-    }
 
-    function __set($key, $value){
-        return($key{0}==="_")?(isset(self::$_VARS[$key]) or self::$_VARS[$key] = $value):(isset($this->_vars[$key]) or $this->_vars[$key] = $value);
-    }
-
-    function __isset($key){
-        return ($key{0}==="_")?isset(self::$_VARS[$key]):isset($this->_vars[$key]);
-    }
 
     /**
      * Call method from trait blocks

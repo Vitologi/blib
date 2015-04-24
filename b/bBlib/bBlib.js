@@ -1162,22 +1162,33 @@
 				
 				if(value && is(handler, 'function')){
 					handler.call(this);
-				};
+				}
 			},
-			'_append':function(data,clear){
-				if(clear)this._removeChildren();
-				
+			'_append':function(block, isBlib){
 				var blocks = [],
-					curentParent = this;
-				
-				while(curentParent){
-					if(curentParent.template.block && !curentParent.template.elem){
-						blocks.push(curentParent);
+					curentParent = this,
+					name;
+
+				if(isBlib){
+					name = block._getName();
+					block.parent._removeChildren(block, true);
+					block._setParent(curentParent);
+					block.parent._setChildren(name, block);
+					block.parent.dom.appendChild(block.dom);
+
+				}else{
+
+					while(curentParent){
+						if(curentParent.template.block && !curentParent.template.elem){
+							blocks.push(curentParent);
+						}
+						curentParent = curentParent.parent;
 					}
-					curentParent = curentParent.parent;
+
+					this.dom.appendChild(blib.build(block,{'parent':this, 'blocks':blocks}));
+
 				}
 
-				this.dom.appendChild(blib.build(data,{'parent':this, 'blocks':blocks}));	
 			},
 			'_remove':function(deep){
 
@@ -1215,13 +1226,19 @@
 				
 				if(!deep)this.parent.dom.removeChild(this.dom);
 			},
-			'_removeChildren':function(){
+			'_removeChildren':function(obj, silent){
 				var children = this.children,
 					i, j;
 					
 				for(i in children){
 					for(j in children[i]){
-						children[i][j]._remove();
+						if(!obj || obj === children[i][j]){
+							if(!silent){
+								children[i][j]._remove();
+							}else{
+								delete children[i][j];
+							}
+						}
 					}
 				}
 			},
@@ -1240,6 +1257,12 @@
 				
 				this._remove();
 				parent.dom.insertBefore(blib.build(data,{'parent':parent, 'blocks':blocks}), nextSibling);				
+			},
+			'_getName':function(){
+				var _this = this,
+					template = _this.template;
+
+				return(template['elem'])?(template['block']+"__"+template['elem']):template['block'];
 			},
 			'_getStatus':function(){
 				return {'error':0, 'code':0, 'message':'', 'stack':[]};

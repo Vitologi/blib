@@ -170,7 +170,8 @@
 			'show':function(error){
 				var message = error.message;
 				if(!blib.is(message,"object"))message = {'tag':'span', 'content':message};
-				this._append(message,true);
+				this._removeChildren();
+				this._append(message);
 				this._setMode('active',true);
 			},
 			'clear':function(){

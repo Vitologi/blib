@@ -51,6 +51,7 @@
 
 			_this.template = {};
 
+			if(meta.name)_this.template.attrs = {'name':meta.name};
 			_this.template.mods = data.mods;
 			_this.template.content = temp;
 
@@ -120,6 +121,7 @@
 		{'block':'bTable', 'elem':'th'},
 		function(data){
 			this.template = data;
+			this.template.attrs = {'title':data.note};
 		},
 		{'tag':'th'}
 	);

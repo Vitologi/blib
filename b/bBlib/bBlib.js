@@ -223,7 +223,7 @@
 				}else if(params.length && is(obj[i], 'string') && obj[i].length > params.length){
 					/* false */
 				}else{
-					url += '&'+key+'='+obj[i];
+					url += '&'+key+'='+encodeURI(obj[i]);
 				}
 			}
 			

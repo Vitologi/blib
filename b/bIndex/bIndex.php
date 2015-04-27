@@ -60,6 +60,9 @@ class bIndex extends bController{
         /** @var bConverter__instance $bConverter  - converter */
         $bConverter = $this->getInstance('bConverter');
 
+        /** @var self $bDecorator */
+        $bDecorator = $this->getInstance('bDecorator');
+
         $pageNo = $this->_config['pageNo'];     // page number
         $access = $this->_config['access']; // flag of page protection
 
@@ -75,7 +78,7 @@ class bIndex extends bController{
         // if page is not locked or user have permission for get it
         if(
             !is_string($access)
-            || $this->_decorate()->checkAccess($access, $pageNo)
+            || $bDecorator->checkAccess($access, $pageNo)
         ){
             // get page template tree
             $page = $bDataMapper->getItem($pageNo);

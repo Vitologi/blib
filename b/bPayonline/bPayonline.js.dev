@@ -81,6 +81,7 @@
             'redirectToPayonline':function(data){
                 var _this = this,
                     url = _this.url || data.url,
+                    body = document.getElementsByTagName('body')[0],
                     i, form, temp;
                 
                 form = {
@@ -98,7 +99,14 @@
                 }
                 
                 temp = blib.build(form);
+
+                body.appendChild(temp);
                 temp.submit();
+
+                window.setTimeout(function(){
+                    body.removeChild(temp);
+                },10000);
+
             },
             'callback':function(){}
         }

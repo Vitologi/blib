@@ -1,0 +1,122 @@
+.bClock{}
+    .bClock__interval{
+        display: inline-block;
+        margin: 5px;}
+        .bClock__interval_init{}
+        .bClock__interval_type_second{
+            vertical-align: text-bottom;
+            font-size: .5em;}
+        .bClock__interval_type_minute{}
+        .bClock__interval_type_hour{}
+
+    .bClock__dotted{
+        display: inline-block;
+        background: transparent !important;
+        vertical-align: middle;
+        -webkit-transition: 0.5s;
+        transition: 0.5s;}
+        .bClock__dotted:before,
+        .bClock__dotted:after{
+            content: "";
+            display: block;
+            width: .5em;
+            height: 1em;
+            font-size: .5em;
+            border-bottom: 1em solid #151515;
+            -webkit-transition: border-color 0.5s;
+            transition: border-color 0.5s;}
+
+
+    .bClock__digit{
+        display: inline-block;
+        width: 3em;
+        margin: 0 .5em;
+        vertical-align: middle;}
+
+        .bClock__digitLine{
+            position: relative;
+            -webkit-transition: background 0.5s;
+            transition: background 0.5s;}
+            .bClock__digitLine:before,
+            .bClock__digitLine:after{
+                content: "";
+                display: block;
+                position: absolute;
+                width: 0;
+                height: 0;
+                border: 0.25em solid transparent;
+                -webkit-transition: border-color 0.5s;
+                transition: border-color 0.5s;}
+            .bClock__digitLine_1,
+            .bClock__digitLine_4,
+            .bClock__digitLine_7{
+                clear: both;
+                width: 1.7em;
+                height: .5em;
+                margin: 0 auto;}
+
+            .bClock__digitLine_2,
+            .bClock__digitLine_5,
+            .bClock__digitLine_3,
+            .bClock__digitLine_6{
+                width: .5em;
+                height: 1.7em;
+                margin: 0.1em 0;}
+            .bClock__digitLine_2,
+            .bClock__digitLine_5{
+                float: left;}
+            .bClock__digitLine_3,
+            .bClock__digitLine_6{
+                float: right;}
+            .bClock__digitLine_active{
+                background-color: black;}
+                .bClock__digitLine_active:before,
+                .bClock__digitLine_active:after{
+                    border-color: #151515;}
+
+
+            .bClock__digitLine_1:before,
+            .bClock__digitLine_4:before,
+            .bClock__digitLine_7:before,
+            .bClock__digitLine_1:after,
+            .bClock__digitLine_4:after,
+            .bClock__digitLine_7:after{
+                border-bottom-color: transparent !important;
+                border-top-color: transparent !important;}
+
+            .bClock__digitLine_1:before,
+            .bClock__digitLine_4:before,
+            .bClock__digitLine_7:before{
+                left: -0.5em;
+                border-left-color: transparent !important;}
+
+            .bClock__digitLine_1:after,
+            .bClock__digitLine_4:after,
+            .bClock__digitLine_7:after{
+                right: -0.5em;
+                border-right-color: transparent !important;}
+
+            .bClock__digitLine_2:before,
+            .bClock__digitLine_3:before,
+            .bClock__digitLine_5:before,
+            .bClock__digitLine_6:before,
+            .bClock__digitLine_2:after,
+            .bClock__digitLine_3:after,
+            .bClock__digitLine_5:after,
+            .bClock__digitLine_6:after{
+                border-left-color: transparent !important;
+                border-right-color: transparent !important;}
+
+            .bClock__digitLine_2:before,
+            .bClock__digitLine_3:before,
+            .bClock__digitLine_5:before,
+            .bClock__digitLine_6:before{
+                top: -0.5em;
+                border-top-color: transparent !important;}
+
+            .bClock__digitLine_2:after,
+            .bClock__digitLine_3:after,
+            .bClock__digitLine_5:after,
+            .bClock__digitLine_6:after{
+                bottom: -0.5em;
+                border-bottom-color: transparent !important;}

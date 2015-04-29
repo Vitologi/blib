@@ -1,0 +1,33 @@
+.bVisit{
+	padding: 5px;}
+	.bVisit_init{}
+	.bVisit__line{
+		display: block;
+		position: relative;
+		margin: 2px 0;
+		border: 1px solid rgb(228, 228, 228);
+		background-color: rgb(249, 249, 249);
+		cursor: default;}
+		.bVisit__line:hover > .bVisit__hiddenLine{
+			display: block;}
+
+	.bVisit__hiddenLine{
+		display: none;
+		position: absolute;
+		width: 100%;
+		background-color: rgb(247, 247, 184);
+		z-index: 1;
+		border: 1px solid rgb(202, 202, 202);}
+
+		.bVisit__lineItem{
+			display: block;
+			white-space: nowrap;}
+			.bVisit__lineTitle{
+				display: inline-block;
+				margin: 0 5px;
+				font-size: 0.7em;
+				color: rgb(179, 179, 179);
+				min-width: 30%;}
+			.bVisit__lineContent{
+				display: inline-block;
+				font-size: 0.9em;}

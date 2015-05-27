@@ -1171,7 +1171,7 @@
 
 				if(isBlib){
 					name = block._getName();
-					block.parent._removeChildren(block, true);
+					if(block.parent!=block.block)block.parent._removeChildren(block, true);
 					block._setParent(curentParent);
 					block.parent._setChildren(name, block);
 					block.parent.dom.appendChild(block.dom);
@@ -1228,15 +1228,17 @@
 			},
 			'_removeChildren':function(obj, silent){
 				var children = this.children,
-					i, j;
+					temp, i, j;
 					
 				for(i in children){
-					for(j in children[i]){
-						if(!obj || obj === children[i][j]){
+					temp = children[i];
+
+					for(j=temp.length-1; j>=0; j--){
+						if(!obj || obj === temp[j]){
 							if(!silent){
-								children[i][j]._remove();
+								temp[j]._remove();
 							}else{
-								delete children[i][j];
+								delete temp[j];
 							}
 						}
 					}
@@ -1397,11 +1399,13 @@
 				obj._setParent(parent);
 				parent._setChildren(currentClass||"noname", obj);
 
-				if(data['elem'] && block){
-					obj._setBlock(block);
-					if(block !== parent){block._setChildren(currentClass||"noname", obj);}
-				}
-			};
+
+			}
+
+			if(data['elem'] && block){
+				obj._setBlock(block);
+				if(block !== parent){block._setChildren(currentClass||"noname", obj);}
+			}
 			
 			for(evt in obj){
 				if(!is(obj[evt], 'function') || evt.substr(0,2) !== "on")continue;

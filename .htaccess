@@ -15,3 +15,8 @@ CharsetDefault utf-8
 	RewriteRule ^.*$ - [NC,L]
 	RewriteRule ^.*$ index.php [NC,L]
 </IfModule>
+
+<Files ~ "\.(dev|ini)$">
+    order allow,deny
+    deny from all
+</Files>

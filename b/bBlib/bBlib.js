@@ -994,6 +994,7 @@
 			Blib.ajax({
 				url:block2url(blocks[0], "html") + '?ver='+version, //html ajax work only with self server
 				dataType: "html",
+				type:"GET",
 				success: function(data){
 					target.html(data);
 					combine({'action':"add", 'extention':'js', 'name':blocks[0]});

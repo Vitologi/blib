@@ -9,3 +9,8 @@
 		width:80% !important;}
 	.bWrapper_percent_90{
 		width:90% !important;}
+
+	.bLeft{
+		float: left;}
+	.bRight{
+		float: right;}

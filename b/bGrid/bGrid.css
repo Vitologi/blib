@@ -1,15 +1,18 @@
-.bGrid {
-    letter-spacing: -0.31em;
-    word-spacing: -0.43em;}
+.bGrid,
+.bGrid__cell{
+	letter-spacing: -0.27em !important;
+	word-spacing: -0.1em !important;}
 
 	.bGrid__cell {
-		position:relative;
 		display:inline-block;
+		box-sizing: border-box;
+		position:relative;
 		word-wrap:break-word;
-		letter-spacing: normal;
-		word-spacing: normal;
 		vertical-align: top;}
-	
+		.bGrid__cell *{
+			letter-spacing: normal;
+			word-spacing: normal;}
+
 		.bGrid__cell_ie {
 			display:inline;
 			margin-right:-1px;

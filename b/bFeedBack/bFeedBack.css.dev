@@ -1,0 +1,45 @@
+.bFeedBack{
+    overflow: hidden;}
+    .bFeedBack__thread,
+    .bFeedBack__detail,
+    .bFeedBack__threadList,
+    .bFeedBack__tools{
+        position: relative;}
+
+    .bFeedBack__help{}
+    .bFeedBack__message{}
+
+    .bFeedBack__thread{}
+        .bFeedBack__thread_selected{}
+        .bFeedBack__thread_disabled{}
+        .bFeedBack__threadCloser{}
+    .bFeedBack__submit{}
+    .bFeedBack__themeList{}
+        .bFeedBack__themeList_hide{
+            display: none !important;}
+
+    .bFeedBack__content{}
+    .bFeedBack__load{
+        display: block;
+        height: 5px;}
+        .bFeedBack__loadInner{
+            display:block;
+            float: left;
+            height: inherit;
+            width: 0;}
+        .bFeedBack__load_load .bFeedBack__loadInner{
+            -webkit-transition: width 20s cubic-bezier(0,1,0,1) 0s;
+            -moz-transition: width 20s cubic-bezier(0,1,0,1) 0s;
+            -o-transition: width 20s cubic-bezier(0,1,0,1) 0s;
+            transition: width 20s cubic-bezier(0,1,0,1) 0s;
+            width: 100%;}
+
+    .bFeedBack__note{}
+        .bFeedBack__note:after,
+        .bFeedBack__note:before{
+            display:none;
+            position: relative;
+            content: attr(alt);}
+        .bFeedBack__note_type_main{}
+        .bFeedBack__note_type_author{}
+        .bFeedBack__note_type_manager{}

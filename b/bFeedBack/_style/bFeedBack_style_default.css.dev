@@ -1,0 +1,114 @@
+
+    .bFeedBack_style_default{}
+        .bFeedBack_style_default .bFeedBack__tools{
+            float: left;
+            border: 1px solid rgb(236, 236, 236);
+            background-color: rgb(247, 247, 247);
+            margin: 10px 10px 0;
+            position: relative;
+            clear: left;
+            overflow: hidden;
+            width: 250px;}
+        .bFeedBack_style_default .bFeedBack__threadList{
+            overflow: auto;
+            max-height: 500px;}
+        .bFeedBack_style_default .bFeedBack__thread{
+            position: relative;
+            border-bottom: 1px solid rgb(125, 175, 219);
+            padding: 5px;
+            cursor: pointer;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;}
+        .bFeedBack_style_default .bFeedBack__thread:last-child{
+            border-bottom: 0;}
+        .bFeedBack_style_default .bFeedBack__thread_selected{
+            background-color: rgb(125, 175, 219);
+            border: 0;
+            color: white;}
+        .bFeedBack_style_default .bFeedBack__thread_disabled{
+            color: rgb(153, 153, 153);}
+        .bFeedBack_style_default .bFeedBack__threadCloser{
+            float: right;}
+        .bFeedBack_style_default .bFeedBack__themeList{
+            display: block;
+            margin: 5px auto;
+            width: 96%;
+            border: 1px solid rgb(236, 236, 236);}
+        .bFeedBack_style_default .bFeedBack__message{
+            margin: 5px;
+            height: 1em;
+            background-color: rgb(236, 236, 236);
+            text-align: center;
+            color: red;}
+        .bFeedBack_style_default .bFeedBack__content{
+            display: block;
+            width: 94%;
+            margin: 5px auto;
+            resize: none;
+            height: 115px;
+            border: 1px solid rgb(236, 236, 236);
+            padding: 5px;
+            box-sizing: border-box;}
+        .bFeedBack_style_default .bFeedBack__submit{
+            text-align: center;
+            font-weight: bold;
+            color: white;
+            margin: 5px;
+            background-color: rgb(125, 175, 219);
+            padding: 2px;
+            cursor: pointer;}
+        .bFeedBack_style_default .bFeedBack__load{
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;}
+        .bFeedBack_style_default .bFeedBack__loadInner{
+            background-color: #1084d0;}
+        .bFeedBack_style_default .bFeedBack__detail{
+            overflow: auto;
+            margin: 10px;
+            height: 700px;
+            background-color: rgb(247, 247, 247);}
+        .bFeedBack_style_default .bFeedBack__note{
+            clear: both;
+            background-color: white;
+            margin: 10px;
+            padding: 10px;
+            border: 2px solid rgb(228, 228, 228);
+            -webkit-border-radius: 5px;
+            -moz-border-radius: 5px;
+            border-radius: 5px;}
+        .bFeedBack_style_default .bFeedBack__note_type_main{
+            min-height: 100px;
+            background-color: rgb(255, 255, 221);}
+        .bFeedBack_style_default .bFeedBack__note_type_author{
+            float: left;}
+        .bFeedBack_style_default .bFeedBack__note_type_manager{
+            float: right;}
+        .bFeedBack_style_default .bFeedBack__note_type_author,
+        .bFeedBack_style_default .bFeedBack__note_type_manager{
+            max-width: 80%;
+            font-style: italic;}
+        .bFeedBack_style_default .bFeedBack__note_type_author:before{
+            display: inline;
+            border-right: 1px solid black;
+            margin-right: 10px;}
+        
+        .bFeedBack_style_default .bFeedBack__note_type_manager:after{
+            display: inline;
+            border-left: 1px solid black;
+            margin-left: 10px;}
+        
+        .bFeedBack_style_default .bFeedBack__note:after,
+        .bFeedBack_style_default .bFeedBack__note:before{
+            padding: 0 10px;
+            font-size: 0.7em;}
+        .bFeedBack_style_default .bFeedBack__help{
+            font-size: 1.5em;
+            text-align: center;
+            padding: 1em;
+            line-height: 1.5em;}

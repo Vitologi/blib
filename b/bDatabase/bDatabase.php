@@ -52,10 +52,13 @@ class bDatabase extends bBlib{
 
 			if(!isset($connections[$name]))throw new Exception('Can`t find connection "'.$name.'" in db configuration');
 
-			$db = array_replace(array('host'=>'', 'database'=>'', 'user'=>'', 'password'=>''), $connections[$name]);
+			$db = array_replace(array('host'=>'', 'database'=>'', 'user'=>'', 'password'=>'', 'persistent'=>false), $connections[$name]);
 
 			$dsn = sprintf('mysql:host=%1$s;dbname=%2$s', $db['host'], $db['database']);
-			$pdo = new PDO($dsn, $db['user'], $db['password'], array(PDO::ATTR_PERSISTENT => true));
+			$attrs = array();
+            if($db['persistent'])$attrs[PDO::ATTR_PERSISTENT]=true;
+
+			$pdo = new PDO($dsn, $db['user'], $db['password'], $attrs);
 			$pdo->query("SET NAMES utf8");
 
 			$this->_db[$name] = $pdo;

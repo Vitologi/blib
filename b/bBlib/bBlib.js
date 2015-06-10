@@ -797,7 +797,7 @@
 		if(!(lang in config.data))config.data[lang]={};
 		
 		if(is(obj, 'string')){
-			return (temp = navigate(config.data, point+'.'+obj))?temp:obj;
+			return (temp = navigate(config.data, point+'.'+obj) && is(temp,'string'))?temp:obj;
 		}else if(is(obj, 'object')){
 			navigate(config.data, point, extend(true, navigate(config.data, point), obj));
 			return Blib;

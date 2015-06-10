@@ -37,7 +37,7 @@ class bMenu__bPanel extends bController{
         $bMenu__view->set("formName", $this->_formName);
 
         // Save in menu view blocks list
-        $blocks = $bPanel__model->getBlocks();
+        $blocks = $bPanel__model->getBlocks('__bPanel');
         $bMenu__view->set("blocks", $blocks);
 
         // Set template for menu view

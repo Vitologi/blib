@@ -25,18 +25,20 @@ class bPanel__model extends bBlib{
         if($this->_parent instanceof bBlib) return $this;
     }
 
+
     /**
      * Get all blocks name which have bPanel controller
      *
-     * @return array    - blocks list
+     * @param string $elem  - element filter
+     * @return array - blocks list
      * @throws Exception
      */
-    final public function getBlocks(){
+    final public function getBlocks($elem = null){
         $arr = opendir('b');
         $temp = array();
         while($v = readdir($arr)){
             if($v == '.' or $v == '..' or $v == 'bBlib') continue;
-            $name = $v.'__bPanel';
+            $name = $v.$elem;
             $path = bBlib::path($name,'php');
             if(file_exists($path))$temp[$v] = $name;
         }

@@ -61,7 +61,7 @@ class bPanel__bPanel extends bBlib{
         switch($mvc['action']){
             case "index":
             default:
-                $blocks = $bPanel__model->getBlocks();
+                $blocks = $bPanel__model->getBlocks('__bPanel');
                 $bPanel__view->set("blocks", $blocks);
                 break;
         }

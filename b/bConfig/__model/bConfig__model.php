@@ -11,10 +11,6 @@ class bConfig__model extends bBlib{
     /** @var null|bConfig $_bConfig                 menu item configuration */
     private $_bConfig       = null;
 
-    /** @var null|bMenu__bDataMapper $_bDataMapper  save datamapper in property for quick access */
-    private $_bDataMapper   = null;
-
-
     /** @var null|bPanel__model $_bPanel__model     for get some method */
     private $_bPanel__model = null;
 
@@ -24,7 +20,7 @@ class bConfig__model extends bBlib{
     /**
      * @var array   - included traits
      */
-    protected $_traits      = array('bSystem', 'bConfig', 'bPanel__model', 'bTemplate');
+    protected $_traits      = array('bConfig', 'bPanel__model', 'bTemplate');
 
 
     /**

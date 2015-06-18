@@ -8,6 +8,9 @@ defined('_BLIB') or die;
  */
 class bFeedBack__view extends bView{
 
+    /** @var bConverter__instance $_converter */
+    protected $_converter = null;
+
     protected $_template = array(
         'block'   => 'bFeedBack',
         'mods'    => array(),
@@ -18,7 +21,10 @@ class bFeedBack__view extends bView{
         ),
         'content' => ''
     );
-    protected $_traits = array('bConverter');
+
+    protected function input(){
+        $this->_converter = $this->getInstance('converter', 'bConverter');
+    }
 
     public function index(){
 
@@ -32,14 +38,13 @@ class bFeedBack__view extends bView{
 
     public function json(){
 
-        /** @var bConverter__instance $bConverter */
-        $bConverter = $this->getInstance('bConverter');
+        $_converter = $this->_converter;
 
         $visitList = $this->get('data', array());
 
-        $bConverter->setData($visitList)->setFormat('array')->convertTo('json');
+        $_converter->setData($visitList)->setFormat('array')->convertTo('json');
 
-        return $bConverter->output();
+        return $_converter->output();
 
     }
 

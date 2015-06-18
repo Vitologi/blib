@@ -6,7 +6,12 @@ defined('_BLIB') or die;
  */
 class bDocumentation extends bBlib{
 
-    protected $_traits   = array('bSystem', 'bConfig', 'bDocumentation__bDataMapper', 'bDecorator', 'bRequest');
+    /** @var bDocumentation__bDataMapper $_db */
+    protected $_db = null;
+    /** @var bDecorator $_decorator */
+    protected $_decorator = null;
+    /** @var bRequest $_request */
+    protected $_request = null;
 
     /** @var array $_template - base template for frontend */
     private $_template = array(
@@ -27,17 +32,15 @@ class bDocumentation extends bBlib{
      */
     protected function input($template = array()){
 
-         /** @var bDecorator__instance $bDecorator - decorator instance */
-         $bDecorator = $this->getInstance('bDecorator');
-
-         /** @var bRequest $bRequest - request instance */
-         $bRequest = $this->getInstance('bRequest');
+        $_this          = $this->_decorator = $this->getInstance('decorator', 'bDecorator');
+        $this->_request = $this->getInstance('request', 'bRequest');
+        $this->_db      = $this->getInstance('db', 'bDocumentation__bDataMapper');
 
 
-         // Decor template
-         $decorTemplate = $bDecorator->getData($template);
-         $requestTemplate =($bRequest->get('blib')===__CLASS__)?array('id'=>$bRequest->get('id'), 'ajax'=>$bRequest->get('ajax')):array();
-         $this->_template = array_replace_recursive($this->_template, $decorTemplate, $requestTemplate);
+        // Decor template
+        $decorTemplate = $_this->getData($template);
+        $requestTemplate =($this->_request->get('blib')===__CLASS__)?array('id'=>$this->_request->get('id'), 'ajax'=>$this->_request->get('ajax')):array();
+        $this->_template = array_replace_recursive($this->_template, $decorTemplate, $requestTemplate);
     }
 
     /**
@@ -60,7 +63,7 @@ class bDocumentation extends bBlib{
 
         // return navigation only if it isn't null
         if($chapterId !== null){
-            $navigation = $this->getNavigation($chapterId);
+            $navigation = $this->getNavigation($chapterId); // 0_0
             $this->_template['navigation']  = $navigation;
         }
 
@@ -93,16 +96,10 @@ class bDocumentation extends bBlib{
 
         if(!$id){return array();}
 
-        /** @var bDocumentation__bDataMapper $bDataMapper - data mapper instance */
-        $bDataMapper = $this->getInstance('bDocumentation__bDataMapper');
-
         // get menu item list
-        $item = $bDataMapper->getItem($id);
-
-        $item->content = ($item->group)?$bDataMapper->getList($item->group):array();
-
+        $item = $this->_db->getItem($id);
+        $item->content = ($item->group)?$this->_db->getList($item->group):array();
         return  $item;
-
     }
 
     /**
@@ -111,14 +108,6 @@ class bDocumentation extends bBlib{
      * @return null|array
      */
     protected function getNavigation(){
-
-        /** @var bDocumentation__bDataMapper $bDataMapper - data mapper instance */
-        $bDataMapper = $this->getInstance('bDocumentation__bDataMapper');
-
-        // get menu item list
-        $navigation = $bDataMapper->getList();
-
-        return $navigation;
-
+        return $this->_db->getList();
     }
 }

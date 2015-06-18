@@ -14,11 +14,6 @@ defined('_BLIB') or die;
 class bPanel__model extends bBlib{
 
     /**
-     * @var array $_traits  - included traits
-     */
-    protected $_traits = array('bTemplate');
-
-    /**
      * @return $this - return self to parent block
      */
     public function output(){
@@ -52,9 +47,9 @@ class bPanel__model extends bBlib{
      */
     final public function getTemplate(){
 
-        /** @var bTemplate $bTemplate - template instance */
-        $bTemplate = $this->getInstance('bTemplate');
+        /** @var bTemplate $_template - template instance */
+        $_template = $this->getInstance('template', 'bTemplate');
 
-        return $bTemplate->getOwnTemplate('template', 'bPanel');
+        return $_template->getOwnTemplate('template', 'bPanel');
     }
 }

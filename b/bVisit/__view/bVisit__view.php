@@ -14,9 +14,10 @@ class bVisit__view extends bView{
         'attrs'   => array(),
         'content' => ''
     );
-    protected $_traits = array('bConverter');
 
     public function index(){
+
+        $this->setInstance('converter', 'bConverter');
 
         $this->_template['content'] = $this->get('data', array());
 
@@ -26,14 +27,14 @@ class bVisit__view extends bView{
 
     public function json(){
 
-        /** @var bConverter__instance $bConverter */
-        $bConverter = $this->getInstance('bConverter');
+        /** @var bConverter__instance $_converter */
+        $_converter = $this->getInstance('converter');
 
         $visitList = $this->get('data', array());
 
-        $bConverter->setData($visitList)->setFormat('array')->convertTo('json');
+        $_converter->setData($visitList)->setFormat('array')->convertTo('json');
 
-        return $bConverter->output();
+        return $_converter->output();
 
     }
 

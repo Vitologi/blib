@@ -3,13 +3,15 @@ defined('_BLIB') or die;
 
 class bSlider extends bBlib{
 
-	protected $_traits = array('bSystem', 'bTemplate');
+	protected $_traits = array('bTemplate');
 	protected $_length = 0;
 	protected $_delay = 10000;
 	protected $_list = array();
 	protected $_mods = array();
 
 	protected function input($template = array()){
+
+        $this->setInstance('template', 'bTemplate');
 
 		if(isset($template['mods']))$this->_mods = $template['mods'];
 		if(isset($template['length']))$this->_length = $template['length'];
@@ -19,10 +21,10 @@ class bSlider extends bBlib{
 	
 	public function output(){
 		
-		/** @var bTemplate $bTemplate */
-		$bTemplate = $this->getInstance('bTemplate');
+		/** @var bTemplate $_template */
+		$_template = $this->getInstance('template');
 
-		$sliders = $bTemplate->getOwnTemplate($this->_list, __CLASS__);
+		$sliders = $_template->getOwnTemplate($this->_list, __CLASS__);
 
 		foreach($sliders as $key => $value){
 			$sliders[$key]=json_decode($value);

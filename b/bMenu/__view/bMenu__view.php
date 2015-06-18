@@ -8,10 +8,10 @@ defined('_BLIB') or die;
  */
 class bMenu__view extends bView{
 
-    /**
-     * @var array $_traits - included traits (get bPanel view)
-     */
-    protected $_traits = array('bPanel__view');
+    protected function input(){
+        $this->setInstance('converter', 'bConverter');
+        $this->setInstance('helper', 'bPanel__view');
+    }
 
     /**
      * Store bMenu default carcase
@@ -62,13 +62,11 @@ class bMenu__view extends bView{
 
         $temp = $this->index($list, $id);
 
-        $this->setTrait('bConverter');
+        /** @var bConverter__instance $_converter */
+        $_converter = $this->getInstance('converter');
 
-        /** @var bConverter__instance $bConverter */
-        $bConverter = $this->getInstance('bConverter');
-
-        $bConverter->setData($temp)->setFormat('array')->convertTo('json');
-        return $bConverter->output();
+        $_converter->setData($temp)->setFormat('array')->convertTo('json');
+        return $_converter->output();
     }
 
     /**
@@ -78,29 +76,29 @@ class bMenu__view extends bView{
      */
     public function addPanel(){
 
-        /** @var bPanel__view $bPanel__view */
-        $bPanel__view = $this->getInstance('bPanel__view');
+        /** @var bPanel__view $_helper */
+        $_helper = $this->getInstance('helper');
 
         $message = $this->get('message', "Добавление записи");
         $errors  = $this->get('errors', array());
         $item = $this->get('item',array());
 
         /** Buttons */
-        $add    = $bPanel__view->buildButton('Сохранить', array('menuForm'), array(
+        $add    = $_helper->buildButton('Сохранить', array('menuForm'), array(
             'action' => 'add'
         ), 'bMenu__bPanel');
-        $cancel = $bPanel__view->buildButton('Отмена', array(), array(), 'bMenu__bPanel');
+        $cancel = $_helper->buildButton('Отмена', array(), array(), 'bMenu__bPanel');
 
         /** Other interface elements */
-        $blocks = $bPanel__view->buildBlocks($this->get('blocks',array()));
-        $message  = array($bPanel__view->buildError($message));
-        $tools = $bPanel__view->buildTools(array($add, $cancel));
+        $blocks = $_helper->buildBlocks($this->get('blocks',array()));
+        $message  = array($_helper->buildError($message));
+        $tools = $_helper->buildTools(array($add, $cancel));
 
         foreach($errors as $key => $value){
-            $message[] = $bPanel__view->buildError($value);
+            $message[] = $_helper->buildError($value);
         }
 
-        $message = $bPanel__view->buildCollection($message);
+        $message = $_helper->buildCollection($message);
 
         $this->setPosition('"{1}"', $blocks);
         $this->setPosition('"{2}"', $message);
@@ -116,28 +114,28 @@ class bMenu__view extends bView{
      */
     public function editPanel(){
 
-        /** @var bPanel__view $bPanel__view */
-        $bPanel__view = $this->getInstance('bPanel__view');
+        /** @var bPanel__view $_helper */
+        $_helper = $this->getInstance('helper');
 
         $item = $this->get('item',array());
         $message = $this->get('message', "Редактирование записи");
         $errors  = $this->get('errors', array());
 
         /** Buttons */
-        $edit   = $bPanel__view->buildButton('Редактировать', array('menuForm'), array(
+        $edit   = $_helper->buildButton('Редактировать', array('menuForm'), array(
             'action' => 'edit'
         ), 'bMenu__bPanel');
-        $cancel = $bPanel__view->buildButton('Отмена', array(), array(), 'bMenu__bPanel');
+        $cancel = $_helper->buildButton('Отмена', array(), array(), 'bMenu__bPanel');
 
         /** Other interface elements */
-        $blocks = $bPanel__view->buildBlocks($this->get('blocks',array()));
-        $tools = $bPanel__view->buildTools(array($edit, $cancel));
+        $blocks = $_helper->buildBlocks($this->get('blocks',array()));
+        $tools = $_helper->buildTools(array($edit, $cancel));
 
-        $message  = array($bPanel__view->buildError($message));
+        $message  = array($_helper->buildError($message));
         foreach($errors as $key => $value){
-            $message[] = $bPanel__view->buildError($value);
+            $message[] = $_helper->buildError($value);
         }
-        $message = $bPanel__view->buildCollection($message);
+        $message = $_helper->buildCollection($message);
 
         $this->setPosition('"{1}"', $blocks);
         $this->setPosition('"{2}"', $message);
@@ -153,40 +151,40 @@ class bMenu__view extends bView{
      */
     public function records(){
 
-        /** @var bPanel__view $bPanel__view */
-        $bPanel__view = $this->getInstance('bPanel__view');
+        /** @var bPanel__view $_helper */
+        $_helper = $this->getInstance('helper');
 
         $message = $this->get('message', "Панель редактирования пунктов меню");
         $errors  = $this->get('errors', array());
 
 
         /** Buttons */
-        $add    = $bPanel__view->buildButton('Добавить', array(), array(
+        $add    = $_helper->buildButton('Добавить', array(), array(
             'action'=>'form',
             'view'   => 'add'
         ), 'bMenu__bPanel');
-        $edit   = $bPanel__view->buildButton('Редактировать', array('menuTable'), array(
+        $edit   = $_helper->buildButton('Редактировать', array('menuTable'), array(
             'action'=>'form',
             'view'   => 'edit'
         ), 'bMenu__bPanel');
-        $delete = $bPanel__view->buildButton('Удалить', array('menuTable'), array(
+        $delete = $_helper->buildButton('Удалить', array('menuTable'), array(
             'action' => 'delete',
             'view'   => 'index'
         ), 'bMenu__bPanel');
 
         /** Other interface elements */
-        $blocks     = $bPanel__view->buildBlocks($this->get('blocks',array()));
-        $location   = $bPanel__view->buildLocation('bMenu__bPanel');
+        $blocks     = $_helper->buildBlocks($this->get('blocks',array()));
+        $location   = $_helper->buildLocation('bMenu__bPanel');
 
-        $message  = array($bPanel__view->buildError($message));
+        $message  = array($_helper->buildError($message));
         foreach($errors as $key => $value){
-            $message[] = $bPanel__view->buildError($value);
+            $message[] = $_helper->buildError($value);
         }
-        $message = $bPanel__view->buildCollection($message);
+        $message = $_helper->buildCollection($message);
 
 
-        $collection = $bPanel__view->buildCollection(array($message, $location));
-        $tools      = $bPanel__view->buildTools(array($add, $edit, $delete));
+        $collection = $_helper->buildCollection(array($message, $location));
+        $tools      = $_helper->buildTools(array($add, $edit, $delete));
 
         $this->setPosition('"{1}"', $blocks);
         $this->setPosition('"{2}"', $collection);
@@ -200,12 +198,12 @@ class bMenu__view extends bView{
      */
     public function recordsJson(){
         /** @var bConverter__instance $bConverter */
-        $bConverter = bConverter::create()->output();
+        $_converter = $this->getInstance('converter');
 
         $list = $this->get('list', array());
 
-        $bConverter->setData($list)->setFormat('array')->convertTo('json');
-        $bConverter->output();
+        $_converter->setData($list)->setFormat('array')->convertTo('json');
+        $_converter->output();
         exit;
     }
 

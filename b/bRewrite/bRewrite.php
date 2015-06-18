@@ -3,10 +3,13 @@ defined('_BLIB') or die;
 
 class bRewrite extends bBlib{
 
+    /** @var bConfig $_config */
+    protected $_config = null;
+    /** @var bRewrite__bDataMapper $_db */
+    protected $_db = null;
+
     /** @var null|static $_instance - Singleton instance */
     private static $_instance = null;
-
-    protected $_traits    = array('bConfig', 'bRewrite__bDataMapper');
 
     /** @var null|array  $_url - url data */
     private   $_url       = null;
@@ -25,14 +28,10 @@ class bRewrite extends bBlib{
     }
 
 	protected function input(){
-
-        /** @var bConfig $bConfig - config instance */
-        $bConfig = $this->getInstance('bConfig');
-
-        $this->_isDisable   = $bConfig->getConfig('bRewrite.isDisable');
-
-        $this->_url         = parse_url($_SERVER['REQUEST_URI']);
-
+        $this->_config    = $this->getInstance('config', 'bConfig');
+        $this->_db        = $this->getInstance('db', 'bRewrite__bDataMapper');
+        $this->_isDisable = $this->_config->getConfig('bRewrite.isDisable');
+        $this->_url       = parse_url($_SERVER['REQUEST_URI']);
 	}
 
 	
@@ -44,10 +43,7 @@ class bRewrite extends bBlib{
 
         if($this->_isDisable)return array();
 
-        /** @var bRewrite__bDataMapper $bDataMapper  - rewrite data mapper instance */
-        $bDataMapper = $this->getInstance('bRewrite__bDataMapper');
-
-        $rewrite = $bDataMapper->getRewrite($this->_url['path']);
+        $rewrite = $this->_db->getRewrite($this->_url['path']);
         return $rewrite->bindex_id?array('pageNo'=>$rewrite->bindex_id):array();
     }
 }

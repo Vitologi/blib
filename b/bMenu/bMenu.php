@@ -8,7 +8,6 @@ defined('_BLIB') or die;
  */
 class bMenu extends bBlib{
 
-    protected $_traits = array('bSystem', 'bRequest','bMenu__view', 'bMenu__model');
     private   $_mvc    = array(
         'action' => 'index',
         'view'   => 'index',
@@ -22,10 +21,13 @@ class bMenu extends bBlib{
      */
     protected function input($data = array()){
 
-        /** @var bRequest $bRequest - request instance */
-        $bRequest   = $this->getInstance('bRequest');
+        $this->setInstance('model', 'bMenu__model');
+        $this->setInstance('view', 'bMenu__view');
 
-        $tunnel     = (array) $bRequest->get(__CLASS__);
+        /** @var bRequest $_request - request instance */
+        $_request   = $this->getInstance('request', 'bRequest');
+
+        $tunnel     = (array) $_request->get(__CLASS__);
 
         // Glue request params
         $this->_mvc     = array_replace($this->_mvc, $tunnel, $data);
@@ -39,11 +41,11 @@ class bMenu extends bBlib{
      */
     public function output(){
 
-        /** @var  bMenu__model $model */
-        $model  = $this->getInstance('bMenu__model');
+        /** @var  bMenu__model $_model */
+        $_model  = $this->getInstance('model');
 
         /** @var  bMenu__view $view */
-        $view   = $this->getInstance('bMenu__view');
+        $_view   = $this->getInstance('view');
 
         $mvc    = $this->_mvc;
         $id     = $mvc['id'];
@@ -51,24 +53,24 @@ class bMenu extends bBlib{
         switch($mvc['action']){
             case 'index':
             default:
-                $temp = $model->getMenu($id);
+                $temp = $_model->getMenu($id);
                 break;
         }
 
 
         switch($mvc['view']){
             case "horizontal":
-                return $view->horizontal($temp, $id);
+                return $_view->horizontal($temp, $id);
                 break;
 
             case "indexJson":
-                return $view->indexJson($temp, $id);
+                return $_view->indexJson($temp, $id);
                 break;
 
 
             case 'index':
             default:
-                return $view->index($temp, $id);
+                return $_view->index($temp, $id);
                 break;
         }
 

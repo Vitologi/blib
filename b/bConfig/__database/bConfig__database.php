@@ -8,10 +8,18 @@ defined('_BLIB') or die;
  */
 class bConfig__database extends bBlib{
 
-	protected $_traits  = array('bSystem','bConfig__database__bDataMapper');
+    /** @var bSystem $_system */
+	protected $_system = null;
+    /** @var bConfig__database__bDataMapper $_db */
+    protected $_db = null;
 
 	/** @var mixed[]	- local config storage */
 	private $_config = array();
+
+    protected function input(){
+        $this->_system = $this->getInstance('system', 'bSystem');
+        $this->_db = $this->getInstance('db', 'bConfig__database__bDataMapper');
+    }
 
 	public function output(){
 		return $this;
@@ -39,11 +47,7 @@ class bConfig__database extends bBlib{
 
 
 		// Return stored configuration if it already exists
-		if($temp = $this->_navigate($this->_config, $selector))return $temp;
-
-		/** @var bConfig__database__bDataMapper $dataMapper	- config data mapper */
-		$dataMapper = $this->getInstance('bConfig__database__bDataMapper');
-
+		if($temp = $this->_system->navigate($this->_config, $selector))return $temp;
 
 		/** Recursive(string based) grab configuration from database
 		 * For example:
@@ -57,20 +61,20 @@ class bConfig__database extends bBlib{
 		for($i=0; $i<count($path); $i++){
 			$currentPath .= $path[$i];
 
-			if(!$this->_navigate($this->_config, $currentPath)) {
+			if(!$this->_system->navigate($this->_config, $currentPath)) {
 
 				// Merge configurations with parents lines
-				$config = $dataMapper->mergeItem($dataMapper->getItem($currentPath));
+				$config = $this->_db->mergeItem($this->_db->getItem($currentPath));
 
 				// Concat with local config
-				$this->_config = $this->_navigate($this->_config, $currentPath, $config->value);
+				$this->_config = $this->_system->navigate($this->_config, $currentPath, $config->value);
 
 			}
 
 			$currentPath .= '.';
 		}
 
-		return $this->_navigate($this->_config, $selector);
+		return $this->_system->navigate($this->_config, $selector);
 	}
 
 	/**
@@ -94,10 +98,7 @@ class bConfig__database extends bBlib{
             return $bConfig__local->setConfig($selector, $value);
         }
 
-		/** @var bDataMapper $dataMapper	- config data mapper */
-		$dataMapper = $this->getInstance('bConfig__database__bDataMapper');
-
-		$config = $dataMapper->getItem($selector);
+		$config = $this->_db->getItem($selector);
 
 		if(is_array($value) and is_array($config->value)){
 			$config->value = array_replace_recursive($config->value,$value);
@@ -105,10 +106,10 @@ class bConfig__database extends bBlib{
 			$config->value = $value;
 		}
 
-		$this->_config = $this->_navigate($this->_config, $selector, $config->value);
+		$this->_config = $this->_system->navigate($this->_config, $selector, $config->value);
 
 		$config->name = $selector;
-		$dataMapper->save($config);
+        $this->_db->save($config);
 	}
 
 }

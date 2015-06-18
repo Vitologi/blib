@@ -6,48 +6,52 @@ defined('_BLIB') or die;
  */
 class bVisit extends bController{
 
-	protected $_traits  = array(/* 'bUser', */ 'bVisit__view', 'bVisit__bDataMapper');
+	protected function configure($data = null){
+        $this->setInstance('user','bUser');
+        $this->setInstance('view','bVisit__view');
+        $this->setInstance('db','bVisit__bDataMapper');
+    }
 
 	public function indexAction(){
 
-		/** @var bUser $bUser */
-		$bUser = $this->getInstance('bUser');
+		/** @var bUser $_user */
+		$_user = $this->getInstance('user');
 
-		/** @var bVisit__bDataMapper $bDataMapper */
-		$bDataMapper = $this->getInstance('bVisit__bDataMapper');
+		/** @var bVisit__bDataMapper $db */
+		$_db = $this->getInstance('db');
 
-		/** @var bVisit__view $bVisit__view */
-		$bVisit__view = $this->getInstance('bVisit__view');
+		/** @var bVisit__view $_view */
+		$_view = $this->getInstance('view');
 
-		$login = $bUser->getLogin();
+		$login = $_user->getLogin();
 
-		$visits = $bDataMapper->getList($login);
+		$visits = $_db->getList($login);
 
-		$bVisit__view->set('data', $visits);
+        $_view->set('data', $visits);
 
 
 		switch($this->getView()){
 
 			case "json":
-				$bVisit__view->json();
+                $_view->json();
 				break;
 
 			case "index":
 			default:
-				$bVisit__view->index();
+                $_view->index();
 				break;
 		}
 	}
 
 	public function setVisitAction(){
 
-		/** @var bVisit__bDataMapper $bDataMapper */
-		$bDataMapper = $this->getInstance('bVisit__bDataMapper');
+        /** @var bVisit__bDataMapper $db */
+        $_db = $this->getInstance('db');
 
-		$visit = $bDataMapper->getItem();
+		$visit = $_db->getItem();
 		$visit->login = $this->getVars('login',null);
 		$visit->ip = $_SERVER['REMOTE_ADDR'];
 		$visit->note = $this->getVars('note',null);
-		$bDataMapper->save($visit);
+        $_db->save($visit);
 	}
 }

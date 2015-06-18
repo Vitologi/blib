@@ -9,12 +9,14 @@ defined('_BLIB') or die;
  */
 class bSession__phpsession extends bBlib{
 
+	/** @var bSystem $_system */
+	protected $_system = null;
+
 	/** @var null|static $_instance - Singleton instance */
 	private static $_instance  = null;
-	private        $_storePath = null;         		// Store path
-	private        $_expire    = 0;					// Cookie lifetime
-	private        $_data      = array();			// Local session storage
-	protected      $_traits    = array('bSystem');
+	private        $_storePath = null;		// Store path
+	private        $_expire    = 0;			// Cookie lifetime
+	private        $_data      = array();	// Local session storage
 
 
 	/**
@@ -33,6 +35,7 @@ class bSession__phpsession extends bBlib{
 	 * @throws Exception
      */
 	protected function input(){
+		$this->_system = $this->getInstance('system', 'bSystem');
 		$this->updateSession($this->_expire, bBlib::path('bSession__phpsession__storage'));
 	}
 
@@ -47,7 +50,7 @@ class bSession__phpsession extends bBlib{
 	 * @return mixed[]			- local session
 	 */
 	public function getSession($selector = null){
-		return $this->_navigate($this->_data, $selector);
+		return $this->_system->navigate($this->_data, $selector);
 	}
 
 	/**
@@ -58,7 +61,7 @@ class bSession__phpsession extends bBlib{
 	 * @void 					- save configurations to database
 	 */
 	public function setSession($selector = null, $value = null){
-		$this->_data = $this->_navigate($this->_data, $selector, $value);
+		$this->_data = $this->_system->navigate($this->_data, $selector, $value);
 		$_SESSION[__CLASS__] = $this->_data;
 	}
 

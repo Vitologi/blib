@@ -6,11 +6,10 @@
  */
 abstract class bBlib{
 
-    const VERSION           = "0.8.0";  // Engine version
+    const VERSION           = "0.8.1";  // Engine version
 
     /** @var null|bBlib $_parent - Block - creator  */
     protected $_parent      = null;
-    protected $_traits      = array();  // Blocks list for multiple inheritance
     protected $_instances   = array();  // Implemented objects
     protected $_vars        = array();  // Local variables
     protected static $_VARS = array();  // Global variables
@@ -28,7 +27,7 @@ abstract class bBlib{
 
     /** BASE INPUT/OUTPUT METHODS */
     protected function input(){}
-    public function output(){return null;}
+    public function output(){return $this;}
 
 
     /**
@@ -67,27 +66,40 @@ abstract class bBlib{
     
     /** INTERFACES */
     /**
-     * Get traits array
+     * Get included instance
      *
-     * @return null|string[]       - traits array
+     * @param string $name                  instance`s name
+     * @param null|object|string $default   default instance
+     * @return object|null                  instance
+     * @throws Exception
      */
-    final protected function getTraits(){
-        return $this->_traits;
+    final protected function getInstance($name = '', $default = null){
+        if(!isset($this->_instances[$name]))$this->setInstance($name, $default);
+        return $this->_instances[$name];
     }
-
 
 
     /**
-     * Get included instance
+     * Set instance
      *
-     * @param string $name      - instance`s name
-     * @return null|bBlib       - null or implemented block
+     * @param string $name                  instance`s name
+     * @param null|object|string $default   default instance
+     * @return $this                        for chaining
+     * @throws Exception
      */
-    final protected function getInstance($name = ''){
-        if(!isset($this->_instances[$name]))$this->setTrait($name);
-        return (isset($this->_instances[$name])?$this->_instances[$name]:null);
+    final protected function setInstance($name = '', $default = null){
+        if(is_string($default)){
+            try{
+                $default = $default::create()->setParent($this)->output();
+            }catch (Exception $e){
+                throw new Exception('Can`t create instance of '.$default.' class.');
+            }
+        }
+
+        $this->_instances[$name] = (is_object($default))?$default:new stdClass();
+
+        return $this;
     }
-    
 
     /**
      * Set caller block
@@ -97,38 +109,6 @@ abstract class bBlib{
      */
     final protected function setParent(bBlib $block = null){
         $this->_parent = $block;
-        return $this;
-    }
-
-
-    /**
-     * Extend functionality of block by saving instance of extender
-     *
-     * @param string|bBlib $name    - block`s name
-     * @param array $data           - some data
-     * @return $this                - for chaining
-     */
-    final protected function setTrait($name = '', $data = array()){
-        if(isset($this->_instances[$name]))return $this;
-
-        if(!is_array($this->_traits))$this->_traits = array();
-        if(!in_array($name, $this->_traits))$this->_traits[] = $name;
-
-        // get output from extender block
-        $result = $name::create($data)->setParent($this)->output();
-
-        // implement object
-        if($result instanceof bBlib){
-            $this->_instances[$name] = $result;
-
-        // or set properties
-        }else{
-            foreach((array)$result as $key => $value){
-                if(isset($this->_vars[$key]))continue;
-                $this->_vars[$key] = $value;
-            }
-        }
-        
         return $this;
     }
 
@@ -175,11 +155,6 @@ abstract class bBlib{
     final private function __construct(){
         $data = (func_num_args()===1)?func_get_arg(0):func_get_args();
         
-        $traits = is_array($this->_traits)?$this->_traits:array();
-
-        // set instance/data of all included traits
-        foreach($traits as $value)$this->setTrait($value, $data);
-
         // base input handler
         $this->input($data);
     }
@@ -193,9 +168,8 @@ abstract class bBlib{
      * @return mixed            - some result of traits method
      */
     function __call($method = '', $args = array()){
-        if(!is_array($this->_traits))$this->_traits = array();
         
-        foreach($this->_traits as $value){
+        foreach($this->_instances as $value){
             if (!method_exists($value, $method)) continue;
             $args[] = $this;
             return call_user_func_array(array($value, $method), $args);

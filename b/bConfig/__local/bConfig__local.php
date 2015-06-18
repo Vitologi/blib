@@ -6,10 +6,15 @@ defined('_BLIB') or die;
  */
 class bConfig__local extends bBlib{
 
-	protected $_traits = array('bSystem');
+	/** @var bSystem $_system */
+	protected $_system = null;
 
 	/** @var mixed[]	- local config storage */
 	private $_config = array();
+
+	protected function input(){
+		$this->_system = $this->getInstance('system', 'bSystem');
+	}
 
 	public function output(){
 		return $this;
@@ -38,7 +43,7 @@ class bConfig__local extends bBlib{
 
 		}
 
-		return $this->_navigate($this->_config, $selector);
+		return $this->_system->navigate($this->_config, $selector);
 	}
 
 	/**
@@ -59,7 +64,7 @@ class bConfig__local extends bBlib{
 		}
 
 		// Extend local configuration
-		$this->_config = $this->_navigate($this->_config, $selector, $value);
+		$this->_config = $this->_system->navigate($this->_config, $selector, $value);
 
 		// Convert it to string
 		$config = json_encode($this->_config[$name], 256);

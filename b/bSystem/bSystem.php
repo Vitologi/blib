@@ -6,23 +6,8 @@ defined('_BLIB') or die;
  */
 class bSystem extends bBlib{
 
-
-    /**
-     * Set default value for block
-     *
-     * @param string $key   - property name
-     * @param null $value   - property value
-     * @param null $default - default value for property
-     * @param bBlib $parent - block-initiator
-     * @return bBlib        - for chaining
-     */
-    public static function _default($key = '', $value = null, $default = null, bBlib $parent){
-
-        if(is_string($key)){
-            $parent->$key = ($value?$value:$default);
-        }
-        return $parent;
-
+    public function output(){
+        return $this;
     }
 
     /**
@@ -31,30 +16,29 @@ class bSystem extends bBlib{
      * For example for $array = array('item'=>array('name'=>array('prefix'=>1111))):
      *
      *      is equal
-     *      $this->_navigate($array, 'item.name.prefix')
+     *      $this->navigate($array, 'item.name.prefix')
      *      $array['item']['name']['prefix']
      *
      *      is equal
-     *      $this->_navigate($array, 'item.name', array('postfix'=>222))
+     *      $this->navigate($array, 'item.name', array('postfix'=>222))
      *      $array['item']['name'] = array_replace_recursive($array['item']['name'], array('postfix'=>222))
      *
      * @return array|null   - handle value or modified array
      * @throws Exception
      */
-    public static function _navigate(){
-        if(func_num_args()===4) {
+    public static function navigate(){
+        if(func_num_args()===3) {
 
             /**
              * @var array $obj          -
              * @var string $selector    -
              * @var mixed $value        -
-             * @var bBlib $parent       -
              */
-            list($obj, $selector, $value, $parent) = func_get_args();
+            list($obj, $selector, $value) = func_get_args();
 
             $isValue = true;
-        }else if(func_num_args()===3){
-            list($obj, $selector, $parent) = func_get_args();
+        }else if(func_num_args()===2){
+            list($obj, $selector) = func_get_args();
             $isValue = false;
         }else{
             throw new Exception('Wrong function arguments');
@@ -90,7 +74,7 @@ class bSystem extends bBlib{
      * @param array $array              - some array
      * @return bSystem__objectaccess    - object
      */
-    public static function _objectAccess(Array $array = array()){
+    public static function objectAccess(Array $array = array()){
         return new bSystem__objectaccess($array);
     }
 }

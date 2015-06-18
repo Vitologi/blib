@@ -6,8 +6,6 @@ defined('_BLIB') or die;
  */
 class bRbac extends bBlib{
 
-
-    protected $_traits     = array('bSystem', 'bRbac__bDataMapper', 'bUser');
     /**
      * @var null|array $_operations - list of roles + privileges + rules witch get from database
      */
@@ -27,22 +25,22 @@ class bRbac extends bBlib{
      *  - from global variable if it exists
      *  - or from database
      */
-    protected function input(){
+    protected function input() {
 
-        /** @var bUser $bUser  - user instance */
-        $bUser = $this->getInstance('bUser');
+        /** @var bUser $_user - user instance */
+        $_user = $this->getInstance('user', 'bUser');
 
-        /** @var bRbac__bDataMapper $bDataMapper    - rbac data mapper */
-        $bDataMapper = $this->getInstance('bRbac__bDataMapper');
+        /** @var bRbac__bDataMapper $_db - rbac data mapper */
+        $_db = $this->getInstance('db', 'bRbac__bDataMapper');
 
-        $userId = $bUser->getId();
+        $userId = $_user->getId();
 
-        $globalOperations = isset(bBlib::$_VARS[__CLASS__][$userId])?bBlib::$_VARS[__CLASS__][$userId]:null;
+        $globalOperations = isset(bBlib::$_VARS[__CLASS__][$userId]) ? bBlib::$_VARS[__CLASS__][$userId] : null;
 
-        if($globalOperations != null){
+        if ($globalOperations != null) {
             $this->_operations = $globalOperations;
-        }else{
-            $this->_operations = $bDataMapper->getOperations($userId);
+        } else {
+            $this->_operations                = $_db->getOperations($userId);
             bBlib::$_VARS[__CLASS__][$userId] = $this->_operations;
         }
 
@@ -94,37 +92,4 @@ class bRbac extends bBlib{
 		return true;
 	}
 
-
-    /**
-     * Method for use in children object
-     *
-     * @return bool|mixed   - access flag or result children rules
-     * @throws Exception
-     */
-    protected static function _checkAccess(){
-
-        if(func_num_args()===3){
-
-            /**
-             * @var string $operationName 	- name of checked operation
-             * @var mixed $data 		    - some data
-             * @var bBlib $caller		    - block-initiator
-             */
-            list($operationName, $data, $caller) = func_get_args();
-
-        }else if(func_num_args()===2){
-            list($operationName, $caller) = func_get_args();
-            $data = array();
-        }else{
-            throw new Exception('Not correct arguments given.');
-        }
-
-        if(!($caller instanceof bBlib))throw new Exception('Not correct arguments given.');
-
-        /** @var bRbac $bRbac  - rbac instance */
-        $bRbac = $caller->getInstance(__CLASS__);
-
-		return  $bRbac->checkAccess($operationName, $data);
-	}
-	
 }

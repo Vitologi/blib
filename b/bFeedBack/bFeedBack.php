@@ -8,13 +8,24 @@ defined('_BLIB') or die;
  */
 class bFeedBack extends bController{
 
-	protected $_traits  = array(/* 'bUser', */ 'bFeedBack__view', 'bFeedBack__bDataMapper');
+    /** @var bUser $_user */
+    protected $_user = null;
+    /** @var bFeedBack__bDataMapper $_db */
+    protected $_db = null;
+    /** @var bFeedBack__view $_view */
+    protected $_view = null;
+    /** @var bRbac $_rbac */
+    protected $_rbac = null;
 
     protected function configure($data = array()){
+
+        $this->_user = $this->getInstance('user', 'bUser');
+        $this->_db   = $this->getInstance('db', 'bFeedBack__bDataMapper');
+        $this->_view = $this->getInstance('view', 'bFeedBack__view');
+        $this->_rbac = $this->getInstance('rbac', 'bRbac');
+
         if(isset($data['mods'])){
-            /** @var bFeedBack__view $bFeedBack__view */
-            $bFeedBack__view = $this->getInstance('bFeedBack__view');
-            $bFeedBack__view->set('mods', $data['mods']);
+            $this->_view->set('mods', $data['mods']);
         }
     }
 
@@ -25,30 +36,24 @@ class bFeedBack extends bController{
      */
     public function indexAction(){
 
-		/** @var bUser $bUser */
-		$bUser = $this->getInstance('bUser');
+        $_view = $this->_view;
+        $_db   = $this->_db;
+        $_user = $this->_user;
 
-		/** @var bFeedBack__bDataMapper $bDataMapper */
-		$bDataMapper = $this->getInstance('bFeedBack__bDataMapper');
+        $userId  = $_user->getId();
+        $themes  = $_db->getThemeList();
+        $threads = $_db->getThreadsByUser($userId);
 
-		/** @var bFeedBack__view $bFeedBack__view */
-		$bFeedBack__view = $this->getInstance('bFeedBack__view');
+        $_view->set('themes', $themes);
+        $_view->set('threads', $threads);
 
-		$userId = $bUser->getId();
-
-		$themes = $bDataMapper->getThemeList();
-		$threads = $bDataMapper->getThreadsByUser($userId);
-
-		$bFeedBack__view->set('themes', $themes);
-		$bFeedBack__view->set('threads', $threads);
-
-		$answer = $bFeedBack__view->index();
+		$answer = $_view->index();
 
 		switch($this->getView()){
 
 			case "json":
-				$bFeedBack__view->set('data', $answer);
-				return $bFeedBack__view->json();
+                $_view->set('data', $answer);
+				return $_view->json();
 				break;
 
 			case "index":
@@ -67,31 +72,26 @@ class bFeedBack extends bController{
      */
     public function setThreadAction(){
 
-		/** @var bUser $bUser */
-		$bUser = $this->getInstance('bUser');
+        $_view = $this->_view;
+        $_db   = $this->_db;
+        $_user = $this->_user;
 
-		/** @var bFeedBack__bDataMapper $bDataMapper */
-		$bDataMapper = $this->getInstance('bFeedBack__bDataMapper');
+        $userId  = $_user->getId();
+        $theme   = $this->get('theme', 0);
+        $content = $this->get('content', '');
 
-        /** @var bFeedBack__view $bFeedBack__view */
-        $bFeedBack__view = $this->getInstance('bFeedBack__view');
+        $thread = $_db->getThread();
 
-		$userId = $bUser->getId();
-		$theme = $this->get('theme', 0);
-		$content = $this->get('content','');
+        $thread->user    = $userId;
+        $thread->theme   = $theme;
+        $thread->content = strip_tags($content);
 
-		$thread = $bDataMapper->getThread();
-
-		$thread->user = $userId;
-		$thread->theme = $theme;
-		$thread->content = strip_tags($content);
-
-		$bDataMapper->saveThread($thread);
+        $_db->saveThread($thread);
 
         switch($this->getView()){
             case "json":
-                $bFeedBack__view->set('data', $thread);
-                return $bFeedBack__view->json();
+                $_view->set('data', $thread);
+                return $_view->json();
                 break;
 
             default:
@@ -109,18 +109,15 @@ class bFeedBack extends bController{
      */
     public function setThreadStatusAction(){
 
-        /** @var bUser $bUser */
-        $bUser = $this->getInstance('bUser');
+        $_db   = $this->_db;
+        $_user = $this->_user;
 
-        /** @var bFeedBack__bDataMapper $bDataMapper */
-        $bDataMapper = $this->getInstance('bFeedBack__bDataMapper');
-
-        $userId = $bUser->getId();
+        $userId = $_user->getId();
         $threadId = $this->get('thread', null);
 
         if($threadId === null) throw new Exception('Haven`t thread id.');
 
-        $thread = $bDataMapper->getThread($threadId);
+        $thread = $_db->getThread($threadId);
 
         if($thread->user != $userId)throw new Exception('Haven`t permission to change thread status.');
 
@@ -128,7 +125,7 @@ class bFeedBack extends bController{
 
         $thread->status = $status;
 
-        $bDataMapper->saveThread($thread);
+        $_db->saveThread($thread);
 
     }
 
@@ -141,43 +138,36 @@ class bFeedBack extends bController{
      */
     public function setReplyAction(){
 
-        /** @var bUser $bUser */
-        $bUser = $this->getInstance('bUser');
-
-        /** @var bRbac $bRbac */
-        $bRbac = $this->getInstance('bRbac');
-
-        /** @var bFeedBack__bDataMapper $bDataMapper */
-        $bDataMapper = $this->getInstance('bFeedBack__bDataMapper');
-
-        /** @var bFeedBack__view $bFeedBack__view */
-        $bFeedBack__view = $this->getInstance('bFeedBack__view');
+        $_view = $this->_view;
+        $_db   = $this->_db;
+        $_user = $this->_user;
+        $_rbac = $this->_rbac;
 
         $threadUser = null;
-        $userId = $bUser->getId();
-        $threadId = $this->get('thread', null);
-        $content = $this->get('content','');
+        $userId     = $_user->getId();
+        $threadId   = $this->get('thread', null);
+        $content    = $this->get('content', '');
 
         if($threadId == null)throw new Exception('Can`t set reply without thread.');
 
-        $thread = $bDataMapper->getThread($threadId);
+        $thread = $_db->getThread($threadId);
         $threadUser = $thread->user;
 
         if(
             $threadUser == $userId
-            or $bRbac->checkAccess('bFeedBack_setReply')
+            or $_rbac->checkAccess('bFeedBack_setReply')
         ) {
 
 
-            $reply          = $bDataMapper->getReply();
+            $reply          = $_db->getReply();
             $reply->thread  = $threadId;
             $reply->content = strip_tags($content);
             $reply->user    = $userId;
-            $bDataMapper->saveReply($reply);
+            $_db->saveReply($reply);
 
 
             $thread->status = 0;
-            $bDataMapper->saveThread($thread);
+            $_db->saveThread($thread);
 
         }else{
             throw new Exception('Can`t set reply for feedback.');
@@ -185,8 +175,8 @@ class bFeedBack extends bController{
 
         switch($this->getView()){
             case "json":
-                $bFeedBack__view->set('data', $reply);
-                return $bFeedBack__view->json();
+                $_view->set('data', $reply);
+                return $_view->json();
                 break;
 
             default:
@@ -204,40 +194,33 @@ class bFeedBack extends bController{
      */
     public function getRepliesAction(){
 
-        /** @var bUser $bUser */
-        $bUser = $this->getInstance('bUser');
-
-        /** @var bRbac $bRbac */
-        $bRbac = $this->getInstance('bRbac');
-
-        /** @var bFeedBack__bDataMapper $bDataMapper */
-        $bDataMapper = $this->getInstance('bFeedBack__bDataMapper');
-
-        /** @var bFeedBack__view $bFeedBack__view */
-        $bFeedBack__view = $this->getInstance('bFeedBack__view');
+        $_view = $this->_view;
+        $_db   = $this->_db;
+        $_user = $this->_user;
+        $_rbac = $this->_rbac;
 
         $threadUser = null;
-        $userId = $bUser->getId();
-        $threadId = $this->get('thread', null);
+        $userId     = $_user->getId();
+        $threadId   = $this->get('thread', null);
 
         if($threadId == null)throw new Exception('Can`t get replies without thread.');
 
-        $thread = $bDataMapper->getThread($threadId);
+        $thread = $_db->getThread($threadId);
         $threadUser = $thread->user;
 
         if(
             $threadUser == $userId
-            or $bRbac->checkAccess('bFeedBack_getReply')
+            or $_rbac->checkAccess('bFeedBack_getReply')
         ) {
-            $replies = $bDataMapper->getRepliesByThread($threadId);
+            $replies = $_db->getRepliesByThread($threadId);
         }else{
             throw new Exception('Can`t set reply for feedback.');
         }
 
         switch($this->getView()){
             case "json":
-                $bFeedBack__view->set('data', $replies);
-                return $bFeedBack__view->json();
+                $_view->set('data', $replies);
+                return $_view->json();
                 break;
 
             default:

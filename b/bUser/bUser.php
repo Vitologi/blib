@@ -8,8 +8,6 @@ class bUser extends bBlib{
 
 	/** @var null|static $_instance - Singleton instance */
 	private static $_instance = null;
-
-	protected $_traits            = array('bSystem', 'bConfig', 'bRequest', 'bUser__bDataMapper', 'bDecorator', 'bSession', 'bUser__view');
 	protected $id                 = null;
 	protected $login              = null;
 	protected $config             = null;
@@ -42,25 +40,30 @@ class bUser extends bBlib{
 
 	protected function input(){
 
-		/** @var bRequest $bRequest - request data */
-		$bRequest 	= $this->getInstance('bRequest');
-		$login 		= $bRequest->get('login');
-		$password 	= $bRequest->get('password');
-		$logout 	= $bRequest->get('logout');
-		$save 		= $bRequest->get('save');
+        $this->setInstance('config', 'bConfig');
+        $this->setInstance('db', 'bUser__bDataMapper');
+        $this->setInstance('session', 'bSession');
+        $this->setInstance('view', 'bUser__view');
 
-		/** @var self $bDecorator */
-		$bDecorator = $this->getInstance('bDecorator');
+        /** @var self $_this */
+        $_this = $this->getInstance('this', 'bDecorator');
+        /** @var bRequest $_request - request data */
+		$_request = $this->getInstance('request','bRequest');
+
+		$login 		= $_request->get('login');
+		$password 	= $_request->get('password');
+		$logout 	= $_request->get('logout');
+		$save 		= $_request->get('save');
 
 		// Authentication
-		$bDecorator->authorize($login, $password, $save);
+        $_this->authorize($login, $password, $save);
 
 		// Logout
-		if($logout)$bDecorator->logout();
+		if($logout)$_this->logout();
 
-		$this->id 		= $bDecorator->getId();
-		$this->login 	= $bDecorator->getLogin();
-		$this->config 	= $bDecorator->getConfig();
+		$this->id 		= $_this->getId();
+		$this->login 	= $_this->getLogin();
+		$this->config 	= $_this->getConfig();
 	}
 
 	/**
@@ -71,11 +74,11 @@ class bUser extends bBlib{
 	public function output(){
 		if($this->_parent instanceof bBlib) return $this;
 
-		/** @var bUser__view $bUser__view */
-		$bUser__view = $this->getInstance('bUser__view');
-		$bUser__view->set('login',$this->login);
+		/** @var bUser__view $_view */
+		$_view = $this->getInstance('view');
+        $_view->set('login',$this->login);
 
-		return $bUser__view->index();
+		return $_view->index();
 	}
 
 	/**
@@ -87,42 +90,44 @@ class bUser extends bBlib{
      */
 	public function authorize($login = null, $password = null, $remember = false){
 
-		/** @var bDataMapper $bDataMapper - user Data Mapper */
-		$bDataMapper = $this->getInstance('bUser__bDataMapper');
-		/** @var bConfig $bConfig - config block */
-		$bConfig	 = $this->getInstance('bConfig');
+		/** @var bDataMapper $_db - user Data Mapper */
+		$_db = $this->getInstance('db');
+		/** @var bConfig $_config - config block */
+		$_config	 = $this->getInstance('config');
+        /** @var bSession $_session */
+        $_session = $this->getInstance('session');
 
 		// Authentication
 		if($login){
 
-			$user = $bDataMapper->getItem($login, $password);
+			$user = $_db->getItem($login, $password);
 
 			if($user->id){
 
-				$userConfig 	= $bConfig->getConfig(__CLASS__ . '.' . $this->id);
+				$userConfig 	= $_config->getConfig(__CLASS__ . '.' . $this->id);
 				$this->id 		= $user->id;
 				$this->login 	= $user->login;
 				$this->config 	= $userConfig;
 
 				if ($remember == 'on') {
-					$sessionExpire = $bConfig->getConfig(__CLASS__ . '.expire');
+					$sessionExpire = $_config->getConfig('expire');
 					$sessionExpire = ($sessionExpire) ? $sessionExpire : 604800;
-					$this->_updateSession($sessionExpire);
+                    $_session->updateSession($sessionExpire);
 				}
 
-				$this->_setSession('id', $this->id);
-				$this->_setSession('login', $this->login);
-				$this->_setSession('config', $this->config);
+                $_session->setSession(__CLASS__.'.id', $this->id);
+                $_session->setSession(__CLASS__.'.login', $this->login);
+                $_session->setSession(__CLASS__.'.config', $this->config);
 
 			}
 
 		// Authentication from session
 		}else{
-			$this->id = $this->_getSession('id');
+			$this->id = $_session->getSession(__CLASS__.'.id');
 
 			if($this->id){
-				$this->config = $this->_getSession('config');
-				$this->login = $this->_getSession('login');
+				$this->config = $_session->getSession(__CLASS__.'.config');
+				$this->login = $_session->getSession(__CLASS__.'.login');
 			}else{
 				$this->config = null;
 				$this->login = null;
@@ -136,14 +141,18 @@ class bUser extends bBlib{
      */
 	public function logout(){
 
-		/** @var bRequest $bRequest - request object*/
-		$bRequest = $this->getInstance('bRequest');
-		$bRequest->set('logout', null);
+        /** @var bSession $_session */
+        $_session = $this->getInstance('session');
+
+        /** @var bRequest $_request - request data */
+        $_request = $this->getInstance('request');
+
+        $_request->set('logout', null);
 
 		$this->id 		= null;
 		$this->login	= null;
         $this->config 	= null;
 
-		$this->_clearSession();
+        $_session->clearSession();
 	}
 }

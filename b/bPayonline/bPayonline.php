@@ -3,7 +3,6 @@ defined('_BLIB') or die;
 
 class bPayonline extends bController{
 
-    protected $_traits = array('bPayonline__view', 'bPayonline__model', 'bDecorator');
     protected $_amount = 0;
 
     /**
@@ -13,6 +12,10 @@ class bPayonline extends bController{
      */
 	protected function configure($data = null){
 
+        $this->setInstance('model', 'bPayonline__model');
+        $this->setInstance('view', 'bPayonline__view');
+        $this->setInstance('this', 'bDecorator');
+
         //указанная пользователем сумма платежа
         $this->_amount = $this->get('amount', 0);
 
@@ -20,33 +23,28 @@ class bPayonline extends bController{
 
     public function getSecureDataAction(){
 
-        /** @var bPayonline__model $bPayonline__model */
-        $bPayonline__model = $this->getInstance('bPayonline__model');
-
-        /** @var bPayonline__view $bPayonline__view */
-        $bPayonline__view = $this->getInstance('bPayonline__view');
-
-        /** @var self $bDecorator   - decorator instance */
-        $bDecorator = $this->getInstance('bDecorator');
+        $_model = $this->getInstance('model');
+        $_view = $this->getInstance('view');
+        $_this = $this->getInstance('this');
 
 
-        $bPayonline__model->setVars('amount', $this->_amount);
+        $_model->setVars('amount', $this->_amount);
 
-        $bDecorator->hook();
+        $_this->hook();
 
-        $data  = $bPayonline__model->getSecureData();
-        $error = $bPayonline__model->getError();
+        $data  = $_model->getSecureData();
+        $error = $_model->getError();
 
         if($error){
-            $bPayonline__view->setVars('error', $error);
+            $_view->setVars('error', $error);
         }else{
-            $bPayonline__view->setVars('data', $data);
+            $_view->setVars('data', $data);
         };
 
         switch($this->getView()){
 
             default:
-                return $bPayonline__view->json();
+                return $_view->json();
                 break;
         }
 

@@ -15,15 +15,11 @@ class bPayonline__view extends bView{
 
     /**
      * Store bPayonline default carcase
-     *
-     * @param array $list   - menu list
-     * @param null $id      - root menu item
-     * @return array        - blib structure (bom)
      */
     public function json(){
 
-        /** @var bConverter__instance $bConverter */
-        $bConverter = $this->getInstance('bConverter');
+        /** @var bConverter__instance $_converter */
+        $_converter = $this->getInstance('converter', 'bConverter');
 
         $return = $this->getVars('error', false);
 
@@ -33,9 +29,8 @@ class bPayonline__view extends bView{
             $return = array('errors'=>$return);
         }
 
-        $bConverter->setData($return)->setFormat('array')->convertTo('json');
-
-        $bConverter->output();
+        $_converter->setData($return)->setFormat('array')->convertTo('json');
+        $_converter->output();
 
     }
 

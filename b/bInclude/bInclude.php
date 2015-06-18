@@ -6,7 +6,11 @@ defined('_BLIB') or die;
  */
 class bInclude extends bBlib{
 
-    protected   $_traits        = array('bSystem', 'bRequest', 'bConfig');
+    /** @var bRequest $_request */
+    protected $_request = null;
+    /** @var bConfig $_config */
+    protected $_config = null;
+
     /**
      * @var array       - requested list of blocks
      */
@@ -39,23 +43,19 @@ class bInclude extends bBlib{
      */
     protected function input(){
 
-        /** @var bConfig $bConfig   - configuration instance */
-        $bConfig = $this->getInstance('bConfig');
+        $this->_request = $this->getInstance('request', 'bRequest');
+        $this->_config  = $this->getInstance('config', 'bConfig');
 
-        /** @var bRequest $bRequest - request instance */
-        $bRequest = $this->getInstance('bRequest');
+        $this->_path         = bBlib::path('bInclude__cache');
+        $this->_cache        = bBlib::path('bInclude__cache', 'ini');
+        $this->_disableCache = $this->_config->getConfig('bInclude.disableCache');
 
-
-        $this->_path            = bBlib::path('bInclude__cache');
-        $this->_cache           = bBlib::path('bInclude__cache', 'ini');
-        $this->_disableCache    = $bConfig->getConfig('bInclude.disableCache');
-
-        if($list = $bRequest->get('list')){
+        if($list = $this->_request->get('list')){
             if(!is_array($list))$list = (array)json_decode($list);
             $this->_list = $list;
         }
 
-        if($callback = $bRequest->get('callback')){
+        if($callback = $this->_request->get('callback')){
             $this->_callback = $callback;
         }
 
@@ -166,7 +166,7 @@ class bInclude extends bBlib{
 			
 			$block = $name::create();
 			$code = @file_get_contents($dir.'/'.$v);
-			$cache[$name] = array($block->getTraits(), $code);
+			$cache[$name] = array(/*$block->getTraits()*/array(), $code);
 	
 		}
 		

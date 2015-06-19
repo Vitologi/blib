@@ -87,8 +87,7 @@ class bConfig__database extends bBlib{
 	public function setConfig($selector = '', $value = null){
 
         // Protect from loop
-        $path = explode('.', $selector);
-        if($path[0]==='bDatabase') {
+        if($selector=='bDatabase') {
             /** @var bConfig $bConfig   - parent block */
             $bConfig = $this->_parent;
 
@@ -99,16 +98,10 @@ class bConfig__database extends bBlib{
         }
 
 		$config = $this->_db->getItem($selector);
-
-		if(is_array($value) and is_array($config->value)){
-			$config->value = array_replace_recursive($config->value,$value);
-		}else{
-			$config->value = $value;
-		}
+		$config->value = $value;
+		$config->name = $selector;
 
 		$this->_config = $this->_system->navigate($this->_config, $selector, $config->value);
-
-		$config->name = $selector;
         $this->_db->save($config);
 	}
 

@@ -6,7 +6,7 @@
  */
 abstract class bBlib{
 
-    const VERSION           = "0.8.1";  // Engine version
+    const VERSION           = "0.8.2";  // Engine version
 
     /** @var null|bBlib $_parent - Block - creator  */
     protected $_parent      = null;

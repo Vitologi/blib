@@ -1,1 +1,1 @@
-<?php defined('_BLIB') or die(); return '{"strategy":["bConfig__database"],"default":"bConfig__database"}';
+<?php defined('_BLIB') or die(); return '{\"strategy\":[\"bConfig__database\"],\"default\":\"bConfig__database\"}';

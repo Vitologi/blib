@@ -114,7 +114,7 @@ class bConfig extends bBlib{
 	public function setConfig($selector = '', $value = array()){
 
 		/** @var bConfig__local $strategy - Get default strategy */
-		$strategy = $this->getInstance($this->_default);
+		$strategy = ($selector == __CLASS__)?$this->getInstance('bConfig__local'):$this->getInstance($this->_default);
 
 		// Extend inner configuration storage
 		$this->_config = $this->_system->navigate($this->_config, $selector, $value);

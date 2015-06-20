@@ -32,7 +32,7 @@
 					},
 					temp;
 				
-				if(!_this.login && (temp = _this.getSave())) data.save = temp;
+				if(!_this.login && (temp = _this.getSave())) requestData.save = temp;
 				requestData.view = 'json';
 				
 				blib.ajax({

@@ -74,7 +74,33 @@ abstract class bBlib{
      * @throws Exception
      */
     final protected function getInstance($name = '', $default = null){
-        if(!isset($this->_instances[$name]))$this->setInstance($name, $default);
+        $instance = isset($this->_instances[$name]) ? $this->_instances[$name] : null;
+        $isObject = is_object($instance);
+
+        if ($isObject)return $instance;
+
+        $isString = is_string($instance);
+        $isDefString = is_string($default);
+        $constructor = ($isString ? $instance : ($isDefString? $default : 'stdClass'));
+
+        try {
+
+            if (class_exists($constructor)) {
+
+                if(method_exists($constructor,'create') && method_exists($constructor, 'output')){
+                    $instance = $constructor::create()->setParent($this)->output();
+                }else{
+                    $instance = new $constructor();
+                }
+
+            }
+
+        } catch (Exception $e) {
+            throw new Exception('Can`t create instance of ' . $default . ' class.');
+        }
+
+        $this->setInstance($name, $instance);
+
         return $this->_instances[$name];
     }
 
@@ -88,16 +114,7 @@ abstract class bBlib{
      * @throws Exception
      */
     final protected function setInstance($name = '', $default = null){
-        if(is_string($default)){
-            try{
-                $default = $default::create()->setParent($this)->output();
-            }catch (Exception $e){
-                throw new Exception('Can`t create instance of '.$default.' class.');
-            }
-        }
-
-        $this->_instances[$name] = (is_object($default))?$default:new stdClass();
-
+        if(is_object($default) || is_string($default))$this->_instances[$name] = $default;
         return $this;
     }
 

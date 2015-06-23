@@ -1,1 +1,0 @@
-<?php defined('_BLIB') or die(); return '{\"connections\":{\"default\":{\"host\":\"localhost\",\"user\":\"root\",\"password\":\"\",\"database\":\"test\",\"persistent\":false}}}';

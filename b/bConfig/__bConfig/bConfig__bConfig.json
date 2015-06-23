@@ -1,0 +1,27 @@
+{
+  "title": "bConfig",
+  "type": "object",
+  "properties": {
+    "strategy": {
+      "type": "array",
+      "format": "table",
+      "title": "Strategy",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "title": "strategy"
+      },
+      "description": "Strategy config collection."
+    },
+    "default": {
+      "type": "string",
+      "description": "Default strategy for store configuration."
+    }
+  },
+  "default": {
+    "strategy":[
+      "bConfig__database"
+    ],
+    "default": "bConfig__database"
+  }
+}

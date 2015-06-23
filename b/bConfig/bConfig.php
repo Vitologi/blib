@@ -36,6 +36,7 @@ class bConfig extends bBlib{
     protected function input(){
         $this->_system = $this->getInstance('system', 'bSystem');
         $this->setInstance('bConfig__local', 'bConfig__local');
+        $this->setInstance('model', 'bConfig__model');
     }
 
 	public function output(){
@@ -50,7 +51,7 @@ class bConfig extends bBlib{
     public function initialize(){
         $config = $this->getConfig(__CLASS__);
         $components = isset($config["strategy"])?$config["strategy"]:array();
-        if(isset($config["default"]))$this->setDefault($config["default"]);
+        if(isset($config["default"]))$this->setDefaultStrategy($config["default"]);
 
         foreach($components as $key => $component){
             $this->setInstance($component, $component);
@@ -65,7 +66,7 @@ class bConfig extends bBlib{
 	 * @void    				- set default strategy
 	 * @return $this    		- for chaining
 	 */
-	public function setDefault($strategy ='bConfig__local'){
+	public function setDefaultStrategy($strategy ='bConfig__local'){
 		$this->_default = $strategy;
 		return $this;
 	}
@@ -125,4 +126,9 @@ class bConfig extends bBlib{
 		return $this;
 	}
 
+    public function setDefault($block){
+        $_model = $this->getInstance('model');
+        $default = $_model->getDefault($block);
+        $this->setConfig($block, $default);
+    }
 }

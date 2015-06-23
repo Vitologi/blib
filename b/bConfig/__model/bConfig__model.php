@@ -69,4 +69,25 @@ class bConfig__model extends bBlib{
         return $this->_helper->getBlocks($block);
     }
 
+    public function parseDefault($content, $prop = false){
+        if(!$prop && isset($content['default']))return $content['default'];
+
+        if(isset($content['properties']))return $this->parseDefault($content['properties'], true);
+
+        $arr = array();
+        foreach($content as $key => $value){
+            if(is_array($value) && ($temp =$this->parseDefault($value)))$arr[$key] = $temp;
+        }
+
+        if(!empty($arr))return $arr;
+    }
+
+    public function getDefault($block){
+        $path = bBlib::path($block.'__bConfig','json');
+        if(!file_exists($path))return array();
+
+        $content = json_decode(file_get_contents($path),true);
+        return $this->parseDefault($content);
+    }
+
 }

@@ -51,9 +51,13 @@ class bDatabase extends bBlib{
 			$connections = $this->_config->getConfig(__CLASS__);
 			$connections = $connections["connections"];
 
-			if(!isset($connections[$name]))throw new Exception('Can`t find connection "'.$name.'" in db configuration');
+			foreach($connections as $key => $value){
+                if($value['name'] === $name)$connect = $value;
+            }
 
-			$db = array_replace(array('host'=>'', 'database'=>'', 'user'=>'', 'password'=>'', 'persistent'=>false), $connections[$name]);
+			if(!isset($connect))throw new Exception('Can`t find connection "'.$name.'" in db configuration');
+
+			$db = array_replace(array('host'=>'', 'database'=>'', 'user'=>'', 'password'=>'', 'persistent'=>false), $connect);
 
 			$dsn = sprintf('mysql:host=%1$s;dbname=%2$s', $db['host'], $db['database']);
 			$attrs = array();

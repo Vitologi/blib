@@ -583,4 +583,23 @@
 		}
 	);
 
+    blib.build.define(
+        {'block':'bForm', 'elem':'jsoneditor'},
+        function(data){
+            this.prepare(data);
+            this.prepareContent();
+            this.template.content = [
+                {"block":"bJsonEditor", "content":data.content}
+            ];
+        },
+        false,
+        new standardFunction({
+            'val':function(data){
+                var _this = this,
+                    editor = _this.children.bJsonEditor[0];
+                return JSON.stringify(editor.getValue());
+            }
+        })
+    );
+
 })( window.blib );

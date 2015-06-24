@@ -28,13 +28,16 @@ class bConfig__model extends bBlib{
 
 
     /**
-     * Get configuration for single block
+     * Get configuration map for single block
      *
      * @param string $block block`s name
-     * @return array        configuration
+     * @return array        config map
      */
     public function getConfigMap($block = null){
-        return $this->_config->getConfig($block);
+        $configMap = $this->getDefault($block, true);
+        $default = $this->_config->getConfig($block);
+        $configMap['default'] = $default;
+        return $configMap;
     }
 
     /**
@@ -47,6 +50,29 @@ class bConfig__model extends bBlib{
         if(!is_string($block))return;
         $config = $this->_converter->setData($config)->convertTo('array');
         $this->_config->setConfig($block, $config);
+    }
+
+
+
+    public function parseDefaultConfig($content, $prop = false){
+        if(!$prop && isset($content['default']))return $content['default'];
+
+        if(isset($content['properties']))return $this->parseDefaultConfig($content['properties'], true);
+
+        $arr = array();
+        foreach($content as $key => $value){
+            if(is_array($value) && ($temp =$this->parseDefaultConfig($value)))$arr[$key] = $temp;
+        }
+
+        if(!empty($arr))return $arr;
+    }
+
+    public function getDefault($block, $map = false){
+        $path = bBlib::path($block.'__bConfig','json');
+        if(!file_exists($path))return array();
+
+        $content = json_decode(file_get_contents($path),true);
+        return $map?$content:$this->parseDefaultConfig($content);
     }
 
     /**
@@ -67,27 +93,6 @@ class bConfig__model extends bBlib{
      */
     public function getBlocks($block = null){
         return $this->_helper->getBlocks($block);
-    }
-
-    public function parseDefault($content, $prop = false){
-        if(!$prop && isset($content['default']))return $content['default'];
-
-        if(isset($content['properties']))return $this->parseDefault($content['properties'], true);
-
-        $arr = array();
-        foreach($content as $key => $value){
-            if(is_array($value) && ($temp =$this->parseDefault($value)))$arr[$key] = $temp;
-        }
-
-        if(!empty($arr))return $arr;
-    }
-
-    public function getDefault($block){
-        $path = bBlib::path($block.'__bConfig','json');
-        if(!file_exists($path))return array();
-
-        $content = json_decode(file_get_contents($path),true);
-        return $this->parseDefault($content);
     }
 
 }

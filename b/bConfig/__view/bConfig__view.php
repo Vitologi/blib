@@ -87,8 +87,9 @@ class bConfig__view extends bView{
      */
     public function showConfigs(){
 
-        $this->_converter->setData($this->get('configMap', array()))->setFormat('array')->convertTo('json');
-        $config = $this->_converter->convertTo('string');
+        //$this->_converter->setData($this->get('configMap', array()))->setFormat('array')->convertTo('json');
+        //$config = $this->_converter->convertTo('string');
+        $config = $this->get('configMap', array());
         $block = $this->get('block', null);
 
         return array(
@@ -105,7 +106,7 @@ class bConfig__view extends bView{
             ),
             'content'	=> array(
                 array('elem'=>'hidden', 'name'=>'block', 'content'=>$block),
-                array('elem'=>'textarea', 'name'=>'config', 'content'=>$config)
+                array('elem'=>'jsoneditor', 'name'=>'config', 'content'=>array('theme'=>'bootstrap2','schema'=>$config))
             )
         );
     }

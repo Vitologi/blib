@@ -37,6 +37,38 @@
           "title": "Site title (SEO)"
         }
       }
+    },
+    "item": {
+      "type": "array",
+      "format": "table",
+      "title": "Page direct configuration",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "title": "Page",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "cat",
+              "dog",
+              "bird",
+              "reptile",
+              "other"
+            ],
+            "default": "dog"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "default": [
+        {
+          "type": "dog",
+          "name": "Walter"
+        }
+      ]
     }
   },
   "default": {
@@ -47,7 +79,7 @@
       "'{keywords}'": "",
       "'{description}'": "",
       "'{title}'": ""
-    }
+    },
+    "item":[]
   }
 }
-

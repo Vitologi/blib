@@ -18,6 +18,7 @@ class bConfig extends bBlib{
 	private   $_config   = array();                            // All configuration stack
 	private   $_default  = 'bConfig__local';                   // Default get/set strategy
 	private   $_strategy = array('bConfig__local');            // Used strategy get/set config
+	private   $_merge = false;                                 // Merge all strategy
 
 
 	/**
@@ -51,7 +52,8 @@ class bConfig extends bBlib{
     public function initialize(){
         $config = $this->getConfig(__CLASS__);
         $components = isset($config["strategy"])?$config["strategy"]:array();
-        if(isset($config["default"]))$this->setDefaultStrategy($config["default"]);
+        if(isset($config["default"]) && in_array($config["default"],$components))$this->setDefaultStrategy($config["default"]);
+        if(isset($config["merge"]))$this->_merge = $config["merge"];
 
         foreach($components as $key => $component){
             $this->setInstance($component, $component);
@@ -80,24 +82,29 @@ class bConfig extends bBlib{
 	public function getConfig($selector =''){
 
 		if(!$this->_system->navigate($this->_config, $selector)){
-			$config = null;
+            $config = null;
 
-			foreach($this->_strategy as $i => $strategy){
+            if($this->_merge){
 
-				/** @var bConfig__local $strategyObject - strategy instance */
-				$strategyObject = $this->getInstance($strategy);
+    			foreach($this->_strategy as $i => $strategy){
+                    /** @var bConfig__local $strategyObject - strategy instance */
+    				$strategyObject = $this->getInstance($strategy);
 
-				$temp = $strategyObject->getConfig($selector);
+                    $temp = $strategyObject->getConfig($selector);
 
-				if($temp === null)continue;
+    				if($temp === null)continue;
 
-				if(is_array($temp) and is_array($config)){
-					$config = array_replace_recursive($config,$temp);
-				}else{
-					$config = $temp;
-				}
+                    if(is_array($temp) and is_array($config)){
+                        $config = array_replace_recursive($config,$temp);
+                    }else{
+                        $config = $temp;
+                    }
 
-			}
+    			}
+            }else{
+                $strategyObject = $this->getInstance($this->_default);
+                $config = $strategyObject->getConfig($selector);
+            }
 
 			$this->_config = $this->_system->navigate($this->_config, $selector, $config);
 		}

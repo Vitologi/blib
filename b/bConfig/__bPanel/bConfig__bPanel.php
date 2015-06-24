@@ -68,7 +68,7 @@ class bConfig__bPanel extends bController{
         $block = $bForm['configForm']['block'];
 
         $_model->saveConfig($block, $config);
-
+        $this->_block = $block;
 
         return $this->indexAction();
     }

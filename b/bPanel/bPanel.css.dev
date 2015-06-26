@@ -18,8 +18,8 @@
 		.bPanel_style_default .bPanel__side{
 			float: left;
 			padding: 5px;
-			min-height: 500px;
-			border-right: 1px solid rgb(190, 190, 190);}
+			border-right: 1px solid rgb(190, 190, 190);
+			border-bottom: 1px solid rgb(190, 190, 190);}
 		.bPanel_style_default .bPanel__parent{
 			padding: 5px;}
 		.bPanel_style_default .bPanel__tools{

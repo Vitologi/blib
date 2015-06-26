@@ -3,9 +3,8 @@
 b/bInclude/__cache/
 b/bExample/
 b/bSession/__phpsession/__storage/*
-b/bBlib/__hook/*
 !index.html
-b/bIndex/bIndex.css
-b/bDecorator/__bConfig/
-
+*.css
+*.js
+**/__bConfig/*.php
 /vendor/

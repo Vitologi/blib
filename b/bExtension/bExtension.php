@@ -38,15 +38,10 @@ class bExtension extends bBlib{
 	 * It looks like ["bBlock"=>["bBlock_mode1"],"bBlock2"=>["bBlock2_mode1","bBlock2_mode2"]]
 	 *
 	 * @param array $list		- two-dimensional array (names of dev-files)
-	 * @param bBlib $caller		- block-initiator
 	 */
-	public static function _concat($list = array(), bBlib $caller){
-
-		/** @var bExtension $bExtension	- instance */
-		$bExtension = $caller->getInstance(__class__);
-
+	public function concatList($list = array()){
         foreach($list as $key => $value){
-			$bExtension->concat($key, $value);
+			$this->concat($key, $value);
         }
     }
 

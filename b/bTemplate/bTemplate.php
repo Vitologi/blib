@@ -6,13 +6,16 @@ defined('_BLIB') or die;
  */
 class bTemplate extends bBlib{
 
-    protected $_traits    = array('bSystem', 'bTemplate__bDataMapper', 'bRequest');
-
     /**
      * @var array $_stack   - template storage (key = template number, value = json-template)
      */
     private   $_stack     = array();
 
+
+    protected function input(){
+        $this->setInstance('db', 'bTemplate__bDataMapper');
+        $this->setInstance('request', 'bRequest');
+    }
 
 	public function output(){
         if($this->_parent)return $this;
@@ -46,10 +49,10 @@ class bTemplate extends bBlib{
      */
     private function saveTemplates($list = array()){
 
-        /** @var bTemplate__bDataMapper $bDataMapper  - data mapper instance */
-        $bDataMapper = $this->getInstance('bTemplate__bDataMapper');
+        /** @var bTemplate__bDataMapper $_db  - data mapper instance */
+        $_db = $this->getInstance('db');
 
-        $templates = $bDataMapper->getList($list);
+        $templates = $_db->getList($list);
 
         foreach ($templates as $template) {
             $this->_stack[$template['id']] = $template['template'];
@@ -176,19 +179,19 @@ class bTemplate extends bBlib{
      */
     public function getOwnTemplate($name = '', $owner = ''){
 
-        /** @var bTemplate__bDataMapper $bDataMapper - data mapper instance */
-        $bDataMapper = $this->getInstance('bTemplate__bDataMapper');
+        /** @var bTemplate__bDataMapper $_db - data mapper instance */
+        $_db = $this->getInstance('db');
 
         if(is_array($name)){
             $temp = array();
-            $list = $bDataMapper->getList($name, $owner);
+            $list = $_db->getList($name, $owner);
 
             foreach($list as $key => $value)$temp[]= $value['template'];
 
             return $temp;
         }
 
-        $dataObject = $bDataMapper->getTemplate($name, $owner);
+        $dataObject = $_db->getTemplate($name, $owner);
 
         return $dataObject->template;
     }
@@ -202,12 +205,12 @@ class bTemplate extends bBlib{
      */
     public function getTemplateDiff($oldTree = null, $newTree = null){
 
-        /** @var bRequest $bRequest */
-        $bRequest = $this->getInstance('bRequest');
+        /** @var bRequest $_request */
+        $_request = $this->getInstance('request');
 
         // if old tree is not provided than try get it from request tunnel
         if(!is_array($oldTree)){
-            $tunnel =  (array) $bRequest->get(__CLASS__);
+            $tunnel =  (array) $_request->get(__CLASS__);
             $oldTree = isset($tunnel['template'])?$tunnel['template']:array();
         }
 
@@ -222,36 +225,4 @@ class bTemplate extends bBlib{
         return $this->getTemplate($diff, true);
     }
 
-    /**
-     * Get template from child block
-     *
-     * @param array $templateTree   - template tree for get template
-     * @param bBlib $caller         - block-initiator
-     * @return mixed                - glued template
-     */
-    public static function _getTemplate($templateTree = array(), bBlib $caller){
-
-        /** @var bTemplate $bTemplate - template instance */
-        $bTemplate = $caller->getInstance(__CLASS__);
-
-		return $bTemplate->getTemplate($templateTree);
-	}
-
-    /**
-     * Get actual template(difference between old and new) from child block
-     *
-     * @param null|array $oldTemplate       - old template tree (multidimensional array of template numbers)
-     * @param null|array $newTemplate       - new template tree (multidimensional array of template numbers)
-     * @param bBlib $caller                 - block-initiator
-     * @return mixed                        - glued template
-     */
-    public static function _getTemplateDiff($oldTemplate = null, $newTemplate = null, bBlib $caller){
-
-        /** @var bTemplate $bTemplate - template instance */
-        $bTemplate = $caller->getInstance(__CLASS__);
-
-        return $bTemplate->getTemplateDiff($oldTemplate, $newTemplate);
-
-	}
-	
 }

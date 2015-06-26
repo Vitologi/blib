@@ -8,10 +8,14 @@ defined('_BLIB') or die;
  */
 class bAnnounces extends bBlib{
 
-	/**
-	 * @var array	- traits
-     */
-	protected $_traits = array('bRequest', 'bAnnounces__bDataMapper', 'bDecorator', 'bConverter');
+    /** @var bRequest  $_request */
+    protected $_request   = null;
+    /** @var bAnnounces__bDataMapper $_db */
+    protected $_db        = null;
+    /** @var static $_decorator */
+    protected $_decorator = null;
+    /** @var bConverter__instance $_converter */
+    protected $_converter = null;
 
 	/**
 	 * @var array	default params
@@ -29,11 +33,16 @@ class bAnnounces extends bBlib{
      */
 	protected function input($data = array()){
 
-		/** @var bRequest $bRequest */
-		$bRequest = $this->getInstance('bRequest');
+        $this->_request   = $this->getInstance('request', 'bRequest');
+        $this->_db        = $this->getInstance('db', 'bAnnounces__bDataMapper');
+        $this->_decorator = $this->getInstance('decorator', 'bDecorator');
+        $this->_converter = $this->getInstance('converter', 'bConverter');
 
-		$tunnel   = (array)$bRequest->get(__CLASS__);
-		$request = array('count' => $bRequest->get('count'), 'limit' => $bRequest->get('limit'));
+        $tunnel  = (array)$this->_request->get(__CLASS__);
+        $request = array(
+            'count' => $this->_request->get('count'),
+            'limit' => $this->_request->get('limit')
+        );
 
 		// Glue request params
 		$this->_mvc     = array_replace($this->_mvc, $request, $tunnel, $data);
@@ -44,18 +53,12 @@ class bAnnounces extends bBlib{
      */
 	public function output(){
 
-		/** @var static $bDecorator */
-		$bDecorator = $this->getInstance('bDecorator');
-
-		/** @var bConverter__instance $bConverter */
-		$bConverter = $this->getInstance('bConverter');
-
 		$mvc = $this->_mvc;
 
 		switch($mvc['action']){
 			case 'index':
 			default:
-				$list = $bDecorator->getAnnounces($mvc['count'], $mvc['limit']);
+				$list = $this->_decorator->getAnnounces($mvc['count'], $mvc['limit']);
 				break;
 		}
 
@@ -64,8 +67,8 @@ class bAnnounces extends bBlib{
 			case 'index':
 			default:
 
-				$bConverter->setData($list)->setFormat('array')->convertTo('json');
-				$bConverter->output();
+                $this->_converter->setData($list)->setFormat('array')->convertTo('json');
+                $this->_converter->output();
 				exit;
 				break;
 		}
@@ -81,12 +84,7 @@ class bAnnounces extends bBlib{
 	 * @throws Exception
      */
 	public function getAnnounces($count = 0, $limit = 8){
-
-		/** @var bAnnounces__bDataMapper $bDataMapper */
-		$bDataMapper = $this->getInstance('bAnnounces__bDataMapper');
-
-		return $bDataMapper->getList(array('from'=>$count, 'count'=>$limit));
-
+        return $this->_db->getList(array('from'=>$count, 'count'=>$limit));
 	}
 
 }

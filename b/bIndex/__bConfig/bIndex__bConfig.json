@@ -1,0 +1,52 @@
+{
+  "title": "bIndex",
+  "type": "object",
+  "properties": {
+    "defaultPage": {
+      "type": "integer",
+      "title": "Default page number",
+      "minimum": 0
+    },
+    "skeleton": {
+      "type": "string",
+      "title": "Basic template",
+      "enum": [
+        "bIndex__skeleton_default",
+        "bIndex__skeleton_speed"
+      ]
+    },
+    "cache": {
+      "type": "boolean",
+      "title": "Cache enabling",
+      "default": false
+    },
+    "uncategorised": {
+      "type": "object",
+      "title": "Default page properties",
+      "properties": {
+        "'{keywords}'": {
+          "type": "string",
+          "title": "Site keywords (SEO)"
+        },
+        "'{description}'": {
+          "type": "string",
+          "title": "Site description (SEO)"
+        },
+        "'{title}'": {
+          "type": "string",
+          "title": "Site title (SEO)"
+        }
+      }
+    }
+  },
+  "default": {
+    "defaultPage": 1,
+    "skeleton": "bIndex__skeleton_default",
+    "cache": false,
+    "uncategorised": {
+      "'{keywords}'": "",
+      "'{description}'": "",
+      "'{title}'": ""
+    }
+  }
+}

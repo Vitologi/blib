@@ -12,14 +12,14 @@ defined('_BLIB') or die;
  */
 class bDataMapper extends bBlib{
 
+    /** @var bDatabase $_db  */
+    protected $_db = null;
+
 	/** @var bDataMapper[] $_mappers - singleton collections */
 	private static $_mappers = array();
 
 	/** @var string      - name of default connection to db */
 	protected $_connectionName = 'default';
-
-	/** @var string[] - included traits */
-	protected $_traits = array('bSystem','bDatabase');
 
 	/**
 	 * Overload object factory for Singleton
@@ -34,6 +34,10 @@ class bDataMapper extends bBlib{
 		return self::$_mappers[$caller];
 	}
 
+
+    protected function input(){
+        $this->_db = $this->getInstance('db', 'bDatabase');
+    }
 
 	/**
 	 * Extend child class by Data Mapper
@@ -51,11 +55,7 @@ class bDataMapper extends bBlib{
 	 * @throws Exception
 	 */
 	final protected function getDatabase(){
-
-		/** @var bDatabase $bDatabase   - instance of database controller */
-		$bDatabase = $this->getInstance('bDatabase');
-
-		return $bDatabase->getDatabase($this->_connectionName);
+        return $this->_db->getDatabase($this->_connectionName);
 	}
 
 	/**

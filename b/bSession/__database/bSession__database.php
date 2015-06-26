@@ -7,23 +7,29 @@ defined('_BLIB') or die;
  *        Data Mapper - interface for interaction to database
  *        singleton    - one work object
  */
-class bSession__database extends bBlib
-{
+class bSession__database extends bBlib{
+
+    /** @var bSystem $_system */
+    protected $_system = null;
+    /** @var bSession__database__bDataMapper $_db */
+    protected $_db = null;
 
     /** @var null|static $_instance - Singleton instance */
     private static $_instance = null;
     private        $_id       = null;
     private        $_expire   = 0;                              // Cookie lifetime
     private        $_data     = array();                        // Local session storage
-    protected      $_traits   = array('bSystem', 'bSession__database__bDataMapper');
+    protected      $_path     = '/';
+    protected      $_domen    = '';
+    protected      $_secure   = false;
+    protected      $_httponly = false;
 
     /**
      * Overload object factory for Singleton
      *
      * @return bConfig|null|static
      */
-    static public function create()
-    {
+    static public function create(){
         if (self::$_instance === null) self::$_instance = parent::create(func_get_args());
         return self::$_instance;
     }
@@ -33,19 +39,15 @@ class bSession__database extends bBlib
      *
      * @throws Exception
      */
-    protected function input()
-    {
+    protected function input(){
 
-        $this->_path        = '/';
-        $this->_domen       = '';
-        $this->_secure      = false;
-        $this->_httponly    = false;
+        $this->_system = $this->getInstance('system', 'bSystem');
+        $this->_db     = $this->getInstance('db', 'bSession__database__bDataMapper');
 
         $this->updateSession($this->_expire);
     }
 
-    public function output()
-    {
+    public function output(){
         return $this;
     }
 
@@ -55,9 +57,8 @@ class bSession__database extends bBlib
      * @param string $selector - session selector
      * @return mixed[]            - local session
      */
-    public function getSession($selector = null)
-    {
-        return $this->_navigate($this->_data, $selector);
+    public function getSession($selector = null){
+        return $this->_system->navigate($this->_data, $selector);
     }
 
     /**
@@ -67,22 +68,17 @@ class bSession__database extends bBlib
      * @param mixed $value - config value
      * @void                    - save configurations to database
      */
-    public function setSession($selector = null, $value = null)
-    {
-        $this->_data = $this->_navigate($this->_data, $selector, $value);
-
-        /** @var bDataMapper $bDataMapper - session Data Mapper */
-        $bDataMapper = $this->getInstance('bSession__database__bDataMapper');
-        $empty = $bDataMapper->getItem();
+    public function setSession($selector = null, $value = null){
+        $this->_data = $this->_system->navigate($this->_data, $selector, $value);
+        $empty = $this->_db->getItem();
 
         $empty->id = $this->_id;
         $empty->value = $this->_data;
 
-        $bDataMapper->save($empty);
+        $this->_db->save($empty);
     }
 
-    public function clearSession()
-    {
+    public function clearSession(){
         $this->_id = null;
         $this->_data = array();
         setcookie('bSession', $this->_id, time() - 3600, $this->_path, $this->_domen, $this->_secure, $this->_httponly);
@@ -90,17 +86,13 @@ class bSession__database extends bBlib
     }
 
 
-    public function updateSession($expire = null)
-    {
+    public function updateSession($expire = null){
 
-        /** @var bDataMapper $bDataMapper - session Data Mapper */
-        $bDataMapper = $this->getInstance('bSession__database__bDataMapper');
-
-
+        $_db = $this->_db;
 
         if (isset($_COOKIE) && isset($_COOKIE['bSession'])) {
 
-            $session = $bDataMapper->getItem($_COOKIE['bSession'], $expire);
+            $session = $_db->getItem($_COOKIE['bSession'], $expire);
 
             if ($session->id) {
                 $this->_id = $session->id;
@@ -110,10 +102,10 @@ class bSession__database extends bBlib
 
         if (!$this->_id) {
 
-            $empty = $bDataMapper->getItem();
+            $empty = $_db->getItem();
             $empty->value = $this->_data;
 
-            $bDataMapper->save($empty);
+            $_db->save($empty);
 
             $this->_id = $empty->id;
 

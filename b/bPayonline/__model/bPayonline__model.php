@@ -28,22 +28,13 @@ class bPayonline__model extends bBlib{
     /** @var false|array $_error    - detected errors list or false  */
     protected $_error = false;
 
-    /** @var null|bPayonline__bDataMapper  $_bDataMapper - save datamapper in property for quick access */
-    private   $_bDataMapper = null;
-
-    /**
-     * @var array   - included traits
-     */
-    protected $_traits      = array('bPayonline__bDataMapper', 'bUser', 'bRbac');
-
 
     /**
      *  Set config and data mapper
      */
     protected function input(){
 
-        /** @var bPayonline__bDataMapper $bDataMapper - data mapper instance */
-        $this->_bDataMapper = $this->getInstance('bPayonline__bDataMapper');
+        $this->setInstance('user', 'bUser');
     }
 
     /**
@@ -58,8 +49,7 @@ class bPayonline__model extends bBlib{
 
     public function configure(){
 
-        /** @var bUser $bUser */
-        $bUser = $this->getInstance('bUser');
+        $_user = $this->getInstance('user');
 
         $this->_url                 = $this->getVars('url', "https://secure.payonlinesystem.com/ru/payment/select/");
         $this->_merchantId          = $this->getVars('merchantId', null);
@@ -73,7 +63,7 @@ class bPayonline__model extends bBlib{
         $this->_failUrl             = $this->getVars('failUrl', null);
 
         $this->_amount              = $this->getVars('amount', 0);
-        $this->_clientId            = $this->getVars('clientId', $bUser->getId());
+        $this->_clientId            = $this->getVars('clientId', $_user->getId());
         $this->_validUntil          = $this->getVars('validUntil', gmdate("Y-m-d H:i:s", (time() + (30 * 60))));
 
         $this->_orderId             = $this->getVars('orderId', null);

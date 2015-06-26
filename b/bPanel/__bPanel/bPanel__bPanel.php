@@ -29,14 +29,14 @@ class bPanel__bPanel extends bBlib{
      */
     protected function input($data = array()){
 
-        /** @var bPanel__model $bPanel__model */
-        $bPanel__model = $this->getInstance('bPanel__model');
+        /** @var bPanel__model $_model */
+        $_model = $this->getInstance('model', 'bPanel__model');
 
-        /** @var bPanel__view $bPanel__view */
-        $bPanel__view = $this->getInstance('bPanel__view');
+        /** @var bPanel__view $_view */
+        $_view = $this->getInstance('view', 'bPanel__view');
 
-        if($template = $bPanel__model->getTemplate()){
-            $bPanel__view->setTemplate($template);
+        if($template = $_model->getTemplate()){
+            $_view->setTemplate($template);
         }
 
         $this->_mvc = array_replace_recursive($this->_mvc, $data);
@@ -50,30 +50,27 @@ class bPanel__bPanel extends bBlib{
      */
     public function output(){
 
-        /** @var bPanel__model $bPanel__model */
-        $bPanel__model = $this->getInstance('bPanel__model');
-
-        /** @var bPanel__view $bPanel__view */
-        $bPanel__view = $this->getInstance('bPanel__view');
+        $_model = $this->getInstance('model');
+        $_view = $this->getInstance('view');
 
         $mvc = $this->_mvc;
 
         switch($mvc['action']){
             case "index":
             default:
-                $blocks = $bPanel__model->getBlocks('__bPanel');
-                $bPanel__view->set("blocks", $blocks);
+                $blocks = $_model->getBlocks('__bPanel');
+                $_view->set("blocks", $blocks);
                 break;
         }
 
         switch($mvc['view']){
             case "index":
             default:
-                $bPanel__view->indexPanel();
+                $_view->indexPanel();
                 break;
         }
 
-        return $bPanel__view->generate();
+        return $_view->generate();
 
     }
 

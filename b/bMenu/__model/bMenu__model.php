@@ -8,27 +8,18 @@ defined('_BLIB') or die;
  */
 class bMenu__model extends bBlib{
 
-    /** @var null|bConfig  $_bConfig  - menu item configuration */
-    private   $_bConfig     = null;
+    /** @var null|bConfig $_config - menu item configuration */
+    private $_config = null;
 
-    /** @var null|bMenu__bDataMapper  $_bDataMapper - save datamapper in property for quick access */
-    private   $_bDataMapper = null;
-
-    /**
-     * @var array   - included traits
-     */
-    protected $_traits      = array('bSystem', 'bMenu__bDataMapper', 'bConfig');
-
+    /** @var null|bMenu__bDataMapper $_db - save datamapper in property for quick access */
+    private $_db = null;
 
     /**
      *  Set config and data mapper
      */
-    protected function input(){
-        /** @var bConfig $bConfig - config instance */
-        $this->_bConfig = $this->getInstance('bConfig');
-
-        /** @var bMenu__bDataMapper $bDataMapper - data mapper instance */
-        $this->_bDataMapper = $this->getInstance('bMenu__bDataMapper');
+    protected function input() {
+        $this->_config = $this->getInstance('config', 'bConfig');
+        $this->_db     = $this->getInstance('db', 'bMenu__bDataMapper');
     }
 
     /**
@@ -51,10 +42,10 @@ class bMenu__model extends bBlib{
         if(!$id){return array();}
 
         // get menu item list
-        $menuList = $this->_bDataMapper->getMenu($id);
+        $menuList = $this->_db->getMenu($id);
 
         // get config for menu
-        $config = $this->_bConfig->getConfig('bMenu.items');
+        $config = $this->_config->getConfig('bMenu.items');
 
         // serialize menu items by config
         foreach($menuList as &$item){
@@ -75,7 +66,7 @@ class bMenu__model extends bBlib{
 
         if(!is_numeric($id))return array();
 
-        $item = $this->_bDataMapper->getItem($id);
+        $item = $this->_db->getItem($id);
 
         if ($item->id)return(array)$item;
 
@@ -99,7 +90,7 @@ class bMenu__model extends bBlib{
             'bmenu_id'=>null
         ),$data);
 
-        $item = $this->_bDataMapper->getItem();
+        $item = $this->_db->getItem();
 
         $item->menu = $data['menu'];
         $item->name = $data['name'];
@@ -107,7 +98,7 @@ class bMenu__model extends bBlib{
         $item->bconfig_id = $data['bconfig_id'];
         $item->bmenu_id = $data['bmenu_id'];
 
-        $this->_bDataMapper->save($item);
+        $this->_db->save($item);
 
         if ($item->id)return(array)$item;
 
@@ -133,7 +124,7 @@ class bMenu__model extends bBlib{
             'bmenu_id'=>null
         ),$data);
 
-        $item = $this->_bDataMapper->getItem($data['id']);
+        $item = $this->_db->getItem($data['id']);
 
         $item->menu = $data['menu'];
         $item->name = $data['name'];
@@ -141,7 +132,7 @@ class bMenu__model extends bBlib{
         $item->bconfig_id = $data['bconfig_id'];
         $item->bmenu_id = $data['bmenu_id'];
 
-        $this->_bDataMapper->save($item);
+        $this->_db->save($item);
 
         return ($item->id)?$item:null;
 
@@ -154,7 +145,7 @@ class bMenu__model extends bBlib{
      * @throws Exception
      */
     public function getSmallList(){
-        return $this->_bDataMapper->getSmallList();
+        return $this->_db->getSmallList();
     }
 
     /**
@@ -167,7 +158,7 @@ class bMenu__model extends bBlib{
      */
     public function getList($pageNo = 0, $count = 5){
         $from = $pageNo*$count;
-        return $this->_bDataMapper->getList(array('from'=>$from,'count'=>$count));
+        return $this->_db->getList(array('from'=>$from,'count'=>$count));
     }
 
     /**
@@ -179,7 +170,7 @@ class bMenu__model extends bBlib{
      */
     public function deleteItem(Array $list = array()){
 
-        return $this->_bDataMapper->destroy($list);
+        return $this->_db->destroy($list);
     }
 
     /**
@@ -188,7 +179,7 @@ class bMenu__model extends bBlib{
      * @return null|number  - menu item number
      */
     public function getCount(){
-        return $this->_bDataMapper->getCount();
+        return $this->_db->getCount();
     }
 
     /**

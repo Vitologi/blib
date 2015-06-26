@@ -19,8 +19,6 @@ class bConverter extends bBlib{
      */
     protected      $_converters = array('bConverter__default','bConverter__json');
 
-    protected      $_traits     = array('bSystem');
-
     /**
      * Overload object factory for Singleton
      *

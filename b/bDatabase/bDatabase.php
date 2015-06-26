@@ -9,8 +9,8 @@ defined('_BLIB') or die;
  */
 class bDatabase extends bBlib{
 
-	/** @var string[] - included traits */
-	protected $_traits = array('bSystem', 'bConfig');
+    /** @var bConfig $_config */
+    protected $_config = null;
 
 	/** @var null|static - singleton instance */
 	private static $_instance = null;
@@ -29,6 +29,10 @@ class bDatabase extends bBlib{
 		return self::$_instance;
 	}
 
+	protected function input(){
+        $this->_config = $this->getInstance('config', 'bConfig');
+    }
+
 	public function output(){
 		return $this;
 	}
@@ -43,16 +47,17 @@ class bDatabase extends bBlib{
 	public function getDataBase($name = 'default'){
 		if(!array_key_exists($name, $this->_db)){
 
-			/** @var bConfig $bConfig 	- configuration block instance */
-			$bConfig = $this->getInstance('bConfig');
-
 			// get connections properties
-			$connections = $bConfig->getConfig(__CLASS__);
+			$connections = $this->_config->getConfig(__CLASS__);
 			$connections = $connections["connections"];
 
-			if(!isset($connections[$name]))throw new Exception('Can`t find connection "'.$name.'" in db configuration');
+			foreach($connections as $key => $value){
+                if($value['name'] === $name)$connect = $value;
+            }
 
-			$db = array_replace(array('host'=>'', 'database'=>'', 'user'=>'', 'password'=>'', 'persistent'=>false), $connections[$name]);
+			if(!isset($connect))throw new Exception('Can`t find connection "'.$name.'" in db configuration');
+
+			$db = array_replace(array('host'=>'', 'database'=>'', 'user'=>'', 'password'=>'', 'persistent'=>false), $connect);
 
 			$dsn = sprintf('mysql:host=%1$s;dbname=%2$s', $db['host'], $db['database']);
 			$attrs = array();

@@ -12,6 +12,9 @@ defined('_BLIB') or die;
  */
 class bDecorator extends bBlib{
 
+    /** @var bConfig $_config */
+    protected $_config = null;
+
     /** @var null|static $_instance - Singleton instance */
     private static $_instance = null;
 
@@ -25,8 +28,6 @@ class bDecorator extends bBlib{
      */
     private $_list = array();
 
-    protected $_traits = array('bSystem', 'bConfig');
-    
     /**
      * Overload object factory for Singleton
      *
@@ -42,11 +43,8 @@ class bDecorator extends bBlib{
      * Set decor rules
      */
     protected function input(){
-
-        /** @var bConfig $bConfig   - configuration instance */
-        $bConfig = $this->getInstance('bConfig');
-
-        $this->_list = $bConfig->getConfig(__CLASS__);
+        $this->_config = $this->getInstance('config', 'bConfig');
+        $this->_list = $this->_config->getConfig(__CLASS__);
     }
 
     /**
@@ -72,16 +70,6 @@ class bDecorator extends bBlib{
 
 
     /**
-     * Get decorated object from child block
-     *
-     * @param bBlib $caller                     - block-initiator
-     * @return null|bBlib|bDecorator__instance  - decorated object
-     */
-    final public static function _decorate(bBlib $caller){
-        return $caller->getInstance('bDecorator');
-	}
-
-    /**
      * Getter for decor rules
      *
      * @return array    - decor rules
@@ -97,14 +85,11 @@ class bDecorator extends bBlib{
      */
     final public function setList($list = array()){
 
-        /** @var bConfig $bConfig   - configuration block */
-        $bConfig = $this->getInstance('bConfig');
-
         // reset storing strategy by default
-        $bConfig->setDefault();
+        $this->_config->setDefault();
 
         // save list
-        $bConfig->setConfig(__CLASS__, $list);
+        $this->_config->setConfig(__CLASS__, $list);
 	}
     
 }

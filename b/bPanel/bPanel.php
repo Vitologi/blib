@@ -7,11 +7,6 @@ defined('_BLIB') or die;
 class bPanel extends bBlib{
 
     /**
-     * @var array $_traits  - included traits
-     */
-    protected $_traits = array('bRequest');
-
-    /**
      * @var array $_data     - default data array
      */
     protected $_data    = array(
@@ -26,10 +21,10 @@ class bPanel extends bBlib{
     protected function input($data = array()){
         if(!is_array($data))$data = array();
 
-        /** @var bRequest $bRequest  - request instance */
-        $bRequest = $this->getInstance('bRequest');
+        /** @var bRequest $_request  - request instance */
+        $_request = $this->getInstance('request', 'bRequest');
 
-        $tunnel = (array) $bRequest->get(__CLASS__);
+        $tunnel = (array) $_request->get(__CLASS__);
 
         $this->_data = array_replace($this->_data, $tunnel, $data);
 

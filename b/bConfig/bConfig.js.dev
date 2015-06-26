@@ -1,0 +1,97 @@
+(function(){
+
+    blib.localize({
+        'bConfig': {
+            '__bPanel':{
+                'setName':"Выберите настройку или создайте новую",
+                'titleName':"Добавление/редактирование настроек",
+                'setParent':"Выберите родительскую настройку",
+                'titleParent':"Используется как настройка по умолчанию"
+            }
+        }
+    },
+    {
+        'language': 'ru'
+    });
+
+
+    blib.build.define(
+        {'block':'bConfig'},
+        function(data){}
+    );
+
+    blib.build.redefine(
+        {'block':'bForm', 'elem':'selectplus'},
+        function(data){
+            data.elem = 'select';
+            this.template = {
+                'mods': data.mods || {},
+                'content': [
+                    {'block': 'bForm', 'elem': 'selectadd'},
+                    {'block': 'bForm', 'elem': 'selectinput'},
+                    data
+                ]
+            };
+
+        },
+        {'tag':"span"},
+        {
+            'getSelectinput':function(){
+                return this.children.bForm__selectinput[0];
+            },
+            'getSelect':function(){
+                return this.children.bForm__select[0];
+            },
+            'getAdd': function () {
+                return this.children.bForm__selectadd[0];
+            },
+            'onchange':function(){
+                var _this = this,
+                    isConfiger = _this._getMode('configer'),
+                    isAdd = _this.getAdd().isAdd;
+
+                if(isConfiger && !isAdd){
+
+                    blib.build({
+                        "block":"bLink",
+                        "data":{'bPanel':{'controller':'bConfig__bPanel'},'bConfig__bPanel':{"configName":_this.getSelect().val()}, 'view':'json'},
+                        "go":true
+                    });
+                }
+            }
+        }
+    );
+
+
+    //SELECTADD
+    blib.build.redefine(
+        {'block':'bForm', 'elem':'selectadd'},
+        function(data){
+            this.isAdd = false;
+            this.template.content = '+';
+        },
+        {'tag':"span"},
+        {
+            'html':function(text){
+                this.template.content = text;
+                this.dom.innerHTML = text;
+            },
+            'onclick':function(){
+                var parent = this.parent,
+                    input = parent.getSelectinput(),
+                    select = parent.getSelect(),
+                    status = input._getMode('open');
+                this.isAdd = true;
+                if(status){
+                    select.addOption(input.val());
+                    input.close();
+                    this.html('+');
+                    this.isAdd = false;
+                }else{
+                    input.open();
+                    this.html('ok');
+                }
+            }
+        }
+    );
+})();

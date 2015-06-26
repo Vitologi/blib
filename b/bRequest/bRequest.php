@@ -6,8 +6,6 @@ defined('_BLIB') or die;
  */
 class bRequest extends bBlib{
 
-    protected $_traits    = array('bRewrite');
-
     /** @var null|static $_instance - Singleton instance */
     private static $_instance = null;
 
@@ -29,10 +27,10 @@ class bRequest extends bBlib{
      */
     protected function input(){
 
-        /** @var bRewrite $bRewrite - rewrite instance */
-        $bRewrite = $this->getInstance('bRewrite');
+        /** @var bRewrite $_rewrite - rewrite instance */
+        $_rewrite = $this->getInstance('rewrite', 'bRewrite');
 
-        $rewriteData = $bRewrite->get();
+        $rewriteData = $_rewrite->get();
 
         $this->_request = (array)json_decode(file_get_contents("php://input"),true)+(array)$_POST +(array)$_GET+(array)$rewriteData;
 

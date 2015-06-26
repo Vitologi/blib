@@ -7,8 +7,6 @@ defined('_BLIB') or die;
  */
 class bIndex extends bController{
 
-    protected $_traits = array(/*'bRbac' */ 'bRequest', 'bIndex__bDataMapper', 'bConfig', 'bCssreset', 'bTemplate', 'bDecorator', 'bUser','bConverter');
-
     /**
      * @var array   $_config    - current page configuration
      */
@@ -29,8 +27,18 @@ class bIndex extends bController{
      */
     protected function configure($data = null){
 
+        $this->setInstance('request', 'bRequest');
+        $this->setInstance('db', 'bIndex__bDataMapper');
+        $this->setInstance('template', 'bTemplate');
+        $this->setInstance('this', 'bDecorator');
+        $this->setInstance('user', 'bUser');
+        $this->setInstance('converter', 'bConverter');
+        $this->setInstance('rbac', 'bRbac');
+
+        $_config = $this->getInstance('config', 'bConfig');
+
         // merge default page config with block`s config
-        $this->_config = array_replace_recursive($this->_config, $this->_getConfig());
+        $this->_config = array_replace_recursive($this->_config, $_config->getConfig(__CLASS__));
 
         // get page number from request or default
         $this->_config['pageNo'] = $this->get('pageNo', $this->_config['defaultPage']);
@@ -39,7 +47,7 @@ class bIndex extends bController{
         $this->_config['ajax'] = $this->get('ajax', $this->_config['ajax']);
 
         // get config for current page
-        $pageConfig = $this->_getConfig($this->_config['pageNo']);
+        $pageConfig = $_config->getConfig(__CLASS__.'.'.$this->_config['pageNo']);
 
         // extend configuration with page config
         if(is_array($pageConfig))$this->_config = array_replace_recursive($this->_config, $pageConfig);
@@ -54,14 +62,17 @@ class bIndex extends bController{
      */
     public function indexAction(){
 
-        /** @var bIndex__bDataMapper $bDataMapper  - page data mapper */
-        $bDataMapper = $this->getInstance('bIndex__bDataMapper');
+        /** @var bIndex__bDataMapper $_db  - page data mapper */
+        $_db = $this->getInstance('db');
 
-        /** @var bConverter__instance $bConverter  - converter */
-        $bConverter = $this->getInstance('bConverter');
+        /** @var bConverter__instance $_converter  - converter */
+        $_converter = $this->getInstance('converter');
 
-        /** @var self $bDecorator */
-        $bDecorator = $this->getInstance('bDecorator');
+        /** @var self $_this */
+        $_this = $this->getInstance('this');
+
+        /** @var bTemplate $_template */
+        $_template = $this->getInstance('template');
 
         $pageNo = $this->_config['pageNo'];     // page number
         $access = $this->_config['access']; // flag of page protection
@@ -78,16 +89,16 @@ class bIndex extends bController{
         // if page is not locked or user have permission for get it
         if(
             !is_string($access)
-            || $bDecorator->checkAccess($access, $pageNo)
+            || $_this->checkAccess($access, $pageNo)
         ){
             // get page template tree
-            $page = $bDataMapper->getItem($pageNo);
+            $page = $_db->getItem($pageNo);
 
             // save it
             $this->_config['template'] = $page->tree;
 
             // create page from template
-            $point["'{template}'"] = $this->_getTemplateDiff(false, $page->tree);
+            $point["'{template}'"] = $_template->getTemplateDiff(false, $page->tree);
         }
 
 
@@ -95,10 +106,9 @@ class bIndex extends bController{
             // output json page
             case "json":
 
-                $temp = $bConverter->setData($point["'{template}'"])->setFormat('json')->convertTo('array');
-                //$temp['ajax'] = true;
-                $bConverter->setData($temp)->setFormat('array')->convertTo('json');
-                $bConverter->output();
+                $temp = $_converter->setData($point["'{template}'"])->setFormat('json')->convertTo('array');
+                $_converter->setData($temp)->setFormat('array')->convertTo('json');
+                $_converter->output();
 
                 break;
 
@@ -122,11 +132,11 @@ class bIndex extends bController{
      */
     public function checkAccess($privilege = null, $pageNo = null){
 
-        // add role based access control system in traits
-        $this->setTrait('bRbac');
+        /** @var bRbac $_rbac */
+        $_rbac = $this->getInstance('rbac');
 
         // if user have access
-        if($this->_checkAccess($privilege, $pageNo))return true;
+        if($_rbac->checkAccess($privilege, $pageNo))return true;
 
         // or not
         return false;
@@ -139,10 +149,10 @@ class bIndex extends bController{
      */
     public function isOwner(){
 
-        /** @var bUser $bUser - user instance */
-        $bUser = $this->getInstance('bUser');
+        /** @var bUser $_user - user instance */
+        $_user = $this->getInstance('user');
 
-        $userId     = $bUser->getId();
+        $userId     = $_user->getId();
         $pageAuthor = $this->_config['author'];
 
         return $userId == $pageAuthor;

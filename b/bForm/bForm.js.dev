@@ -430,6 +430,7 @@
 			this.select = data.select;
 			this.show = data.show;
 			this.key = data.key;
+            this.isRequired = data.isRequired;
 
 			var meta = this.block.meta,
 				options = meta.select[data.select],
@@ -439,11 +440,14 @@
 			this.defValue = defValue;
 			if(!this.template.content)this.template.content = [];
 
+            if(!this.isRequired)this.template.content.push({'block':'bForm', 'elem':'option'});
+
 			for(i in options){
-				optionText = '';
+				optionText = [];
 				optionValue = options[i][this.key];
 				for(j in this.show){
-					optionText += options[i][this.show[j]]+' ';
+					optionText.push({'content':options[i][this.show[j]]});
+					optionText.push({'content':' '});
 				}
 
 				if(this.defValue == optionValue){
@@ -582,5 +586,24 @@
 			}
 		}
 	);
+
+    blib.build.define(
+        {'block':'bForm', 'elem':'jsoneditor'},
+        function(data){
+            this.prepare(data);
+            this.prepareContent();
+            this.template.content = [
+                {"block":"bJsonEditor", "content":data.content}
+            ];
+        },
+        false,
+        new standardFunction({
+            'val':function(data){
+                var _this = this,
+                    editor = _this.children.bJsonEditor[0];
+                return JSON.stringify(editor.getValue());
+            }
+        })
+    );
 
 })( window.blib );

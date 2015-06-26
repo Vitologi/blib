@@ -5,20 +5,11 @@ defined('_BLIB') or die;
  * Class bConfig - interface for store some configuration for blocks.
  * Included patterns:
  * 		singleton	- one configuration controller
- * 		strategy 	- many types of config storage
  */
 class bConfig extends bBlib{
 
-    /** @var bSystem $_system */
-	protected $_system = null;
-
 	/** @var null|static $_instance - Singleton instance */
 	private static $_instance = null;
-
-	private   $_config   = array();                            // All configuration stack
-	private   $_default  = 'bConfig__local';                   // Default get/set strategy
-	private   $_strategy = array('bConfig__local');            // Used strategy get/set config
-	private   $_merge = false;                                 // Merge all strategy
 
 
 	/**
@@ -27,51 +18,17 @@ class bConfig extends bBlib{
 	 * @return bConfig|null|static
      */
 	static public function create() {
-		if (self::$_instance === null){
-            self::$_instance = parent::create(func_get_args());
-            self::$_instance->initialize();
-        }
+		if (self::$_instance === null)self::$_instance = parent::create(func_get_args());
 		return self::$_instance;
 	}
 
     protected function input(){
-        $this->_system = $this->getInstance('system', 'bSystem');
-        $this->setInstance('bConfig__local', 'bConfig__local');
         $this->setInstance('model', 'bConfig__model');
     }
 
 	public function output(){
-		return $this;
-	}
-
-    /**
-     * Grab config by self, set config store strategy and point default config strategy
-     * ATTENTION: this operation execute after save singleton into static property
-     * this is need for prevent error(loop) when strategy based on block which use configuration
-     */
-    public function initialize(){
-        $config = $this->getConfig(__CLASS__);
-        $components = isset($config["strategy"])?$config["strategy"]:array();
-        if(isset($config["default"]) && in_array($config["default"],$components))$this->setDefaultStrategy($config["default"]);
-        if(isset($config["merge"]))$this->_merge = $config["merge"];
-
-        foreach($components as $key => $component){
-            $this->setInstance($component, $component);
-            $this->_strategy[] = $component;
-        }
+        return $this;
     }
-
-	/**
-	 * Get full configuration data from all included strategy
-	 *
-	 * @param string $strategy 	- name strategy for get/set
-	 * @void    				- set default strategy
-	 * @return $this    		- for chaining
-	 */
-	public function setDefaultStrategy($strategy ='bConfig__local'){
-		$this->_default = $strategy;
-		return $this;
-	}
 
 	/**
 	 * Get full configuration data from all included strategy
@@ -80,36 +37,7 @@ class bConfig extends bBlib{
 	 * @return null|mixed		- configuration data
      */
 	public function getConfig($selector =''){
-
-		if(!$this->_system->navigate($this->_config, $selector)){
-            $config = null;
-
-            if($this->_merge){
-
-    			foreach($this->_strategy as $i => $strategy){
-                    /** @var bConfig__local $strategyObject - strategy instance */
-    				$strategyObject = $this->getInstance($strategy);
-
-                    $temp = $strategyObject->getConfig($selector);
-
-    				if($temp === null)continue;
-
-                    if(is_array($temp) and is_array($config)){
-                        $config = array_replace_recursive($config,$temp);
-                    }else{
-                        $config = $temp;
-                    }
-
-    			}
-            }else{
-                $strategyObject = $this->getInstance($this->_default);
-                $config = $strategyObject->getConfig($selector);
-            }
-
-			$this->_config = $this->_system->navigate($this->_config, $selector, $config);
-		}
-
-		return $this->_system->navigate($this->_config, $selector);
+        return $this->getInstance('model')->getConfig($selector);
 	}
 
 	/**
@@ -120,22 +48,16 @@ class bConfig extends bBlib{
 	 * @return $this			- for chaining
      */
 	public function setConfig($selector = '', $value = array()){
-
-		/** @var bConfig__local $strategy - Get default strategy */
-		$strategy = ($selector == __CLASS__)?$this->getInstance('bConfig__local'):$this->getInstance($this->_default);
-
-		// Extend inner configuration storage
-		$this->_config = $this->_system->navigate($this->_config, $selector, $value);
-
-		// forwards request to the strategy
-		$strategy->setConfig($selector, $value);
-
-		return $this;
+        return $this->getInstance('model')->setConfig($selector, $value);
 	}
 
+    /**
+     * Create default configuration for block (use .json files)
+     *
+     * @param $block
+     * @throws Exception
+     */
     public function setDefault($block){
-        $_model = $this->getInstance('model');
-        $default = $_model->getDefault($block);
-        $this->setConfig($block, $default);
+        return $this->getInstance('model')->setDefault($block);
     }
 }

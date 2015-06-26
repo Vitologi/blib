@@ -4,7 +4,7 @@
   "properties": {
     "disableCache": {
       "type": "boolean",
-      "title":"Disable cache",
+      "title": "Disable cache",
       "description": "Disable cache for compiled source (js/css)."
     }
   },

@@ -25,11 +25,69 @@ class bConfig__database extends bBlib{
 		return $this;
 	}
 
+
+    /**
+     * Get config item
+     *
+     * @param string $selector	- config selector
+     * @return mixed[]			- local configs
+     */
+    public function getItem($selector = ''){
+        $path = explode('.', $selector);
+
+        // Protect from loop
+        if($path[0]==='bDatabase') {
+            /** @var bConfig $bConfig   - parent block */
+            $bConfig = $this->_parent;
+
+            /** @var bConfig__local $bConfig__local - default config strategy */
+            $bConfig__local = $bConfig->getInstance('bConfig__local');
+
+            return $bConfig__local->getItem($selector);
+        }
+
+        $item = $this->_db->getItem($selector);
+
+        if($item->bconfig_id)$item->bconfig_id = $this->_db->getItemById($item->bconfig_id)->name;
+
+        return array('name'=>$item->name, 'value'=>$item->value,'parent'=>$item->bconfig_id);
+    }
+
+    /**
+     * Save configurations to database
+     *
+     * @param string $selector   config selector
+     * @param mixed $value       config value
+     * @param null $parent       parent config
+     * @throws Exception
+     * @void                    - save configurations to database
+     */
+    public function saveItem($selector = '', $value = null, $parent= null){
+        // Protect from loop
+        if($selector=='bDatabase') {
+            /** @var bConfig $bConfig   - parent block */
+            $bConfig = $this->_parent;
+
+            /** @var bConfig__local $bConfig__local - default config strategy */
+            $bConfig__local = $bConfig->getInstance('bConfig__local');
+
+            return $bConfig__local->saveItem($selector, $value, $parent);
+        }
+
+        $config = $this->_db->getItem($selector);
+        $config->value = $value;
+        $config->name = $selector;
+        $config->bconfig_id = $this->_db->getItem($parent)->id;
+
+        $this->_config = $this->_system->navigate($this->_config, $selector, $config->value);
+        $this->_db->save($config);
+    }
+
 	/**
-	 * Get config from block`s file named like bBlock__bConfig.php
+	 * Get config from data base
 	 *
 	 * @param string $selector	- config selector
-	 * @return mixed[]			- local configs
+	 * @return mixed[]			- db configs
 	 */
 	public function getConfig($selector = ''){
         $path = explode('.', $selector);
@@ -104,5 +162,15 @@ class bConfig__database extends bBlib{
 		$this->_config = $this->_system->navigate($this->_config, $selector, $config->value);
         $this->_db->save($config);
 	}
+
+    /**
+     * Get all config names
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getConfigList(){
+        return $this->_db->getConfigList();
+    }
 
 }

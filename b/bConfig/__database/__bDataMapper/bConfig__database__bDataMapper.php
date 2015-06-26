@@ -43,6 +43,31 @@ class bConfig__database__bDataMapper extends bDataMapper{
     }
 
     /**
+     * Get configuration by name from table
+     *
+     * @return stdClass      - data-object {Configuration}
+     */
+    public function getItemById(){
+
+        // Empty config object
+        $prototype = (object)array('id'=>null, 'name'=>null, 'value'=>null, 'bconfig_id'=>null);
+
+        if(func_num_args()===0)return $prototype;
+
+        $id = func_get_arg(0);
+
+        $query = $this->getDatabase()->prepare('SELECT * FROM `bconfig` AS `table` WHERE `table`.`id` LIKE  :id');
+        $query->bindParam(':id', $id, PDO::PARAM_STR);
+
+        $query->execute();
+        if(!$result = $query->fetch(PDO::FETCH_ASSOC))return $prototype;
+
+        $result['value'] = json_decode($result['value'],true);
+
+        return (object) $result;
+    }
+
+    /**
      * Merge to parent configs
      *
      * @param stdClass $obj     - data-object
@@ -66,7 +91,9 @@ class bConfig__database__bDataMapper extends bDataMapper{
             // try to merge (if throw exception do nothing)
             try{
                 $temp = json_decode($result['value'],true);
-                if(is_array($temp) and is_array($obj->value)){
+                if($obj->value == null) {
+                    $obj->value = $temp;
+                }elseif(is_array($temp) and is_array($obj->value)){
                     $obj->value = array_replace_recursive($temp, $obj->value);
                 }
             }catch (Exception $e){}
@@ -78,6 +105,25 @@ class bConfig__database__bDataMapper extends bDataMapper{
         return $obj;
 
     }
+
+    /**
+     * Get all config names
+     *
+     * @return array
+     * @throws Exception
+     */
+    public function getConfigList(){
+        $temp = array();
+        $query = $this->getDatabase()->prepare('SELECT `table`.`name` FROM `bconfig` AS `table`');
+
+        $query->execute();
+        if(!$result = $query->fetchAll(PDO::FETCH_ASSOC))return array();
+
+        foreach($result as $value)$temp[]=$value['name'];
+
+        return $temp;
+    }
+
 
     /**
      * Get list of data (not completed) 0_0

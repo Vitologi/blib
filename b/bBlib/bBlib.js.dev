@@ -1475,6 +1475,7 @@
 			//задаем атрибуты
 			for (key in data.attrs) {
 				if (data.attrs.hasOwnProperty(key)) {
+					if(key == 'title'||key == 'alt')data.attrs[key] = blib.localize(data.attrs[key]);
 					obj._attr(key, data.attrs[key]);
 				}
 			}

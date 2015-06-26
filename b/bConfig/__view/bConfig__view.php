@@ -34,7 +34,7 @@ class bConfig__view extends bView{
         $errors  = $this->get('errors', array());
 
         /** Configured blocks */
-        $configBlocks = $this->getConfBlocks();
+//        $configBlocks = $this->getConfBlocks();
 
         /** Buttons */
         $save    = $_helper->buildButton('сохранить', array('configForm'), array(
@@ -46,7 +46,7 @@ class bConfig__view extends bView{
         $blocks       = $_helper->buildBlocks($this->get('blocks', array()));
 
 
-        $location   = $_helper->buildLocation('bConfig__bPanel',array('block'=>$this->get('block', null)));
+        $location   = $_helper->buildLocation('bConfig__bPanel',array('configName'=>$this->get('configName', null)));
 
         $message  = array($_helper->buildError($message));
         foreach($errors as $key => $value){
@@ -56,7 +56,7 @@ class bConfig__view extends bView{
 
 
         $collection = $_helper->buildCollection(array($message, $location));
-        $tools      = $_helper->buildTools(array($configBlocks, $save));
+        $tools      = $_helper->buildTools(array(/*$configBlocks,*/ $save));
 
         $this->setPosition('"{1}"', $blocks);
         $this->setPosition('"{2}"', $collection);
@@ -69,15 +69,21 @@ class bConfig__view extends bView{
     /**
      * Get block witch can be configured
      *
-     * @return array    bom for create list
+     * @param null|array $list
+     * @return array bom for create list
      */
-    public function getConfBlocks(){
-        return array(
-            'block'=>'bConfig',
-            'elem'=>'list',
-            'selected'=>$this->get('block'),
-            'content'=>$this->get('confBlocks',array())
-        );
+    public function parseConfigList($list = null){
+
+        if($list == null)$list = $this->get('configList', array());
+
+        $temp = array();
+
+        foreach($list as $value){
+            $blockName = (strpos($value,'.')?$value:($value.'.name'));
+            $temp[]=array('name'=>$value,'value'=>$blockName);
+        }
+
+        return $temp;
     }
 
     /**
@@ -87,9 +93,10 @@ class bConfig__view extends bView{
      */
     public function showConfigs(){
 
-        $this->_converter->setData($this->get('configMap', array()))->setFormat('array')->convertTo('json');
-        $config = $this->_converter->convertTo('string');
-        $block = $this->get('block', null);
+        $config       = $this->get('configMap', array());
+        $configName   = $this->get('configName', null);
+        $configParent = $this->get('configParent', null);
+        $list         = $this->parseConfigList();
 
         return array(
             'block' => 'bForm',
@@ -100,12 +107,22 @@ class bConfig__view extends bView{
                 'method' => "POST",
                 'action' => "/",
                 'ajax'   => true,
-                'select' => array(),
-                'items'  => array()
+                'select' => array(
+                    'list' => $list
+                ),
+                'items'  => array(
+                    array(
+                        'configName'=>$configName,
+                        'configParent'=>$configParent
+                    )
+                )
             ),
             'content'	=> array(
-                array('elem'=>'hidden', 'name'=>'block', 'content'=>$block),
-                array('elem'=>'textarea', 'name'=>'config', 'content'=>$config)
+                array('elem'=>'label', 'content'=>'bConfig.__bPanel.setName', 'attrs'=>array('title'=>'bConfig.__bPanel.titleName')),
+                array('elem'=>'selectplus', 'isRequired'=>true, 'mods'=>array('configer'=>true), 'name'=>'configName', 'select'=>'list', 'key'=>'name', 'show'=>array('value')),
+                array('elem'=>'label', 'content'=>'bConfig.__bPanel.setParent', 'attrs'=>array('title'=>'bConfig.__bPanel.titleParent')),
+                array('elem'=>'select', 'name'=>'configParent', 'select'=>'list', 'key'=>'name', 'show'=>array('value')),
+                array('elem'=>'jsoneditor', 'name'=>'config', 'content'=>array('theme'=>'bootstrap2','schema'=>$config))
             )
         );
     }

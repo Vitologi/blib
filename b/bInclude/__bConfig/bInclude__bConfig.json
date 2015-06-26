@@ -1,0 +1,14 @@
+{
+  "title": "bInclude",
+  "type": "object",
+  "properties": {
+    "disableCache": {
+      "type": "boolean",
+      "title": "Disable cache",
+      "description": "Disable cache for compiled source (js/css)."
+    }
+  },
+  "default": {
+    "disableCache": true
+  }
+}

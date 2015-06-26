@@ -2,26 +2,39 @@
   "title": "bConfig",
   "type": "object",
   "properties": {
+
     "strategy": {
       "type": "array",
-      "format": "table",
       "title": "Strategy",
       "uniqueItems": true,
       "items": {
         "type": "string",
-        "title": "strategy"
+        "title": "strategy",
+        "enum":["bConfig__local","bConfig__database"]
       },
       "description": "Strategy config collection."
     },
     "default": {
       "type": "string",
+      "watch": {
+        "strategy": "strategy"
+      },
+      "enumSource": [{
+        "source": "strategy",
+        "value": "{{item}}"
+      }],
       "description": "Default strategy for store configuration."
+    },
+    "merge": {
+      "type": "boolean",
+      "description": "Merge all strategy for get combine configuration."
     }
   },
   "default": {
     "strategy":[
       "bConfig__database"
     ],
-    "default": "bConfig__database"
+    "default": "bConfig__database",
+    "merge":true
   }
 }

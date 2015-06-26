@@ -9,12 +9,7 @@ defined('_BLIB') or die;
  */
 class bConfig__bPanel extends bController{
 
-    protected $_block = 'bConfig';
-
-    /** @var bConfig__model $_model */
-    protected $_model = null;
-    /** @var bConfig__view $_view */
-    protected $_view = null;
+    protected $_configName = 'bConfig';
 
     /**
      * Get tunnel data for business logic, set view template and configure it
@@ -24,31 +19,36 @@ class bConfig__bPanel extends bController{
      */
     protected function configure($data = array()){
 
-        $_model = $this->_model = $this->getInstance('model', 'bConfig__model');
-        $_view = $this->_view = $this->getInstance('view', 'bConfig__view');
+        $_model = $this->getInstance('model', 'bConfig__model');
+        $_view   = $this->getInstance('view', 'bConfig__view');
+        $_helper = $this->getInstance('helper', 'bPanel__model');
 
         // Save blocks (panel and config)
-        $blocks = $_model->getBlocks('__bPanel');
-        $confBlocks = $_model->getBlocks();
-
+        $blocks = $_helper->getBlocks('__bPanel');
         $_view->set("blocks", $blocks);
-        $_view->set("confBlocks", $confBlocks);
+
 
         // Set template for menu view
-        if ($template = $_model->getTemplate()) $_view->setTemplate($template);
+        if ($template = $_helper->getTemplate()) $_view->setTemplate($template);
 
     }
 
 
     public function indexAction(){
 
-        $_view = $this->_view;
-        $_model = $this->_model;
+        $_model = $this->getInstance('model');
+        $_view   = $this->getInstance('view');
 
-        $block = $this->get('block', $this->_block);
-        $configMap = $_model->getConfigMap($block);
+        $configList = $_model->getConfigList();
+        $_view->set("configList", $configList);
 
-        $_view->set("block", $block);
+        $configName = $this->get('configName', $this->_configName);
+        $configParent = $_model->getConfigParent($configName);
+        $configMap = $_model->getConfigMap($configName);
+
+
+        $_view->set("configName", $configName);
+        $_view->set("configParent", $configParent);
         $_view->set("configMap", $configMap);
         $_view->build();
 
@@ -61,14 +61,16 @@ class bConfig__bPanel extends bController{
      */
     public function saveAction(){
 
-        $_model = $this->_model;
+        /** @var bConfig__model $_model */
+        $_model = $this->getInstance('model');
 
-        $bForm = $this->get('bForm', array('configForm'=>array('block'=>null,'config'=>array())));
+        $bForm = array_replace_recursive(array('configForm'=>array('configName'=>null,'config'=>array(),'parent'=>null)),$this->get('bForm', array()));
         $config = $bForm['configForm']['config'];
-        $block = $bForm['configForm']['block'];
+        $configName = $bForm['configForm']['configName'];
+        $parent = $bForm['configForm']['configParent'];
 
-        $_model->saveConfig($block, $config);
-
+        $_model->saveConfig($configName, $config, $parent);
+        $this->_configName = $configName;
 
         return $this->indexAction();
     }

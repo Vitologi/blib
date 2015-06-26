@@ -30,7 +30,7 @@
 		.bForm_style_default .bForm__textarea,
 		.bForm_style_default .bForm__select,
 		.bForm_style_default .bForm__option,
-		
+		.bForm_style_default .bForm__jsoneditor,
 		.bForm_style_default .bForm__radio,
 		.bForm_style_default .bForm__checkbox{
 			padding: .5em .6em;
@@ -74,7 +74,8 @@
 		.bForm_style_default .bForm__file{
 			padding: .3em .6em;}
 		.bForm_style_default .bForm__hidden{}
-		.bForm_style_default .bForm__textarea{
+		.bForm_style_default .bForm__textarea,
+		.bForm_style_default .bForm__jsoneditor{
 			width: 98%;
 			margin: 5px 1%;
 			resize: vertical;}

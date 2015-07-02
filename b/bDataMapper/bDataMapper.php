@@ -64,7 +64,7 @@ class bDataMapper extends bBlib{
 	 * @param string $name      - connection settings name
 	 * @return $this            - for chaining
 	 */
-	final protected function connect($name = 'default'){
+	final public function connect($name = 'default'){
 		$this->_connectionName = $name;
 		return $this;
 	}

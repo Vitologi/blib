@@ -94,9 +94,8 @@ class bController extends bBlib{
 
     /**
      * Default configuration method
-     * @param $data     - some input data
      */
-    protected function configure($data = null){
+    protected function configure(){
 
     }
 

@@ -7,9 +7,15 @@ defined('_BLIB') or die;
 class bRbac extends bBlib{
 
     /**
-     * @var null|array $_operations - list of roles + privileges + rules witch get from database
+     * @var array $_operations - list of roles + privileges + rules witch get from database
      */
-    private   $_operations = null;
+    private static  $_operations = array();
+
+    /**
+     * @var null|int $_id          current user id
+     */
+    private   $_id         = null;
+
     /**
      * @var null|array $_roles      - serialized roles array like array('admin'=>true, 'manager'=> true)
      */
@@ -26,26 +32,24 @@ class bRbac extends bBlib{
      *  - or from database
      */
     protected function input() {
+        $this->setInstance('user', 'bUser');
+        $this->setInstance('db', 'bRbac__bDataMapper');
+        $_this = $this->getInstance('this', 'bDecorator');
 
+        $_this->initialize();
+	}
+
+    public function initialize(){
         /** @var bUser $_user - user instance */
-        $_user = $this->getInstance('user', 'bUser');
+        $_user = $this->getInstance('user');
 
         /** @var bRbac__bDataMapper $_db - rbac data mapper */
-        $_db = $this->getInstance('db', 'bRbac__bDataMapper');
+        $_db = $this->getInstance('db');
 
-        $userId = $_user->getId();
-
-        $globalOperations = isset(bBlib::$_VARS[__CLASS__][$userId]) ? bBlib::$_VARS[__CLASS__][$userId] : null;
-
-        if ($globalOperations != null) {
-            $this->_operations = $globalOperations;
-        } else {
-            $this->_operations                = $_db->getOperations($userId);
-            bBlib::$_VARS[__CLASS__][$userId] = $this->_operations;
-        }
-
-        $this->parseOperation($this->_operations);
-	}
+        $this->_id = $_user->getId();
+        if(!isset(self::$_operations[$this->_id]))self::$_operations[$this->_id] = $_db->getOperations($this->_id);
+        $this->parseOperation(self::$_operations[$this->_id]);
+    }
 
     /**
      * Save self instance in child block
@@ -91,5 +95,9 @@ class bRbac extends bBlib{
 		if(method_exists($this->_parent, $value))return $this->_parent->$value($data);
 		return true;
 	}
+
+    public function hasRole($roleName = null){
+        return array_key_exists($roleName, $this->_roles);
+    }
 
 }

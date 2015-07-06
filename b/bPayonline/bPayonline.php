@@ -10,7 +10,7 @@ class bPayonline extends bController{
      *
      * @param null $data    - templates data
      */
-	protected function configure($data = null){
+	public function initialize($data = null){
 
         $this->setInstance('model', 'bPayonline__model');
         $this->setInstance('view', 'bPayonline__view');

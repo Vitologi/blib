@@ -15,9 +15,12 @@ class bVisit__view extends bView{
         'content' => ''
     );
 
-    public function index(){
 
+    protected function input(){
         $this->setInstance('converter', 'bConverter');
+    }
+
+    public function index(){
 
         $this->_template['content'] = $this->get('data', array());
 

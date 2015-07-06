@@ -57,7 +57,7 @@ class bExtension extends bBlib{
         $files = $this->concatCode($block, array());
         
 		foreach($list as $key => $value){
-			$files = $this->concatCode($value, $files);
+			$files = $this->concatCode($value, $files, 1);
 		}
         
 		foreach($files as $key => $value){
@@ -68,14 +68,16 @@ class bExtension extends bBlib{
 	}
 
 
-	/**
-	 * Collects all code from the dev-files and sorts it by file extension
-	 *
-	 * @param string $name		- block`s name
-	 * @param array $stack		- empty array or result previous iteration
-	 * @return array			- sorted glues code (like ["js"=>"code1 \n code2", "css"=>"css rule1 \n css rule2"])
+    /**
+     * Collects all code from the dev-files and sorts it by file extension
+     *
+     * @param string $name - block`s name
+     * @param array $stack - empty array or result previous iteration
+     * @param int $root     root flag
+     * @return array - sorted glues code (like ["js"=>"code1 \n code2", "css"=>"css rule1 \n css rule2"])
+     * @throws Exception
      */
-	private function concatCode($name = '', $stack = array()){
+	private function concatCode($name = '', $stack = array(), $root = 0){
 		$path 	= bBlib::path($name);
 		$folder = opendir($path);
 
@@ -84,13 +86,14 @@ class bExtension extends bBlib{
 			// glue only .dev files
 			if(preg_match('/\w*.(\w+).dev$/', $file, $matches)){
 				if(!isset($stack[$matches[1]]))$stack[$matches[1]]='';
-				$stack[$matches[1]] .= file_get_contents($path.$file);
+				$content = file_get_contents($path.$file);
+				$stack[$matches[1]] = ($root == 0)?$content.$stack[$matches[1]]:$stack[$matches[1]].$content;
 				continue;
 			}
 
 			// climb down if the folder named like element '__...'
             if(is_dir($path.$file) && substr($file, 0,2) === '__'){
-				$stack = $this->concatCode($name.$file, $stack);
+				$stack = $this->concatCode($name.$file, $stack, $root+1);
 			};
 		}
 		

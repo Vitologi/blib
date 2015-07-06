@@ -1499,27 +1499,52 @@
 			ready();
 			
 		},
-	
-		//заносим блок/елемент в коллекцию
+
+	//заносим блок/елемент в коллекцию
 		define = function(name, factory, template, action){
 			var point = (name.elem)?name.block+'.'+name.elem:name.block;
-			
+
 			if(!is(factory, 'function') && !is(name.block, 'string'))return;
 
-			extend(true, factory.prototype, {'template':name}, baseProto, {'constructor':factory});	
-			if(is(template, 'object')){factory.prototype._setTemplate(template)};
-			if(is(action, 'object')){factory.prototype._setAction(action)};
-			
-			return navigate(config.block, point, factory);
-		};
-		
+			extend(true, factory.prototype, {'template':name}, baseProto, {'constructor':factory});
+			if(is(template, 'object')){factory.prototype._setTemplate(template)}
+			if(is(action, 'object')){factory.prototype._setAction(action)}
+
+			navigate(config.block, point, factory);
+			applyDeferredRedefine();
+			return navigate(config.block, point);
+		},
+
+		/** применение отложенных заданий*/
+		deferredRedefine = [],
+		applyDeferredRedefine = function(){
+			var i = deferredRedefine.length- 1,
+				temp, result=[];
+
+			for(; i>=0; i--){
+				temp = deferredRedefine[i];
+				delete deferredRedefine[i];
+				redefine(temp['name'], temp['factory'], temp['template'], temp['action']);
+			}
+
+			for (i = 0; i < deferredRedefine.length; i++) {
+				if ( i in deferredRedefine ) {
+					result.push(deferredRedefine[i]);
+				}
+			}
+
+			deferredRedefine = result;
+		},
+
 		//переопределяем блок/елемент в коллекцию
 		redefine = function(name, factory, template, action){
 			if(!is(factory, 'function') || !is(name.block, 'string'))return;
-						
+
 			var point = (name.elem)?name.block+'.'+name.elem:name.block,
 				oldFactory = navigate(config.block, point);
-			
+
+			if(!is(oldFactory,'function'))return deferredRedefine.push({'name':name,'factory':factory,'template':template,'action':action});
+
 			extend(true, factory.prototype, oldFactory.prototype, {'constructor':factory});
 			if(is(template, 'object')){factory.prototype._setTemplate(template)};
 			if(is(action, 'object')){factory.prototype._setAction(action)};
@@ -1527,9 +1552,9 @@
 			for(key in oldFactory){
 				factory[key] = oldFactory[key];
 			}
-			
+
 			return navigate(config.block, point, factory);
-			
+
 		};
 	
 	build.ready = ready;

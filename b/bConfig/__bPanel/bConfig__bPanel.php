@@ -17,7 +17,7 @@ class bConfig__bPanel extends bController{
      * @param array $data   - provided data
      * @throws Exception
      */
-    protected function configure($data = array()){
+    public function initialize($data = array()){
 
         $_model = $this->getInstance('model', 'bConfig__model');
         $_view   = $this->getInstance('view', 'bConfig__view');

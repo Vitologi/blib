@@ -32,7 +32,8 @@ class bController extends bBlib{
     protected function input(Array $data = array()){
 
         $this->_request = $this->getInstance('request','bRequest');
-
+        $_this = $this->getInstance('this','bDecorator');
+        
         if(isset($data['action'])){
             $this->setAction($data['action']);
         }else{
@@ -45,7 +46,7 @@ class bController extends bBlib{
             $this->setView($this->get('view', $this->_view_));
         }
 
-        $this->configure($data);
+        $_this->initialize($data);
     }
 
     /**
@@ -95,7 +96,7 @@ class bController extends bBlib{
     /**
      * Default configuration method
      */
-    protected function configure(){
+    public function initialize(){
 
     }
 

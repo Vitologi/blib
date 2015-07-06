@@ -17,7 +17,7 @@ class bFeedBack extends bController{
     /** @var bRbac $_rbac */
     protected $_rbac = null;
 
-    protected function configure($data = array()){
+    public function initialize($data = array()){
 
         $this->_user = $this->getInstance('user', 'bUser');
         $this->_db   = $this->getInstance('db', 'bFeedBack__bDataMapper');

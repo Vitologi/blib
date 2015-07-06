@@ -19,7 +19,7 @@ class bMenu__bPanel extends bController{
      * @param array $data   - provided data
      * @throws Exception
      */
-    protected function configure($data = array()){
+    public function initialize($data = array()){
 
         $this->setInstance('model', 'bMenu__model');
         $this->setInstance('validator', 'bMenu__validator');

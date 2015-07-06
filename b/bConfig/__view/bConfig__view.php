@@ -33,9 +33,6 @@ class bConfig__view extends bView{
         $message = $this->get('message', "Панель редактирования конфигураций блоков");
         $errors  = $this->get('errors', array());
 
-        /** Configured blocks */
-//        $configBlocks = $this->getConfBlocks();
-
         /** Buttons */
         $save    = $_helper->buildButton('сохранить', array('configForm'), array(
             'action'=>'save',

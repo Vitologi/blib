@@ -47,7 +47,7 @@ class bPayonline__model extends bBlib{
     }
 
 
-    public function configure(){
+    public function initialize(){
 
         $_user = $this->getInstance('user');
 
@@ -108,7 +108,7 @@ class bPayonline__model extends bBlib{
 
     public function getSecureData() {
 
-        $this->configure();
+        $this->initialize();
 
         if( $this->_error )return array();
 

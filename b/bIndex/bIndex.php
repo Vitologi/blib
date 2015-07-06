@@ -25,7 +25,7 @@ class bIndex extends bController{
     /**
      * Generate configuration for page
      */
-    protected function configure($data = null){
+    public function initialize($data = null){
 
         $this->setInstance('request', 'bRequest');
         $this->setInstance('db', 'bIndex__bDataMapper');

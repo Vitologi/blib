@@ -6,7 +6,7 @@ defined('_BLIB') or die;
  */
 class bVisit extends bController{
 
-	protected function configure($data = null){
+	public function initialize($data = null){
         $this->setInstance('user','bUser');
         $this->setInstance('view','bVisit__view');
         $this->setInstance('db','bVisit__bDataMapper');

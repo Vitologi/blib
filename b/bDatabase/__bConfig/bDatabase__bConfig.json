@@ -14,6 +14,9 @@
           "name": {
             "type": "string"
           },
+          "provider": {
+            "type": "string"
+          },
           "host": {
             "type": "string"
           },
@@ -38,11 +41,12 @@
     "connections":[
       {
         "name": "default",
-        "host":  "localhost",
-        "user":  "root",
+        "provider": "mysql",
+        "host": "localhost",
+        "user": "root",
         "password": "",
-        "database":"test",
-        "persistent":false
+        "database": "test",
+        "persistent": false
 
       }
     ]

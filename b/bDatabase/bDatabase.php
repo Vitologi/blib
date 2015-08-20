@@ -48,24 +48,20 @@ class bDatabase extends bBlib{
 		if(!array_key_exists($name, $this->_db)){
 
 			// get connections properties
-			$connections = $this->_config->getConfig(__CLASS__);
-			$connections = $connections["connections"];
-
+			$config = $this->_config->getConfig(__CLASS__);
+			$connections = $config["connections"];
 			foreach($connections as $key => $value){
-                if($value['name'] === $name)$connect = $value;
-            }
+				if($value['name'] === $name) $connect = $value;
+			}
+			if(!isset($connect)) throw new Exception('Can`t find connection "'.$name.'" in db configuration');
 
-			if(!isset($connect))throw new Exception('Can`t find connection "'.$name.'" in db configuration');
+			$db = array_replace(array('provider' => '', 'host' => '', 'database' => '', 'user' => '', 'password' => '', 'persistent' => false), $connect);
+			$dsn = sprintf('%1$s:host=%2$s;dbname=%3$s', $db['provider'], $db['host'], $db['database']);
 
-			$db = array_replace(array('host'=>'', 'database'=>'', 'user'=>'', 'password'=>'', 'persistent'=>false), $connect);
-
-			$dsn = sprintf('mysql:host=%1$s;dbname=%2$s', $db['host'], $db['database']);
 			$attrs = array();
-            if($db['persistent'])$attrs[PDO::ATTR_PERSISTENT]=true;
-
+			if($db['persistent']) $attrs[PDO::ATTR_PERSISTENT] = true;
 			$pdo = new PDO($dsn, $db['user'], $db['password'], $attrs);
-			$pdo->query("SET NAMES utf8");
-
+			if($db['provider']==='mysql') $pdo->query("SET NAMES utf8");
 			$this->_db[$name] = $pdo;
 		}
 
